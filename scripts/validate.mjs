@@ -35,3 +35,44 @@ export async function validateCode(code) {
   }
   return { ok: true, events: haps.length };
 }
+
+// ---- CLI: node scripts/validate.mjs <track.json|file.strudel>... | --code "<code>" ----
+const REQUIRED_FIELDS = ['id', 'title', 'prompt', 'batch', 'code', 'createdAt'];
+
+async function validateTarget(arg) {
+  if (arg.endsWith('.json')) {
+    const { readFile } = await import('node:fs/promises');
+    let track;
+    try {
+      track = JSON.parse(await readFile(arg, 'utf8'));
+    } catch (err) {
+      return { ok: false, error: `unreadable JSON: ${err.message}` };
+    }
+    const missing = REQUIRED_FIELDS.filter((f) => !track[f]);
+    if (missing.length) return { ok: false, error: `missing fields: ${missing.join(', ')}` };
+    return validateCode(track.code);
+  }
+  const { readFile } = await import('node:fs/promises');
+  return validateCode(await readFile(arg, 'utf8'));
+}
+
+if (process.argv[1] && import.meta.url.endsWith(process.argv[1].split('/').pop())) {
+  const args = process.argv.slice(2);
+  if (args.length === 0) {
+    console.error('usage: node scripts/validate.mjs <track.json>... | --code "<strudel code>"');
+    process.exit(2);
+  }
+  let failures = 0;
+  if (args[0] === '--code') {
+    const result = await validateCode(args[1] ?? '');
+    console.log(result.ok ? `PASS (${result.events} events / 8 cycles)` : `FAIL — ${result.error}`);
+    failures += result.ok ? 0 : 1;
+  } else {
+    for (const file of args) {
+      const result = await validateTarget(file);
+      console.log(result.ok ? `PASS ${file} (${result.events} events / 8 cycles)` : `FAIL ${file} — ${result.error}`);
+      failures += result.ok ? 0 : 1;
+    }
+  }
+  process.exit(failures ? 1 : 0);
+}
