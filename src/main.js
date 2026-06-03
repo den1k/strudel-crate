@@ -63,6 +63,11 @@ const debounce = (fn, ms) => {
   };
 };
 
+const flashError = (el) => {
+  el.classList.add('error');
+  setTimeout(() => el.classList.remove('error'), 1200);
+};
+
 // --- rendering --------------------------------------------------------------
 function visibleTracks() {
   return state.tracks.filter((t) => {
@@ -101,8 +106,17 @@ function trackCard(track) {
     b.className = 'block' + (track.rating != null && n <= track.rating ? ' on' : '');
     b.title = `${n}/5`;
     b.addEventListener('click', async () => {
-      await putRating(track, { rating: track.rating === n ? null : n }); // click again to clear
-      renderTracks();
+      try {
+        await putRating(track, { rating: track.rating === n ? null : n }); // click again to clear
+      } catch (err) {
+        console.error(err);
+        flashError(card);
+        return;
+      }
+      // update blocks in place — a full re-render would wipe unsaved notes in other cards
+      rate.querySelectorAll('.block').forEach((el, i) =>
+        el.classList.toggle('on', track.rating != null && i < track.rating),
+      );
     });
     rate.appendChild(b);
   }
@@ -112,9 +126,14 @@ function trackCard(track) {
   notes.placeholder = 'notes — what works, what to change…';
   notes.value = track.notes ?? '';
   const saveNotes = debounce(async () => {
-    await putRating(track, { notes: notes.value });
-    notes.classList.add('saved');
-    setTimeout(() => notes.classList.remove('saved'), 600);
+    try {
+      await putRating(track, { notes: notes.value });
+      notes.classList.add('saved');
+      setTimeout(() => notes.classList.remove('saved'), 600);
+    } catch (err) {
+      console.error(err);
+      flashError(notes);
+    }
   }, 600);
   notes.addEventListener('input', saveNotes);
 

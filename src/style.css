@@ -109,6 +109,7 @@ body {
 }
 .notes:focus { outline: none; border-color: var(--dim); }
 .notes.saved { border-color: var(--acid); }
+.notes.error, .track.error { border-color: var(--hot); }
 
 .code { grid-area: code; font-size: 12px; }
 .code summary { color: var(--dim); cursor: pointer; user-select: none; }
