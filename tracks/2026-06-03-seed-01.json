@@ -1,0 +1,8 @@
+{
+  "id": "2026-06-03-seed-01",
+  "title": "Boiler Primer",
+  "prompt": "seed: driving acid techno, 130bpm",
+  "batch": "2026-06-03-seed",
+  "code": "setcpm(130/4)\nstack(\n  s(\"bd*4\").bank(\"RolandTR909\").gain(1.1),\n  s(\"[~ hh]*4\").bank(\"RolandTR909\").gain(0.7).pan(sine.range(0.3, 0.7)),\n  s(\"~ cp ~ cp\").bank(\"RolandTR909\").room(0.3),\n  note(\"<c2 c2 eb2 g1>*8\").s(\"sawtooth\").lpf(sine.slow(4).range(200, 1800)).resonance(12).decay(0.12).sustain(0).gain(0.8)\n)",
+  "createdAt": "2026-06-03T00:00:00Z"
+}
