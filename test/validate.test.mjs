@@ -36,4 +36,15 @@ describe('validateCode', () => {
     expect(result.ok).toBe(false);
     expect(result.error).toMatch(/did not evaluate to a Pattern/);
   });
+
+  it('rejects sounds the webapp does not load', async () => {
+    const result = await validateCode('s("definitelynotasound*4")');
+    expect(result.ok).toBe(false);
+    expect(result.error).toMatch(/unknown sounds/);
+  });
+
+  it('accepts drum-machine bank sounds', async () => {
+    const result = await validateCode('s("bd*4, ~ sd").bank("RolandTR909")');
+    expect(result.ok).toBe(true);
+  });
 });
