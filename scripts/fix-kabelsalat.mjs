@@ -4,7 +4,14 @@
 import { readFile, writeFile } from 'node:fs/promises';
 
 const path = 'node_modules/@kabelsalat/web/package.json';
-const pkg = JSON.parse(await readFile(path, 'utf8'));
+let raw;
+try {
+  raw = await readFile(path, 'utf8');
+} catch {
+  console.warn('fix-kabelsalat: @kabelsalat/web not found, skipping patch');
+  process.exit(0);
+}
+const pkg = JSON.parse(raw);
 if (!pkg.exports) {
   pkg.exports = { '.': { import: './dist/index.mjs', default: './dist/index.js' } };
   await writeFile(path, JSON.stringify(pkg, null, 2) + '\n');
