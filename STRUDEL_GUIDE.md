@@ -96,28 +96,38 @@ or pick the register in the scale root (`"C2:minor"`).
 - `.ply("<1 1 2 4>")` — ratchet builds
 - LFOs everywhere: `sine`, `saw`, `tri`, `square`, `rand`, `perlin` + `.range(a,b).slow(n)`
 
-## Making it a COMPLETE track (3–5 minutes), not a loop
+## Making it a COMPLETE track (3–6 minutes) — THE DEFAULT
 
-Listeners rate these as tracks. Direct listener feedback: *"too slow and monotonous —
-give it build and movement; it should be a complete track, 3-5 minutes."* At
-`setcpm(130/4)` one cycle ≈ 1.8s, so a 3.5-minute track ≈ 110+ cycles of evolution.
+**Every track defaults to 3–6 minutes with an intro, an elaborate middle, and an
+outro.** Only write a short loop sketch if the style prompt explicitly asks for one.
+Direct listener feedback: *"too slow and monotonous — give it build and movement; it
+should be a complete track."*
 
-**Approach A — `arrange()` sections** (preferred for full tracks). Each section is its
-own `stack(...)`; arrange plays them in sequence for the given cycle counts:
+Size the arrangement from the tempo: total cycles ≈ minutes × BPM / 4 (one cycle = one
+4/4 bar). At `setcpm(130/4)`, 4 minutes ≈ 130 cycles. Budget your `arrange()` section
+lengths to add up to that.
+
+**Approach A — `arrange()` sections** (the default shape). Each section is its own
+`stack(...)`; arrange plays them in sequence for the given cycle counts. Intro and
+outro are mandatory; the middle should develop — add/remove layers, open filters,
+shift progressions between sections:
 
 ```
 setcpm(132/4)
 arrange(
-  [16, stack(...intro: drums + filtered bass...)],
-  [32, stack(...main groove: add melody, open the filter...)],
+  [16, stack(...intro: reduced kit, filtered, sets the mood...)],
+  [32, stack(...build: add bass + hats, filter opening...)],
+  [32, stack(...main: full groove + melody...)],
   [16, stack(...breakdown: drop drums, pads + space...)],
-  [32, stack(...peak: everything + variation...)],
-  [16, stack(...outro: strip back down...)]
+  [24, stack(...peak: everything + variation/fills...)],
+  [12, stack(...outro: strip back down to the intro elements...)]
 )
 ```
+(132 cycles ≈ 4 min at 132 BPM.)
 
 **Approach B — one evolving `stack`** with long-cycle gates and sweeps:
-- Gate layers in/out over a long arc: `.mask("<1!8 0!24>/32")` (layer exits at cycle 8)
+- Gate layers in/out over a long arc: `.mask("<0!8 1!24>")` — silent 8 cycles, in for 24,
+  repeating every 32. Pair with always-on layers so the track's first 8 cycles aren't empty.
 - 32-cycle filter journeys: `.lpf(saw.slow(32).range(300, 3000))`
 - Section-length alternation: `"<x y>/8"` patterns change every 8 cycles
 - Fills at boundaries: `.every(16, x => x.ply(2))`
