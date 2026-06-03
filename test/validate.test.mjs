@@ -30,4 +30,10 @@ describe('validateCode', () => {
     expect(result.ok).toBe(false);
     expect(result.error).toMatch(/no events/);
   });
+
+  it('rejects code that does not evaluate to a Pattern', async () => {
+    const result = await validateCode('1 + 1');
+    expect(result.ok).toBe(false);
+    expect(result.error).toMatch(/did not evaluate to a Pattern/);
+  });
 });

@@ -1,5 +1,7 @@
 // Validate a Strudel code string headlessly: it must transpile, evaluate to
 // a Pattern, and produce events when queried.
+// NOTE: evaluate() executes the input string as JS in this process. Inputs are
+// trusted agent-generated Strudel code (reviewed via the webapp), not untrusted user input.
 import { evaluate } from '@strudel/transpiler';
 import { Pattern } from '@strudel/core';
 import { initStrudelEnv } from './strudel-env.mjs';
