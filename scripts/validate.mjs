@@ -2,6 +2,7 @@
 // a Pattern, and produce events when queried.
 // NOTE: evaluate() executes the input string as JS in this process. Inputs are
 // trusted agent-generated Strudel code (reviewed via the webapp), not untrusted user input.
+import { fileURLToPath } from 'node:url';
 import { evaluate } from '@strudel/transpiler';
 import { Pattern } from '@strudel/core';
 import { initStrudelEnv } from './strudel-env.mjs';
@@ -40,23 +41,22 @@ export async function validateCode(code) {
 const REQUIRED_FIELDS = ['id', 'title', 'prompt', 'batch', 'code', 'createdAt'];
 
 async function validateTarget(arg) {
+  const { readFile } = await import('node:fs/promises');
   if (arg.endsWith('.json')) {
-    const { readFile } = await import('node:fs/promises');
     let track;
     try {
       track = JSON.parse(await readFile(arg, 'utf8'));
     } catch (err) {
       return { ok: false, error: `unreadable JSON: ${err.message}` };
     }
-    const missing = REQUIRED_FIELDS.filter((f) => !track[f]);
+    const missing = REQUIRED_FIELDS.filter((f) => track[f] == null || track[f] === '');
     if (missing.length) return { ok: false, error: `missing fields: ${missing.join(', ')}` };
     return validateCode(track.code);
   }
-  const { readFile } = await import('node:fs/promises');
   return validateCode(await readFile(arg, 'utf8'));
 }
 
-if (process.argv[1] && import.meta.url.endsWith(process.argv[1].split('/').pop())) {
+if (process.argv[1] && process.argv[1] === fileURLToPath(import.meta.url)) {
   const args = process.argv.slice(2);
   if (args.length === 0) {
     console.error('usage: node scripts/validate.mjs <track.json>... | --code "<strudel code>"');
