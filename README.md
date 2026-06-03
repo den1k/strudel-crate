@@ -24,6 +24,6 @@ an elaborate middle, and an outro.
 ## How a track is "valid"
 
 `scripts/validate.mjs` runs the code through Strudel's own transpiler/evaluator in
-Node, requires it to produce events over 8 cycles, and checks every referenced sound
+Node, requires it to produce events in its first 8 cycles, and checks every sound referenced across the full arrangement (512-cycle scan)
 against `scripts/sounds.json` — which is generated from the exact sample banks the
 webapp loads. If it validates, the webapp can play it.

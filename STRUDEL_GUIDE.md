@@ -25,7 +25,7 @@ the validator (`node scripts/validate.mjs tracks/<id>.json`) enforces most of it
    full track. Nothing else. No `$:` labels, no variable assignments, no `samples()`,
    no `await`, no visual functions (`.pianoroll()`, `.scope()`, `.punchcard()`, …).
 2. **Double quotes** for all pattern strings (they become mini-notation). Never single quotes.
-3. **Sounds:** only names listed in `scripts/sounds.json`. The validator rejects anything else.
+3. **Sounds:** only names listed in `scripts/sounds.json`. The validator rejects anything else. The check covers the entire arrangement, including late sections.
 4. **Tempo:** `setcpm(130/4)` = 130 BPM with 4 beats per cycle. Without it, tempo is ~120bpm.
 5. Keep per-layer `.gain()` between 0.3 and 1.2.
 6. **The first 8 cycles must produce sound** — the validator queries cycles 0-8; an

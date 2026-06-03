@@ -8,7 +8,10 @@ import { Pattern } from '@strudel/core';
 import { initStrudelEnv } from './strudel-env.mjs';
 import { checkSounds, loadKnownSounds } from './check-sounds.mjs';
 
-const QUERY_CYCLES = 8;
+const QUERY_CYCLES = 8; // events must appear early — intros may not open with silence
+// The sound allowlist must cover the WHOLE arrangement, not just the intro:
+// 512 cycles > 6 minutes at 180 BPM (6 × 180 / 4 = 270 bars), with headroom.
+const SOUND_SCAN_CYCLES = 512;
 
 export async function validateCode(code) {
   await initStrudelEnv();
@@ -30,7 +33,13 @@ export async function validateCode(code) {
   if (haps.length === 0) {
     return { ok: false, error: `pattern produced no events in ${QUERY_CYCLES} cycles` };
   }
-  const unknown = checkSounds(haps, await loadKnownSounds());
+  let allHaps;
+  try {
+    allHaps = pattern.queryArc(0, SOUND_SCAN_CYCLES);
+  } catch (err) {
+    return { ok: false, error: `pattern query failed: ${err.message}` };
+  }
+  const unknown = checkSounds(allHaps, await loadKnownSounds());
   if (unknown.length > 0) {
     return { ok: false, error: `unknown sounds (not loaded by the webapp): ${unknown.join(', ')} — see scripts/sounds.json for valid names` };
   }

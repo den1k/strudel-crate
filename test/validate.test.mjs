@@ -47,4 +47,11 @@ describe('validateCode', () => {
     const result = await validateCode('s("bd*4, ~ sd").bank("RolandTR909")');
     expect(result.ok).toBe(true);
   });
+
+  it('rejects unknown sounds that first appear after cycle 8 (full-arrangement scan)', async () => {
+    const code = 'arrange([8, s("bd*4")], [8, s("definitelynotasound*4")])';
+    const result = await validateCode(code);
+    expect(result.ok).toBe(false);
+    expect(result.error).toMatch(/unknown sounds/);
+  });
 });
