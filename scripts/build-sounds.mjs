@@ -10,9 +10,11 @@ const SYNTHS = ['sine', 'square', 'triangle', 'sawtooth', 'supersaw', 'white', '
 
 function manifestUrl(bank) {
   if (bank.shorthand) {
-    // 'github:user/repo' shorthand resolves to the repo's strudel.json on the default branch
+    // 'github:user/repo' shorthand: @strudel/webaudio's githubPath() defaults to
+    // the 'main' branch when none is given — mirror that exactly so the allowlist
+    // matches what the webapp will actually fetch.
     const repo = bank.shorthand.replace('github:', '');
-    return `https://raw.githubusercontent.com/${repo}/master/strudel.json`;
+    return `https://raw.githubusercontent.com/${repo}/main/strudel.json`;
   }
   return bank.json;
 }

@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 
 const here = dirname(fileURLToPath(import.meta.url));
 
+// Re-reads sounds.json on each call; fine for CLI-scale use (OS page cache).
 export async function loadKnownSounds() {
   const names = JSON.parse(await readFile(join(here, 'sounds.json'), 'utf8'));
   return new Set(names);
