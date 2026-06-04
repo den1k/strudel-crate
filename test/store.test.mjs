@@ -42,4 +42,22 @@ describe('createStore', () => {
     expect(saved).toMatchObject({ id: 'x', rating: 2, notes: '' });
     expect(saved.updatedAt).toBeTruthy();
   });
+
+  it('round-trips lesson through saveRating/listTracks', async () => {
+    await writeFile(join(dirs.tracksDir, 'a.json'), JSON.stringify(track('a')));
+    await store.saveRating('a', { rating: 3, notes: 'meh mix', lesson: 'keep drums under synths' });
+    const tracks = await store.listTracks();
+    expect(tracks[0]).toMatchObject({ rating: 3, notes: 'meh mix', lesson: 'keep drums under synths' });
+  });
+
+  it('defaults lesson to empty string for unrated tracks and pre-lesson rating files', async () => {
+    await writeFile(join(dirs.tracksDir, 'a.json'), JSON.stringify(track('a')));
+    await writeFile(join(dirs.tracksDir, 'b.json'), JSON.stringify(track('b')));
+    // simulate a rating file written before the lesson field existed
+    await mkdir(dirs.ratingsDir, { recursive: true });
+    await writeFile(join(dirs.ratingsDir, 'b.json'), JSON.stringify({ id: 'b', rating: 2, notes: 'old' }));
+    const tracks = await store.listTracks();
+    expect(tracks.find((t) => t.id === 'a')).toMatchObject({ rating: null, lesson: '' });
+    expect(tracks.find((t) => t.id === 'b')).toMatchObject({ rating: 2, notes: 'old', lesson: '' });
+  });
 });

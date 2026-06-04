@@ -1,4 +1,4 @@
-// Digest of listener ratings/notes, consumed by /generate-tracks agents.
+// Digest of listener ratings/lessons, consumed by /generate-tracks agents.
 import { fileURLToPath } from 'node:url';
 import { createStore } from '../server/store.mjs';
 
@@ -9,7 +9,8 @@ const metaSuffix = (t) =>
 
 export function buildDigest(tracks) {
   const rated = tracks.filter((t) => t.rating != null);
-  if (rated.length === 0) {
+  const lessons = tracks.filter((t) => t.lesson?.trim());
+  if (rated.length === 0 && lessons.length === 0) {
     return 'No ratings yet — no listener feedback to apply.';
   }
   const lines = [`# Listener feedback (${rated.length} rated / ${tracks.length} total, ${tracks.length - rated.length} unrated)`];
@@ -19,16 +20,14 @@ export function buildDigest(tracks) {
     lines.push('', '## Top rated — emulate what works here');
     for (const t of top) {
       lines.push('', `### ${'★'.repeat(t.rating)} "${t.title}" (${t.id})${metaSuffix(t)}`);
-      if (t.notes) lines.push(`notes: ${t.notes}`);
       lines.push('```', t.code, '```');
     }
   }
 
-  const low = rated.filter((t) => t.rating <= 2).slice(0, 10);
-  if (low.length) {
-    lines.push('', '## Low rated — avoid these mistakes');
-    for (const t of low) {
-      lines.push(`- ${'★'.repeat(t.rating)} "${t.title}"${metaSuffix(t)}: ${t.notes || '(no notes)'}`);
+  if (lessons.length) {
+    lines.push('', '## Lessons for all future tracks');
+    for (const t of lessons) {
+      lines.push(`- ${t.lesson.trim()} (from "${t.title}")`);
     }
   }
   return lines.join('\n');
