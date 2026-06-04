@@ -24,6 +24,12 @@ export async function exportTrack(track, format, { onStatus = () => {}, stopPlay
   try {
     stopPlayback();
     onStatus('rendering…');
+    // setcpm/setcps exist only inside repls (each StrudelMirror registers its
+    // own); the bare transpiler evaluate() can't see them. Exports derive cps
+    // from meta.bpm instead, so a no-op satisfies the reference — same trick
+    // as scripts/strudel-env.mjs. ??= so a repl-registered real one survives.
+    globalThis.setcpm ??= () => {};
+    globalThis.setcps ??= () => {};
     const { pattern } = await evaluate(track.code);
     if (typeof pattern?.queryArc !== 'function') {
       throw new Error('code did not evaluate to a pattern');
