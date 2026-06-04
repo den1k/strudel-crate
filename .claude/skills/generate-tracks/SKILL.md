@@ -45,7 +45,8 @@ outro (see the guide's arrange() default).
       default: a complete 3–6 minute track with intro, elaborate middle, and outro,
       built with arrange().
    2. Style brief: "{prompt}". Your variation directive: {directive}.
-      Listener feedback to honor (emulate the top-rated, avoid low-rated mistakes):
+      Listener feedback to honor (emulate the top-rated; apply every lesson
+      under "Lessons for all future tracks"):
       {digest}
    3. Write tracks/{id}.json with all required fields:
       id "{id}", batch "{batch}", prompt (the style brief verbatim),

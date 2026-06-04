@@ -9,7 +9,7 @@ const metaSuffix = (t) =>
 
 export function buildDigest(tracks) {
   const rated = tracks.filter((t) => t.rating != null);
-  const lessons = tracks.filter((t) => t.lesson);
+  const lessons = tracks.filter((t) => t.lesson?.trim());
   if (rated.length === 0 && lessons.length === 0) {
     return 'No ratings yet — no listener feedback to apply.';
   }
@@ -27,7 +27,7 @@ export function buildDigest(tracks) {
   if (lessons.length) {
     lines.push('', '## Lessons for all future tracks');
     for (const t of lessons) {
-      lines.push(`- ${t.lesson} (from "${t.title}")`);
+      lines.push(`- ${t.lesson.trim()} (from "${t.title}")`);
     }
   }
   return lines.join('\n');

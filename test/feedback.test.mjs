@@ -68,4 +68,10 @@ describe('buildDigest', () => {
     const digest = buildDigest([track('hi', 5, '')]);
     expect(digest).not.toContain('## Lessons for all future tracks');
   });
+
+  it('ignores whitespace-only lessons', () => {
+    const digest = buildDigest([track('w', null, '', 'C', '   ')]);
+    expect(digest).toMatch(/no ratings yet/i);
+    expect(digest).not.toContain('## Lessons for all future tracks');
+  });
 });
