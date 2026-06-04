@@ -44,15 +44,16 @@ most of it.
    formant lead). No drum kits, no basslines-plus-pads — that's a track.
 3. **Built-in morph arc.** The loop must evolve over 8–32 cycles and then repeat:
    use `<...>/N` step patterns and slow LFOs (`sine.slow(16).range(a, b)`) so one
-   full pass takes ~15–60 seconds (one cycle = 240/bpm seconds: at 120 BPM,
+   full pass takes ~15–65 seconds (one cycle = 240/bpm seconds: at 120 BPM,
    16 cycles = 32 s). A static 1-bar loop will be rated down.
 4. **Modulate at least 3 dimensions** — pick from pitch (penv/accelerate/vib),
    timbre (fm/vowel/crush/shape/noise), filter (lpf/bpf + lpenv + resonance),
    space (room/delay/pan), motion (tremolo/speed/degrade). A raw waveform with one
    filter sweep is not sound design.
 5. **Double quotes** for all pattern strings. **Sounds** only from
-   `scripts/sounds.json`. **First 8 cycles must produce sound.** Per-layer
-   `.gain()` between 0.3 and 1.2 (support layer ≤ 0.4).
+   `scripts/sounds.json`. **First 8 cycles must produce sound.** Per-stack-layer
+   `.gain()` between 0.3 and 1.2 (support layer 0.3–0.4); echo copies inside
+   `.off()`/`.jux()` chains may sit lower.
 6. **Original sound.** Never leave a default tone untouched; transform the source
    until it's yours. Detune-thicken with `.off(0.01, x => x.add(note(0.1)))`,
    stereo-split with `.jux(rev)`, dirty up with `.shape()`/`.crush()` — make
