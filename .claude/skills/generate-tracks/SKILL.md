@@ -50,6 +50,9 @@ outro (see the guide's arrange() default).
    3. Write tracks/{id}.json with all required fields:
       id "{id}", batch "{batch}", prompt (the style brief verbatim),
       title (short, evocative, unique), createdAt "{timestamp}",
+      description (1-3 listener-facing sentences),
+      meta { bpm (must match your setcpm), genre, mood, key,
+             instruments (sounds you used), energy (1-5) },
       code (your Strudel code — follow the guide's shape rules).
    4. Run: node scripts/validate.mjs tracks/{id}.json
       If FAIL: read the error, fix the code (for unknown sounds, grep

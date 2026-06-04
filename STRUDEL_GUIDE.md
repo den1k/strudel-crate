@@ -13,10 +13,31 @@ the validator (`node scripts/validate.mjs tracks/<id>.json`) enforces most of it
   "title": "Short Evocative Name",
   "prompt": "<the user's style prompt, verbatim>",
   "batch": "<batch id you were given>",
+  "description": "<1-3 sentences for a listener: what it sounds like, how it develops>",
+  "meta": {
+    "bpm": <integer matching your setcpm>,
+    "genre": "<e.g. dub techno>",
+    "mood": "<e.g. hypnotic, cavernous>",
+    "key": "<e.g. F minor>",
+    "instruments": ["<sounds/banks you actually used>"],
+    "energy": <1-5>
+  },
   "code": "<strudel code as a single JSON string, \\n for newlines>",
   "createdAt": "<ISO timestamp, e.g. from `date -u +%Y-%m-%dT%H:%M:%SZ`>"
 }
 ```
+
+## Metadata rules
+
+- `meta.bpm` MUST equal the BPM in your `setcpm(<bpm>/4)` — the validator cross-checks.
+  No `setcpm` in the code → bpm must be 120 (the default).
+- `energy`: 1 = ambient/beatless · 2 = downtempo · 3 = head-nod groove · 4 = dancefloor ·
+  5 = peak-time. Match what the code actually does.
+- `instruments`: the sounds you actually used, listener-facing (e.g. "RolandTR909 kit",
+  "sawtooth bass", "piano") — not every control name.
+- `key`: the musical key implied by your `scale()`/`note()` choices (e.g. "C minor").
+- `description`: 1–3 sentences for a listener — what it sounds like and how it
+  develops. No code talk.
 
 ## Code rules (hard requirements)
 

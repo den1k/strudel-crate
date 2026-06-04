@@ -3,6 +3,15 @@
   "title": "Felt Hammer",
   "prompt": "seed: melancholy piano sketch, 72bpm",
   "batch": "2026-06-03-seed",
+  "description": "A melancholy felt-piano sketch: slow minor chords under a sparse echoing melody, with a lone 707 rimshot keeping time.",
+  "meta": {
+    "bpm": 72,
+    "genre": "ambient piano",
+    "mood": "melancholy, intimate",
+    "key": "C minor",
+    "instruments": ["piano", "RolandTR707 rim"],
+    "energy": 1
+  },
   "code": "setcpm(72/4)\nstack(\n  note(\"<[c3,eb3,g3] [ab2,c3,eb3] [bb2,d3,f3] [g2,bb2,d3]>\").s(\"piano\").room(0.6).gain(0.9),\n  n(\"0 ~ [4 2] ~ 7 ~ [3 2] ~\").scale(\"C4:minor\").s(\"piano\").slow(2).gain(0.7).delay(0.3),\n  s(\"~ ~ rim ~\").bank(\"RolandTR707\").gain(0.4)\n)",
   "createdAt": "2026-06-03T00:00:00Z"
 }
