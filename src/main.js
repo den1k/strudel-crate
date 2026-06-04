@@ -95,9 +95,25 @@ function trackCard(track) {
 
   const meta = document.createElement('div');
   meta.className = 'meta';
-  meta.innerHTML = `<h3></h3><span class="id"></span>`;
+  meta.innerHTML = `<h3></h3><span class="id"></span><p class="desc"></p><div class="chips"></div>`;
   $('h3', meta).textContent = track.title;
   $('.id', meta).textContent = track.id;
+  $('.desc', meta).textContent = track.description ?? '';
+  const m = track.meta ?? {};
+  const chips = $('.chips', meta);
+  const chipValues = [
+    m.genre,
+    m.bpm && `${m.bpm} bpm`,
+    m.key,
+    m.energy && '▮'.repeat(m.energy) + '▯'.repeat(5 - m.energy),
+    m.mood,
+  ].filter(Boolean);
+  for (const value of chipValues) {
+    const chip = document.createElement('span');
+    chip.className = 'chip';
+    chip.textContent = value;
+    chips.appendChild(chip);
+  }
 
   const rate = document.createElement('div');
   rate.className = 'rate';
@@ -139,7 +155,8 @@ function trackCard(track) {
 
   const code = document.createElement('details');
   code.className = 'code';
-  code.innerHTML = `<summary>code</summary><pre></pre>`;
+  code.innerHTML = `<summary>code</summary><p class="instruments"></p><pre></pre>`;
+  $('.instruments', code).textContent = (track.meta?.instruments ?? []).join(' · ');
   $('pre', code).textContent = track.code;
 
   card.append(playBtn, meta, rate, notes, code);
