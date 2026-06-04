@@ -1,4 +1,6 @@
-import { initStrudel, evaluate, hush } from '@strudel/web';
+import { initStrudel } from '@strudel/web';
+import { mountEditor, getEditor, isStarted } from './editor.js';
+import { nextPlayingId } from './playing-state.js';
 import banks from '../shared/sample-banks.json';
 
 const state = { tracks: [], playingId: null, samplesReady: false, batch: 'all', filter: 'all' };
@@ -21,18 +23,74 @@ ready.then(() => {
   renderTransport();
 });
 
-// --- playback (single global scheduler: evaluate swaps, hush stops) ------
+// --- code sections + editors ---------------------------------------------
+// renderTracks() rebuilds every card with replaceChildren(), so the <details>
+// holding each editor is cached per track and *moved* into the new card —
+// preserving the CodeMirror instance, session-only edits, and open state.
+const codeSections = new Map(); // trackId -> <details class="code">
+
+function codeSection(track) {
+  let section = codeSections.get(track.id);
+  if (section) return section;
+  section = document.createElement('details');
+  section.className = 'code';
+  section.innerHTML = `<summary>code</summary><p class="instruments"></p><p class="eval-error" hidden></p><div class="editor"></div>`;
+  $('.instruments', section).textContent = (track.meta?.instruments ?? []).join(' · ');
+  section.addEventListener('toggle', () => {
+    if (section.open) ensureEditor(track); // lazy-mount on first open
+  });
+  codeSections.set(track.id, section);
+  return section;
+}
+
+function ensureEditor(track) {
+  return mountEditor({
+    track,
+    root: $('.editor', codeSection(track)),
+    prebake: () => ready,
+    onToggle: onEditorToggle,
+    onError: onEditorError,
+  });
+}
+
+function onEditorToggle(trackId, started) {
+  const next = nextPlayingId(state.playingId, trackId, started);
+  if (next === state.playingId) return;
+  state.playingId = next;
+  renderTracks();
+  renderTransport();
+}
+
+function onEditorError(trackId, err) {
+  const section = codeSections.get(trackId);
+  if (section) {
+    const msg = $('.eval-error', section);
+    msg.textContent = err ? `✖ ${err.message}` : '';
+    msg.hidden = !err;
+  }
+  // a failed eval that never started the scheduler must not leave a phantom
+  // "now playing" state (a failed *re*-eval keeps the old pattern running)
+  if (err && state.playingId === trackId && !isStarted(trackId)) {
+    state.playingId = null;
+    renderTracks();
+    renderTransport();
+  }
+}
+
+// --- playback (one StrudelMirror per track; solo mode keeps it exclusive) --
 async function play(track) {
   state.playingId = track.id;
   renderTracks();
   renderTransport();
   await ready; // audio context unlocks via this click
   if (state.playingId !== track.id) return; // user moved on while samples loaded
-  evaluate(track.code);
+  const editor = ensureEditor(track);
+  codeSection(track).open = true; // reveal the editor so highlighting is visible
+  editor.evaluate();
 }
 
 function stop() {
-  hush();
+  getEditor(state.playingId)?.stop(); // onToggle clears state; next line covers the not-yet-evaluated case
   state.playingId = null;
   renderTracks();
   renderTransport();
@@ -153,11 +211,7 @@ function trackCard(track) {
   }, 600);
   notes.addEventListener('input', saveNotes);
 
-  const code = document.createElement('details');
-  code.className = 'code';
-  code.innerHTML = `<summary>code</summary><p class="instruments"></p><pre></pre>`;
-  $('.instruments', code).textContent = (track.meta?.instruments ?? []).join(' · ');
-  $('pre', code).textContent = track.code;
+  const code = codeSection(track);
 
   card.append(playBtn, meta, rate, notes, code);
   return card;
