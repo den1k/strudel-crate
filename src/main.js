@@ -2,8 +2,9 @@ import * as core from '@strudel/core';
 import * as mini from '@strudel/mini';
 import * as tonal from '@strudel/tonal';
 import * as webaudio from '@strudel/webaudio';
-import { initAudioOnFirstClick, registerSynthSounds, samples } from '@strudel/webaudio';
+import { initAudioOnFirstClick, getAudioContext, registerSynthSounds, samples } from '@strudel/webaudio';
 import { mountEditor, getEditor, isStarted } from './editor.js';
+import { exportTrack, isExporting } from './export.js';
 import { nextPlayingId } from './playing-state.js';
 import banks from '../shared/sample-banks.json';
 
@@ -112,6 +113,7 @@ async function play(track) {
   renderTransport();
   await ready; // audio context unlocks via this click
   if (state.playingId !== track.id) return; // user moved on while samples loaded
+  await getAudioContext().resume(); // post-export contexts start suspended
   // editor mounts hidden inside the closed <details>; the user opens it
   // explicitly when they want to watch the code (keeps cards compact)
   const editor = ensureEditor(track);
@@ -204,6 +206,35 @@ function trackCard(track) {
     chip.textContent = value;
     chips.appendChild(chip);
   }
+
+  const exportRow = document.createElement('div');
+  exportRow.className = 'exports';
+  for (const fmt of ['wav', 'mp3']) {
+    const btn = document.createElement('button');
+    btn.className = 'export';
+    btn.textContent = `↓ ${fmt}`;
+    btn.title = fmt === 'wav' ? 'download lossless wav' : 'download mp3 192kbps';
+    btn.addEventListener('click', async () => {
+      if (isExporting()) return;
+      const all = document.querySelectorAll('button.export');
+      all.forEach((el) => (el.disabled = true));
+      const label = btn.textContent;
+      try {
+        await exportTrack(track, fmt, {
+          stopPlayback: stop, // offline render swaps the global audio context
+          onStatus: (s) => (btn.textContent = s),
+        });
+      } catch (err) {
+        console.error(err);
+        flashError(card);
+      } finally {
+        btn.textContent = label;
+        document.querySelectorAll('button.export').forEach((el) => (el.disabled = false));
+      }
+    });
+    exportRow.appendChild(btn);
+  }
+  meta.appendChild(exportRow);
 
   const rate = document.createElement('div');
   rate.className = 'rate';

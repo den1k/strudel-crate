@@ -98,6 +98,14 @@ body {
   border: 1px solid var(--line); padding: 2px 8px;
   background: var(--bg); white-space: nowrap;
 }
+.exports { display: flex; gap: 6px; margin-top: 8px; }
+.export {
+  background: transparent; color: var(--dim);
+  border: 1px solid var(--line); font-family: var(--mono); font-size: 11px;
+  padding: 2px 8px; cursor: pointer;
+}
+.export:hover:not(:disabled) { color: var(--acid); border-color: var(--acid); }
+.export:disabled { opacity: 0.5; cursor: default; }
 .code .instruments { color: var(--dim); font-size: 11px; margin: 6px 0 0; }
 
 .rate { grid-area: rate; display: flex; gap: 4px; }
