@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { validateCode } from '../scripts/validate.mjs';
+import { validateCode, validateTrack } from '../scripts/validate.mjs';
 
 describe('validateCode', () => {
   it('accepts valid strudel code and counts events', async () => {
@@ -53,5 +53,67 @@ describe('validateCode', () => {
     const result = await validateCode(code);
     expect(result.ok).toBe(false);
     expect(result.error).toMatch(/unknown sounds/);
+  });
+});
+
+describe('validateTrack', () => {
+  const goodTrack = () => ({
+    id: 't', title: 'T', prompt: 'p', batch: 'b',
+    description: 'A driving little techno sketch.',
+    meta: { bpm: 120, genre: 'techno', mood: 'dark', key: 'C minor', instruments: ['RolandTR909 kit'], energy: 3 },
+    code: 'setcpm(120/4)\ns("bd*4").bank("RolandTR909")',
+    createdAt: 'x',
+  });
+
+  it('accepts a fully-specified track', async () => {
+    const result = await validateTrack(goodTrack());
+    expect(result.ok).toBe(true);
+  });
+
+  it('rejects a missing description', async () => {
+    const t = goodTrack();
+    delete t.description;
+    const result = await validateTrack(t);
+    expect(result.ok).toBe(false);
+    expect(result.error).toMatch(/description/);
+  });
+
+  it('rejects missing meta', async () => {
+    const t = goodTrack();
+    delete t.meta;
+    expect((await validateTrack(t)).error).toMatch(/meta/);
+  });
+
+  it('rejects bpm that contradicts setcpm', async () => {
+    const t = goodTrack();
+    t.meta.bpm = 95;
+    const result = await validateTrack(t);
+    expect(result.ok).toBe(false);
+    expect(result.error).toMatch(/does not match/);
+  });
+
+  it('requires bpm 120 when code has no setcpm', async () => {
+    const t = goodTrack();
+    t.code = 's("bd*4").bank("RolandTR909")';
+    t.meta.bpm = 128;
+    expect((await validateTrack(t)).error).toMatch(/does not match/);
+    t.meta.bpm = 120;
+    expect((await validateTrack(t)).ok).toBe(true);
+  });
+
+  it('reads setcpm(N) as N cycles per minute (bpm = 4N)', async () => {
+    const t = goodTrack();
+    t.code = 'setcpm(30)\ns("bd*4").bank("RolandTR909")';
+    t.meta.bpm = 120;
+    expect((await validateTrack(t)).ok).toBe(true);
+  });
+
+  it('rejects bad energy and bad instruments', async () => {
+    const t1 = goodTrack();
+    t1.meta.energy = 7;
+    expect((await validateTrack(t1)).error).toMatch(/energy/);
+    const t2 = goodTrack();
+    t2.meta.instruments = [];
+    expect((await validateTrack(t2)).error).toMatch(/instruments/);
   });
 });

@@ -47,7 +47,45 @@ export async function validateCode(code) {
 }
 
 // ---- CLI: node scripts/validate.mjs <track.json|file.strudel>... | --code "<code>" ----
-const REQUIRED_FIELDS = ['id', 'title', 'prompt', 'batch', 'code', 'createdAt'];
+const REQUIRED_FIELDS = ['id', 'title', 'prompt', 'batch', 'description', 'code', 'createdAt'];
+
+const isNonEmptyString = (v) => typeof v === 'string' && v.trim() !== '';
+
+// BPM declared by the code: setcpm(N/4) → N, setcpm(N) → N×4, none → 120 (strudel default).
+function declaredBpm(code) {
+  const frac = code.match(/setcpm\(\s*(\d+(?:\.\d+)?)\s*\/\s*4\s*\)/);
+  if (frac) return Number(frac[1]);
+  const plain = code.match(/setcpm\(\s*(\d+(?:\.\d+)?)\s*\)/);
+  if (plain) return Number(plain[1]) * 4;
+  return 120;
+}
+
+// Full track validation: required fields + meta schema + bpm↔setcpm, then the code itself.
+export async function validateTrack(track) {
+  const missing = REQUIRED_FIELDS.filter((f) => track[f] == null || track[f] === '');
+  if (missing.length) return { ok: false, error: `missing fields: ${missing.join(', ')}` };
+  const m = track.meta;
+  if (m == null || typeof m !== 'object' || Array.isArray(m)) {
+    return { ok: false, error: 'missing fields: meta (object with bpm, genre, mood, key, instruments, energy)' };
+  }
+  if (!(Number.isInteger(m.bpm) && m.bpm >= 40 && m.bpm <= 220)) {
+    return { ok: false, error: 'meta.bpm must be an integer 40-220' };
+  }
+  for (const f of ['genre', 'mood', 'key']) {
+    if (!isNonEmptyString(m[f])) return { ok: false, error: `meta.${f} must be a non-empty string` };
+  }
+  if (!Array.isArray(m.instruments) || m.instruments.length === 0 || !m.instruments.every(isNonEmptyString)) {
+    return { ok: false, error: 'meta.instruments must be a non-empty array of strings' };
+  }
+  if (!(Number.isInteger(m.energy) && m.energy >= 1 && m.energy <= 5)) {
+    return { ok: false, error: 'meta.energy must be an integer 1-5' };
+  }
+  const bpm = declaredBpm(track.code);
+  if (m.bpm !== bpm) {
+    return { ok: false, error: `meta.bpm (${m.bpm}) does not match the code's tempo (${bpm} BPM from setcpm)` };
+  }
+  return validateCode(track.code);
+}
 
 async function validateTarget(arg) {
   const { readFile } = await import('node:fs/promises');
@@ -58,9 +96,7 @@ async function validateTarget(arg) {
     } catch (err) {
       return { ok: false, error: `unreadable JSON: ${err.message}` };
     }
-    const missing = REQUIRED_FIELDS.filter((f) => track[f] == null || track[f] === '');
-    if (missing.length) return { ok: false, error: `missing fields: ${missing.join(', ')}` };
-    return validateCode(track.code);
+    return validateTrack(track);
   }
   return validateCode(await readFile(arg, 'utf8'));
 }
