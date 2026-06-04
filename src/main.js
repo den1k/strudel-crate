@@ -73,7 +73,7 @@ function onEditorToggle(trackId, started) {
   const next = nextPlayingId(state.playingId, trackId, started);
   if (next === state.playingId) return;
   state.playingId = next;
-  renderTracks();
+  updatePlayingUi();
   renderTransport();
 }
 
@@ -88,15 +88,27 @@ function onEditorError(trackId, err) {
   // "now playing" state (a failed *re*-eval keeps the old pattern running)
   if (err && state.playingId === trackId && !isStarted(trackId)) {
     state.playingId = null;
-    renderTracks();
+    updatePlayingUi();
     renderTransport();
+  }
+}
+
+// Flip only the playing state on existing cards — a full renderTracks() here
+// would rebuild the whole list and yank the scroll position mid-listen.
+function updatePlayingUi() {
+  for (const card of document.querySelectorAll('#tracks .track')) {
+    const playing = card.dataset.id === state.playingId;
+    card.classList.toggle('playing', playing);
+    const btn = $('.play', card);
+    btn.innerHTML = playing ? '<span class="eq"><i></i><i></i><i></i></span>' : '▶';
+    btn.title = playing ? 'stop' : 'play';
   }
 }
 
 // --- playback (one StrudelMirror per track; solo mode keeps it exclusive) --
 async function play(track) {
   state.playingId = track.id;
-  renderTracks();
+  updatePlayingUi();
   renderTransport();
   await ready; // audio context unlocks via this click
   if (state.playingId !== track.id) return; // user moved on while samples loaded
@@ -109,7 +121,7 @@ async function play(track) {
 function stop() {
   getEditor(state.playingId)?.stop(); // onToggle clears state; next line covers the not-yet-evaluated case
   state.playingId = null;
-  renderTracks();
+  updatePlayingUi();
   renderTransport();
 }
 
@@ -158,6 +170,7 @@ function visibleTracks() {
 function trackCard(track) {
   const card = document.createElement('article');
   card.className = 'track' + (track.id === state.playingId ? ' playing' : '');
+  card.dataset.id = track.id;
 
   const playBtn = document.createElement('button');
   playBtn.className = 'play';
