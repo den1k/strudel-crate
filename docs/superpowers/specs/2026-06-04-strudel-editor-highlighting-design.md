@@ -26,8 +26,10 @@ as strudel.cc. The editor is editable: Ctrl+Enter re-evaluates the code live.
 
 ### Dependencies
 
-- Add `@strudel/codemirror` (1.2.x, matching the pinned `@strudel/core@1.2.6`
-  family). CodeMirror 6 comes with it (~300KB; acceptable for a local tool).
+- Add `@strudel/codemirror` (1.3.0 — verified to pin the repo's exact
+  `@strudel/core@1.2.6`/`@strudel/transpiler@1.2.6`/`superdough@1.3.0`, so no
+  duplicate Strudel instances). CodeMirror 6 comes with it (~300KB; acceptable
+  for a local tool).
 
 ### Sample loading and audio init
 
