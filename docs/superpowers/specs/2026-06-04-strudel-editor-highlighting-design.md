@@ -53,8 +53,12 @@ as strudel.cc. The editor is editable: Ctrl+Enter re-evaluates the code live.
 
 - A module-level `activeEditor` ref enforces one-track-at-a-time:
   starting any editor first stops the previous one.
-- `play(track)` → `ensureEditor(track)` → open the code details so highlighting
-  is visible → `editor.evaluate()`.
+- `play(track)` → `ensureEditor(track)` → `editor.evaluate()`. The code details
+  stays closed — the user opens it explicitly to watch the highlighting
+  (amended 2026-06-04: originally play auto-opened the details; reverted per
+  user feedback to keep cards compact).
+- Only one code details may be open at a time: opening one closes the others
+  (accordion), also amended 2026-06-04.
 - `stop()` → `activeEditor.stop()`, clear `state.playingId`.
 - Ctrl+Enter inside an editor re-evaluates that track (stopping any other
   playing track first) and updates `state.playingId` so transport UI stays
