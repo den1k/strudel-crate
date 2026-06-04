@@ -122,11 +122,16 @@ body {
 .code { grid-area: code; font-size: 12px; }
 .code summary { color: var(--dim); cursor: pointer; user-select: none; }
 .code summary:hover { color: var(--acid); }
-.code pre {
-  margin-top: 6px; padding: 10px; overflow-x: auto;
-  background: var(--bg); border-left: 2px solid var(--acid);
-  color: #b9c49a; white-space: pre-wrap;
+.code .eval-error { color: var(--hot); font-size: 11px; margin: 6px 0 0; }
+.code .editor {
+  margin-top: 6px;
+  border-left: 2px solid var(--acid);
+  /* StrudelMirror paints the root with var(--background); the active-event
+     highlight outline is `outline: solid 2px var(--foreground)` */
+  --background: var(--bg);
+  --foreground: var(--acid);
 }
+.code .editor .cm-editor { padding: 6px 4px; }
 
 /* transport */
 #transport {
