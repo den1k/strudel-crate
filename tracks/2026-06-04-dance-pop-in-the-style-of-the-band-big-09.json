@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-04-dance-pop-in-the-style-of-the-band-big-09",
+  "title": "Sister Neon",
+  "prompt": "dance pop in the style of the band big sis",
+  "batch": "2026-06-04-dance-pop-in-the-style-of-the-band-big",
+  "description": "Layered supersaw chords sweep open on an OberheimDMX four-to-the-floor kick, building from a hazy atmospheric intro through a driving bass and square-wave melody peak. The arrangement moves through a stripped breakdown with triangle arpeggios before the final chorus doubles the chord rate and lets the filter climb to a bright, euphoric climax.",
+  "meta": {
+    "bpm": 120,
+    "genre": "synth-pop",
+    "mood": "euphoric, bright, soaring",
+    "key": "A minor",
+    "instruments": ["OberheimDMX kit", "supersaw chords", "sawtooth bass", "square lead"],
+    "energy": 4
+  },
+  "code": "setcpm(120/4)\narrange(\n  [16, stack(\n    note(\"<[a2,c3,e3] [f2,a2,c3] [c3,e3,g3] [g2,b2,d3]>\").s(\"supersaw\").lpf(sine.slow(8).range(500, 1400)).room(0.5).gain(0.6),\n    s(\"[~ hh]*4\").bank(\"OberheimDMX\").gain(0.4).pan(sine.range(0.35, 0.65))\n  )],\n  [24, stack(\n    note(\"<[a2,c3,e3] [f2,a2,c3] [c3,e3,g3] [g2,b2,d3]>*2\").s(\"supersaw\").lpf(saw.slow(24).range(700, 2200)).room(0.4).gain(0.62),\n    note(\"<a1 f1 c2 g1>*8\").s(\"sawtooth\").lpf(700).decay(0.12).sustain(0).gain(0.7),\n    s(\"bd*4\").bank(\"OberheimDMX\").gain(0.92),\n    s(\"[~ hh]*4\").bank(\"OberheimDMX\").gain(0.5).pan(sine.range(0.35, 0.65))\n  )],\n  [32, stack(\n    note(\"<[a2,c3,e3] [f2,a2,c3] [c3,e3,g3] [g2,b2,d3]>*4\").s(\"supersaw\").lpf(sine.slow(8).range(1200, 3000)).resonance(6).room(0.35).gain(0.6),\n    n(\"0 2 4 7 4 2 <7 9> 4\").scale(\"A4:minor\").s(\"square\").decay(0.1).sustain(0.1).delay(0.3).gain(0.55),\n    note(\"<a1 f1 c2 g1>*8\").s(\"sawtooth\").lpf(900).decay(0.12).sustain(0).gain(0.72),\n    s(\"bd*4\").bank(\"OberheimDMX\").gain(0.95),\n    s(\"~ cp ~ cp\").bank(\"OberheimDMX\").room(0.25).gain(0.7),\n    s(\"[~ hh]*4\").bank(\"OberheimDMX\").gain(0.5).pan(sine.range(0.35, 0.65)),\n    s(\"~ ~ ~ oh\").bank(\"OberheimDMX\").gain(0.42)\n  )],\n  [16, stack(\n    note(\"<[a2,c3,e3] [f2,a2,c3] [c3,e3,g3] [e3,g3,b3]>\").s(\"supersaw\").lpf(sine.slow(16).range(600, 2600)).room(0.6).gain(0.66),\n    n(\"0 4 7 9\").scale(\"A4:minor\").s(\"triangle\").room(0.5).delay(0.4).gain(0.5),\n    s(\"~ cp ~ cp\").bank(\"OberheimDMX\").room(0.5).gain(0.45)\n  )],\n  [24, stack(\n    note(\"<[a2,c3,e3] [f2,a2,c3] [c3,e3,g3] [g2,b2,d3]>*4\").s(\"supersaw\").lpf(sine.slow(8).range(1400, 3200)).resonance(8).room(0.3).gain(0.6).every(4, x => x.ply(2)),\n    n(\"0 2 4 7 4 2 <7 11> 4\").scale(\"A4:minor\").s(\"square\").decay(0.1).sustain(0.1).delay(0.3).gain(0.56),\n    note(\"<a1 f1 c2 g1>*8\").s(\"sawtooth\").lpf(1100).decay(0.12).sustain(0).gain(0.72),\n    s(\"bd*4\").bank(\"OberheimDMX\").gain(0.96),\n    s(\"~ cp ~ cp\").bank(\"OberheimDMX\").room(0.25).gain(0.7),\n    s(\"[~ hh]*4\").bank(\"OberheimDMX\").gain(0.52).pan(sine.range(0.35, 0.65)).degradeBy(0.1),\n    s(\"~ ~ ~ oh\").bank(\"OberheimDMX\").gain(0.42)\n  )],\n  [16, stack(\n    note(\"<[a2,c3,e3] [f2,a2,c3] [c3,e3,g3] [g2,b2,d3]>\").s(\"supersaw\").lpf(sine.slow(16).range(1200, 500)).room(0.55).gain(0.6),\n    s(\"bd*2\").bank(\"OberheimDMX\").gain(0.85),\n    s(\"[~ hh]*2\").bank(\"OberheimDMX\").gain(0.4)\n  )],\n  [12, stack(\n    note(\"<[a2,c3,e3] [a2,c3,e3]>\").s(\"supersaw\").lpf(700).room(0.6).gain(0.55)\n  )]\n)",
+  "createdAt": "2026-06-04T15:45:02Z"
+}

@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-04-dance-pop-in-the-style-of-the-band-big-07",
+  "title": "Filterhound",
+  "prompt": "dance pop in the style of the band big sis",
+  "batch": "2026-06-04-dance-pop-in-the-style-of-the-band-big",
+  "description": "A relentless 909 kick with panning hi-hats drives a sawtooth bassline in C minor whose filter sweeps open and shut across six distinct sections, building from bare groove to full clap-and-open-hat intensity before a stripped breakdown and a final reassembled peak. Melody lines in the upper register enter midway, adding harmonic motion before the arrangement winds back down to its bare bones.",
+  "meta": {
+    "bpm": 122,
+    "genre": "dance-pop",
+    "mood": "driving, tense, propulsive",
+    "key": "C minor",
+    "instruments": ["RolandTR909 kit", "sawtooth bass", "sawtooth lead"],
+    "energy": 4
+  },
+  "code": "setcpm(122/4)\narrange(\n  [16, stack(\n    s(\"bd*4\").bank(\"RolandTR909\").gain(0.85),\n    s(\"[~ hh]*4\").bank(\"RolandTR909\").gain(0.5).pan(sine.range(0.35, 0.65)),\n    note(\"<c2 c2 eb2 g1>*8\").s(\"sawtooth\").lpf(sine.slow(16).range(220, 1200)).resonance(11).decay(0.12).sustain(0).gain(0.85)\n  )],\n  [24, stack(\n    s(\"bd*4\").bank(\"RolandTR909\").gain(0.9),\n    s(\"[~ hh]*4\").bank(\"RolandTR909\").gain(0.55).pan(sine.range(0.35, 0.65)).degradeBy(0.1),\n    s(\"~ cp ~ cp\").bank(\"RolandTR909\").room(0.3).gain(0.55),\n    note(\"<c2 c2 eb2 g1>*8\").s(\"sawtooth\").lpf(saw.slow(24).range(300, 2400)).resonance(12).decay(0.13).sustain(0).gain(0.9)\n  )],\n  [32, stack(\n    s(\"bd*4\").bank(\"RolandTR909\").gain(0.95),\n    s(\"[~ hh]*4\").bank(\"RolandTR909\").gain(0.55).pan(sine.range(0.3, 0.7)).cut(1),\n    s(\"~ oh ~ oh\").bank(\"RolandTR909\").gain(0.4).cut(1),\n    s(\"~ cp ~ cp\").bank(\"RolandTR909\").room(0.35).gain(0.6),\n    note(\"<c2 c2 eb2 g1>*8\").s(\"sawtooth\").lpf(sine.slow(8).range(400, 2600)).resonance(13).decay(0.12).sustain(0).gain(0.95),\n    n(\"<7 9 11 12>\").scale(\"C4:minor\").s(\"sawtooth\").lpf(sine.slow(12).range(800, 3000)).decay(0.2).sustain(0).delay(0.3).gain(0.5)\n  )],\n  [16, stack(\n    s(\"~ cp ~ cp\").bank(\"RolandTR909\").room(0.5).gain(0.55),\n    note(\"<c2 eb2 g1 bb1>*4\").s(\"sawtooth\").lpf(saw.slow(16).range(250, 1400)).resonance(10).decay(0.2).sustain(0.1).room(0.4).gain(0.8),\n    n(\"0 ~ 3 ~ 7 ~ 5 ~\").scale(\"C4:minor\").s(\"sawtooth\").decay(0.25).sustain(0).delay(0.4).room(0.3).gain(0.45)\n  )],\n  [32, stack(\n    s(\"bd*4\").bank(\"RolandTR909\").gain(0.95),\n    s(\"[~ hh]*4\").bank(\"RolandTR909\").gain(0.55).pan(sine.range(0.3, 0.7)).cut(1).every(8, x => x.ply(2)),\n    s(\"~ oh ~ oh\").bank(\"RolandTR909\").gain(0.4).cut(1),\n    s(\"~ cp ~ cp\").bank(\"RolandTR909\").room(0.35).gain(0.6),\n    note(\"<c2 c2 eb2 g1>*8\").s(\"sawtooth\").lpf(sine.slow(8).range(500, 3000)).resonance(13).decay(0.12).sustain(0).gain(0.95),\n    n(\"<7 9 11 12 9 7 5 4>\").scale(\"C4:minor\").s(\"sawtooth\").lpf(sine.slow(16).range(1000, 3400)).decay(0.18).sustain(0).delay(0.3).pan(0.4).gain(0.5)\n  )],\n  [12, stack(\n    s(\"bd*4\").bank(\"RolandTR909\").gain(0.8),\n    s(\"[~ hh]*4\").bank(\"RolandTR909\").gain(0.45).pan(sine.range(0.35, 0.65)),\n    note(\"<c2 c2 eb2 g1>*8\").s(\"sawtooth\").lpf(sine.slow(12).range(200, 900)).resonance(10).decay(0.12).sustain(0).gain(0.8)\n  )]\n)\n",
+  "createdAt": "2026-06-04T15:45:02Z"
+}

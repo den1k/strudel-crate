@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-04-aphex-twin-style-from-the-druqks-album-06",
+  "title": "Glass Lullaby Unwound",
+  "prompt": "aphex twin style from the druqks album",
+  "batch": "2026-06-04-aphex-twin-style-from-the-druqks-album",
+  "description": "Slow, spacious piano chords in C minor drift through long reverb tails and echoing delays while a sine bass pulses softly underneath. High-register piano melodies gradually layer into the arrangement and a gentle triangle mid-voice adds warmth, with only a distant TR707 rim marking time before everything dissolves back to two chords and silence.",
+  "meta": {
+    "bpm": 90,
+    "genre": "braindance",
+    "mood": "haunting, delicate, introspective",
+    "key": "C minor",
+    "instruments": ["piano", "sine bass", "triangle synth", "RolandTR707 kit"],
+    "energy": 1
+  },
+  "code": "setcpm(90/4)\narrange(\n  [16, stack(\n    note(\"<[c4,eb4,g4] [bb3,d4,f4]>/2\").s(\"piano\").gain(0.6).room(0.5).delay(\"0.4:0.166:0.5\").lpf(2200),\n    note(\"<c2 ~ ab1 ~>\").s(\"sine\").gain(0.45).attack(0.4).release(1.2).room(0.4).lpf(500)\n  )],\n  [24, stack(\n    note(\"<[c4,eb4,g4] [ab3,c4,eb4] [bb3,d4,f4] [g3,bb3,d4]>\").s(\"piano\").gain(0.6).room(0.5).delay(\"0.4:0.166:0.5\").lpf(2400),\n    note(\"<g5 eb5 c5 d5>*2\").s(\"piano\").gain(0.45).delay(\"0.5:0.125:0.6\").room(0.6).lpf(3200).pan(sine.slow(8).range(0.35, 0.65)),\n    note(\"<c2 ab1 bb1 g1>\").s(\"sine\").gain(0.5).attack(0.4).release(1.4).room(0.4).lpf(600)\n  )],\n  [32, stack(\n    note(\"<[c4,eb4,g4] [ab3,c4,eb4] [bb3,d4,f4] [g3,bb3,d4]>\").s(\"piano\").gain(0.6).room(0.55).delay(\"0.4:0.166:0.5\").lpf(2600),\n    note(\"<g5 c6 eb5 bb5 d6 c6 eb6 g5>\").s(\"piano\").gain(0.5).delay(\"0.5:0.125:0.65\").room(0.6).lpf(sine.slow(16).range(2200, 4000)).pan(sine.slow(6).range(0.3, 0.7)),\n    note(\"<c2 ab1 bb1 g1>\").s(\"sine\").gain(0.5).attack(0.3).release(1.5).room(0.45).lpf(700),\n    note(\"<eb3 ~ g3 ~>\").s(\"triangle\").gain(0.35).attack(0.6).release(2).room(0.6).lpf(900),\n    s(\"~ rim ~ ~\").bank(\"RolandTR707\").gain(0.4).room(0.6).delay(0.3)\n  )],\n  [16, stack(\n    note(\"<[c4,eb4,g4,bb4] [ab3,c4,eb4,g4]>/2\").s(\"piano\").gain(0.6).room(0.65).delay(\"0.5:0.25:0.6\").lpf(2000),\n    note(\"<c2 ~ ab1 ~>\").s(\"sine\").gain(0.48).attack(0.5).release(1.8).room(0.55).lpf(550),\n    note(\"<g5 ~ ~ eb5 ~ ~ d5 ~>\").s(\"piano\").gain(0.42).delay(\"0.6:0.166:0.7\").room(0.7).lpf(3000)\n  )],\n  [28, stack(\n    note(\"<[c4,eb4,g4] [ab3,c4,eb4] [bb3,d4,f4] [f3,ab3,c4]>\").s(\"piano\").gain(0.62).room(0.55).delay(\"0.4:0.166:0.55\").lpf(2800),\n    note(\"<c6 g5 eb6 bb5 d6 ab5 c6 g5>\").s(\"piano\").gain(0.52).delay(\"0.5:0.125:0.65\").room(0.6).lpf(sine.slow(14).range(2400, 4200)).pan(sine.slow(5).range(0.25, 0.75)).every(4, x => x.add(note(12)).gain(0.4)),\n    note(\"<c2 ab1 bb1 f1>\").s(\"sine\").gain(0.5).attack(0.25).release(1.4).room(0.45).lpf(750),\n    note(\"<eb3 g3 d3 c3>\").s(\"triangle\").gain(0.36).attack(0.5).release(1.8).room(0.6).lpf(1000),\n    s(\"~ rim ~ rim\").bank(\"RolandTR707\").gain(0.42).room(0.6).delay(0.35)\n  )],\n  [16, stack(\n    note(\"<[c4,eb4,g4] [ab3,c4,eb4]>/2\").s(\"piano\").gain(0.58).room(0.7).delay(\"0.5:0.25:0.6\").lpf(1800),\n    note(\"<g5 ~ ~ ~ eb5 ~ ~ ~>\").s(\"piano\").gain(0.4).delay(\"0.6:0.166:0.7\").room(0.75).lpf(2600),\n    note(\"<c2 ~ ab1 ~>\").s(\"sine\").gain(0.45).attack(0.6).release(2.2).room(0.6).lpf(450)\n  )]\n)",
+  "createdAt": "2026-06-04T15:40:05Z"
+}

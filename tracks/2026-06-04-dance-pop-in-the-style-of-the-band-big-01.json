@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-04-dance-pop-in-the-style-of-the-band-big-01",
+  "title": "Sister Supernova",
+  "prompt": "dance pop in the style of the band big sis",
+  "batch": "2026-06-04-dance-pop-in-the-style-of-the-band-big",
+  "description": "Sweeping supersaw chords in C minor build from a shimmering hi-hat intro through a driving four-on-the-floor chorus with punchy claps and a stabbing sawtooth bassline. A melodic supersaw riff enters over the main drop, climbing and reversing with each repeat, before the track dissolves back into drifting pads.",
+  "meta": {
+    "bpm": 124,
+    "genre": "synth-pop",
+    "mood": "euphoric, propulsive, anthemic",
+    "key": "C minor",
+    "instruments": ["RolandTR909 kit", "supersaw pads", "sawtooth bass"],
+    "energy": 4
+  },
+  "code": "setcpm(124/4)\narrange(\n  [16, stack(\n    note(\"<[c3,eb3,g3] [ab2,c3,eb3] [bb2,d3,f3] [g2,bb2,d3]>\").s(\"supersaw\").attack(0.04).release(0.6).lpf(sine.slow(16).range(500, 1400)).room(0.5).gain(0.7),\n    s(\"[~ hh]*4\").bank(\"RolandTR909\").gain(0.45).pan(sine.range(0.35, 0.65))\n  )],\n  [24, stack(\n    s(\"bd*4\").bank(\"RolandTR909\").gain(0.95),\n    s(\"[~ hh]*4\").bank(\"RolandTR909\").gain(0.55).pan(sine.range(0.35, 0.65)),\n    note(\"<[c3,eb3,g3] [ab2,c3,eb3] [bb2,d3,f3] [g2,bb2,d3]>\").s(\"supersaw\").attack(0.03).release(0.5).lpf(saw.slow(24).range(700, 2200)).room(0.4).gain(0.7),\n    note(\"<c2 ab1 bb1 g1>*8\").s(\"sawtooth\").lpf(900).decay(0.12).sustain(0).gain(0.7)\n  )],\n  [32, stack(\n    s(\"bd*4\").bank(\"RolandTR909\").gain(0.95),\n    s(\"[~ hh]*4\").bank(\"RolandTR909\").gain(0.6).pan(sine.range(0.35, 0.65)),\n    s(\"~ cp ~ cp\").bank(\"RolandTR909\").room(0.3).gain(0.65),\n    note(\"<c2 ab1 bb1 g1>*8\").s(\"sawtooth\").lpf(sine.slow(8).range(600, 2000)).resonance(8).decay(0.12).sustain(0).gain(0.75),\n    note(\"<[c3,eb3,g3] [ab2,c3,eb3] [bb2,d3,f3] [g2,bb2,d3]>\").s(\"supersaw\").attack(0.02).release(0.45).lpf(1800).room(0.35).gain(0.7),\n    n(\"0 2 4 7 4 2 0 ~\").scale(\"C4:minor\").s(\"supersaw\").decay(0.18).sustain(0.1).delay(0.3).gain(0.55).pan(0.6)\n  )],\n  [16, stack(\n    note(\"<[c3,eb3,g3] [ab2,c3,eb3] [bb2,d3,f3] [g2,bb2,d3]>\").s(\"supersaw\").attack(0.06).release(0.9).lpf(sine.slow(16).range(800, 2400)).room(0.6).gain(0.72),\n    n(\"0 ~ 4 ~ 7 ~ 9 ~\").scale(\"C5:minor\").s(\"sine\").decay(0.2).sustain(0).delay(0.4).room(0.5).gain(0.5),\n    s(\"~ cp ~ cp\").bank(\"RolandTR909\").room(0.5).gain(0.5)\n  )],\n  [32, stack(\n    s(\"bd*4\").bank(\"RolandTR909\").gain(1.0),\n    s(\"[~ hh]*4\").bank(\"RolandTR909\").gain(0.6).pan(sine.range(0.35, 0.65)),\n    s(\"~ cp ~ cp\").bank(\"RolandTR909\").room(0.3).gain(0.65),\n    s(\"~ ~ ~ oh\").bank(\"RolandTR909\").gain(0.4),\n    note(\"<c2 ab1 bb1 g1>*8\").s(\"sawtooth\").lpf(sine.slow(8).range(900, 2600)).resonance(10).decay(0.12).sustain(0).gain(0.78),\n    note(\"<[c3,eb3,g3] [ab2,c3,eb3] [bb2,d3,f3] [g2,bb2,d3]>\").s(\"supersaw\").attack(0.02).release(0.5).lpf(2400).room(0.35).gain(0.72),\n    n(\"7 9 11 12 11 9 7 4\").scale(\"C4:minor\").s(\"supersaw\").decay(0.16).sustain(0.1).delay(0.3).gain(0.6).pan(0.55).every(4, x => x.rev())\n  )],\n  [12, stack(\n    note(\"<[c3,eb3,g3] [ab2,c3,eb3] [bb2,d3,f3] [g2,bb2,d3]>\").s(\"supersaw\").attack(0.08).release(1.2).lpf(sine.slow(12).range(400, 1200)).room(0.6).gain(0.7),\n    s(\"[~ hh]*4\").bank(\"RolandTR909\").gain(0.4).pan(sine.range(0.35, 0.65))\n  )]\n)\n",
+  "createdAt": "2026-06-04T15:45:02Z"
+}

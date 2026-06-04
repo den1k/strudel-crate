@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-04-dance-pop-in-the-style-of-the-band-big-04",
+  "title": "Sister Light",
+  "prompt": "dance pop in the style of the band big sis",
+  "batch": "2026-06-04-dance-pop-in-the-style-of-the-band-big",
+  "description": "Lush piano chords open the track quietly in A minor before a TR-707 rim shot and gentle bass sine ease it into motion. The arrangement flowers into a bright chorus with four-note jazz-flavored piano voicings, a lilting melodic run, and full kick-snare drive before winding down to a bare piano close.",
+  "meta": {
+    "bpm": 108,
+    "genre": "electro-pop",
+    "mood": "tender, lush, hopeful",
+    "key": "A minor",
+    "instruments": ["piano", "sine bass", "RolandTR707 kit"],
+    "energy": 2
+  },
+  "code": "setcpm(108/4)\narrange(\n  [16, stack(\n    note(\"<[a2,c3,e3] [f2,a2,c3] [g2,b2,d3] [e2,g2,b2]>\").s(\"piano\").room(0.5).gain(0.8).lpf(1600),\n    note(\"<a4 ~ e4 ~>\").s(\"piano\").room(0.6).gain(0.5).delay(0.2)\n  )],\n  [16, stack(\n    note(\"<[a2,c3,e3] [f2,a2,c3] [g2,b2,d3] [e2,g2,b2]>\").s(\"piano\").room(0.5).gain(0.8).lpf(sine.slow(16).range(1200, 2600)),\n    note(\"<a3 c4 e4 g4>*2\").s(\"piano\").room(0.5).gain(0.45).delay(0.25),\n    note(\"<a1 f1 g1 e1>\").s(\"sine\").gain(0.6).lpf(500),\n    s(\"~ rim ~ rim\").bank(\"RolandTR707\").gain(0.5).room(0.2)\n  )],\n  [24, stack(\n    note(\"<[a2,c3,e3,g3] [f2,a2,c3,e3] [g2,b2,d3,f3] [e2,g2,b2,d3]>\").s(\"piano\").room(0.4).gain(0.8).lpf(sine.slow(24).range(1600, 3000)),\n    note(\"<a4 e4 g4 b4 c5 g4 e4 a4>\").s(\"piano\").room(0.4).gain(0.5).delay(0.3),\n    note(\"<a1 f1 g1 e1>*2\").s(\"sine\").gain(0.65).lpf(700),\n    s(\"bd ~ ~ bd ~ ~ bd ~\").bank(\"RolandTR707\").gain(0.9),\n    s(\"[~ hh]*4\").bank(\"RolandTR707\").gain(0.55).pan(sine.range(0.35, 0.65)),\n    s(\"~ cp ~ cp\").bank(\"RolandTR707\").gain(0.55).room(0.3)\n  )],\n  [24, stack(\n    note(\"<[d3,f3,a3,c4] [c3,e3,g3,b3] [a2,c3,e3,g3] [f2,a2,c3,e3]>\").s(\"piano\").room(0.4).gain(0.8).lpf(sine.slow(8).range(2000, 3400)),\n    note(\"<d5 c5 a4 f4 g4 e4 c4 a3>\").s(\"piano\").room(0.4).gain(0.5).delay(0.3),\n    note(\"<d2 c2 a1 f1>*2\").s(\"sine\").gain(0.7).lpf(900),\n    s(\"bd*4\").bank(\"RolandTR707\").gain(0.9),\n    s(\"[~ hh]*4\").bank(\"RolandTR707\").gain(0.6).pan(sine.range(0.3, 0.7)),\n    s(\"~ cp ~ cp\").bank(\"RolandTR707\").gain(0.6).room(0.3),\n    s(\"~ ~ ~ oh\").bank(\"RolandTR707\").gain(0.45)\n  )],\n  [16, stack(\n    note(\"<[f2,a2,c3,e3] [g2,b2,d3,f3] [a2,c3,e3,g3] [e2,g2,b2,d3]>\").s(\"piano\").room(0.6).gain(0.8).lpf(2200),\n    note(\"<f4 ~ g4 ~ a4 ~ e4 ~>\").s(\"piano\").room(0.6).gain(0.5).delay(0.35),\n    note(\"<f1 g1 a1 e1>\").s(\"sine\").gain(0.55).lpf(500),\n    s(\"~ rim ~ rim\").bank(\"RolandTR707\").gain(0.45).room(0.3)\n  )],\n  [16, stack(\n    note(\"<[a2,c3,e3] [f2,a2,c3] [g2,b2,d3] [e2,g2,b2]>\").s(\"piano\").room(0.55).gain(0.8).lpf(sine.slow(16).range(1800, 1000)),\n    note(\"<a4 ~ e4 ~>\").s(\"piano\").room(0.6).gain(0.45).delay(0.25),\n    note(\"<a1 f1 g1 e1>\").s(\"sine\").gain(0.5).lpf(450)\n  )]\n)\n",
+  "createdAt": "2026-06-04T15:45:02Z"
+}
