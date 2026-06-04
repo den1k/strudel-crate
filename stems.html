@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>STRUDEL/STEMS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body>
+  <header class="masthead">
+    <h1>STRUDEL<span>/</span>STEMS</h1>
+    <nav class="nav" aria-label="sections">
+      <a href="/">crate</a>
+      <a href="/stems" class="on">stems</a>
+    </nav>
+    <div class="filters">
+      <select id="batch-filter" aria-label="filter by batch"><option value="all">all batches</option></select>
+      <div class="seg" role="group" aria-label="rating filter">
+        <button data-filter="all" class="on">all</button>
+        <button data-filter="unrated">unrated</button>
+        <button data-filter="top">★4+</button>
+      </div>
+    </div>
+  </header>
+  <main id="tracks"><p class="empty">loading stems…</p></main>
+  <footer id="transport">
+    <span id="status" class="status">warming up samples…</span>
+    <span id="now-playing"></span>
+    <button id="stop" disabled>■ STOP</button>
+  </footer>
+  <script type="module" src="/src/stems.js"></script>
+</body>
+</html>
