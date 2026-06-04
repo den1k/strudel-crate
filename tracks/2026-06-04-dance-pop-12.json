@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-04-dance-pop-12",
+  "title": "Sunbreak Strut",
+  "prompt": "dance pop",
+  "batch": "2026-06-04-dance-pop",
+  "description": "A sunny, bass-driven dance-pop groove that struts out of the gate with a funky CasioRZ1 kit and warm jvbass lines. The track peaks early with shimmering synth chords and bright arpy melody, then playfully deconstructs — peeling back layers, widening the stereo space, and letting the bass carry you home.",
+  "meta": {
+    "bpm": 122,
+    "genre": "dance pop",
+    "mood": "sunny, funky, playful",
+    "key": "F major",
+    "instruments": ["CasioRZ1 kit", "jvbass", "supersaw chords", "arpy melody", "sawtooth bass"],
+    "energy": 4
+  },
+  "code": "setcpm(122/4)\narrange(\n  [12, stack(\n    s(\"bd ~ bd ~\").bank(\"CasioRZ1\").gain(0.9),\n    s(\"[~ hh]*4\").bank(\"CasioRZ1\").gain(0.6).pan(sine.range(0.3, 0.7)),\n    note(\"<f1 f1 c2 bb1>*4\").s(\"jvbass\").decay(0.18).sustain(0.1).gain(0.9).lpf(600)\n  )],\n  [24, stack(\n    s(\"bd ~ bd ~\").bank(\"CasioRZ1\").gain(0.9),\n    s(\"[~ hh]*4\").bank(\"CasioRZ1\").gain(0.65).pan(sine.range(0.25, 0.75)),\n    s(\"~ cp ~ cp\").bank(\"CasioRZ1\").gain(0.7).room(0.2),\n    note(\"<f1 f1 c2 bb1>*8\").s(\"jvbass\").decay(0.14).sustain(0.05).gain(1.0).lpf(sine.slow(8).range(400, 1200)),\n    note(\"<[f3,a3,c4] [f3,a3,c4] [g3,bb3,d4] [eb3,g3,bb3]>\").s(\"supersaw\").gain(0.55).lpf(1800).room(0.25).attack(0.04).decay(0.3).sustain(0.5)\n  )],\n  [28, stack(\n    s(\"bd ~ bd ~\").bank(\"CasioRZ1\").gain(0.95),\n    s(\"[~ hh]*4\").bank(\"CasioRZ1\").gain(0.7).pan(sine.range(0.2, 0.8)).degradeBy(0.1),\n    s(\"~ cp ~ cp\").bank(\"CasioRZ1\").gain(0.75).room(0.25),\n    s(\"rim(3,8)\").bank(\"CasioRZ1\").gain(0.5).pan(0.65),\n    note(\"<f1 f1 c2 bb1>*8\").s(\"jvbass\").decay(0.14).sustain(0.05).gain(1.0).lpf(sine.slow(6).range(500, 1600)),\n    note(\"<[f3,a3,c4] [f3,a3,c4] [g3,bb3,d4] [eb3,g3,bb3]>\").s(\"supersaw\").gain(0.6).lpf(2200).room(0.3).attack(0.04).sustain(0.5),\n    n(\"<0 2 4 5 7 5 4 2>\").scale(\"F4:major\").s(\"arpy\").gain(0.55).decay(0.12).sustain(0).pan(sine.range(0.3, 0.7)).room(0.2)\n  )],\n  [16, stack(\n    s(\"bd ~ ~ ~\").bank(\"CasioRZ1\").gain(0.85),\n    s(\"[~ hh]*4\").bank(\"CasioRZ1\").gain(0.5).pan(sine.range(0.3, 0.7)),\n    s(\"~ cp ~ cp\").bank(\"CasioRZ1\").gain(0.6).room(0.5),\n    note(\"<f1 f1 c2 bb1>*4\").s(\"jvbass\").decay(0.2).sustain(0.08).gain(0.85).lpf(800),\n    note(\"<[f3,a3,c4] [eb3,g3,bb3]>/2\").s(\"supersaw\").gain(0.5).lpf(900).room(0.5).attack(0.1).sustain(0.6).delay(0.3)\n  )],\n  [24, stack(\n    s(\"bd ~ bd ~\").bank(\"CasioRZ1\").gain(0.9),\n    s(\"[~ hh]*4\").bank(\"CasioRZ1\").gain(0.7).pan(sine.range(0.2, 0.8)),\n    s(\"~ cp ~ cp\").bank(\"CasioRZ1\").gain(0.75).room(0.2),\n    note(\"<f1 c2 bb1 f1>*8\").s(\"jvbass\").decay(0.13).sustain(0.04).gain(1.0).lpf(sine.slow(4).range(600, 2000)),\n    note(\"<[f3,a3,c4] [f3,a3,c4] [g3,bb3,d4] [eb3,g3,bb3]>\").s(\"supersaw\").gain(0.58).lpf(2000).room(0.28).sustain(0.5),\n    n(\"<0 2 4 7 4 2 0 4>\").scale(\"F4:major\").s(\"arpy\").gain(0.52).decay(0.1).sustain(0).pan(sine.range(0.25, 0.75))\n  )],\n  [14, stack(\n    s(\"bd ~ ~ ~\").bank(\"CasioRZ1\").gain(0.8),\n    note(\"<f1 f1 c2 bb1>*4\").s(\"jvbass\").decay(0.22).sustain(0.1).gain(0.85).lpf(sine.slow(14).range(300, 900)),\n    note(\"<[f3,a3,c4]>/2\").s(\"supersaw\").gain(0.4).lpf(600).room(0.6).attack(0.12).sustain(0.7).delay(0.4)\n  )]\n)",
+  "createdAt": "2026-06-04T17:11:55Z"
+}
