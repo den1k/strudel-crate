@@ -108,13 +108,14 @@ body {
 .rate .block:hover { border-color: var(--acid); }
 .rate .block.on { background: var(--acid); border-color: var(--acid); }
 
+.feedback { grid-area: notes; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 .notes {
-  grid-area: notes;
   background: var(--bg); color: var(--ink);
   border: 1px solid var(--line); font-family: var(--mono); font-size: 12px;
   padding: 8px; min-height: 56px; resize: vertical;
   transition: border-color 0.3s ease;
 }
+.lesson { min-height: 36px; border-style: dashed; }
 .notes:focus { outline: none; border-color: var(--dim); }
 .notes.saved { border-color: var(--acid); }
 .notes.error, .track.error { border-color: var(--hot); }

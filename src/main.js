@@ -43,6 +43,7 @@ async function putRating(track, patch) {
   const body = {
     rating: 'rating' in patch ? patch.rating : track.rating,
     notes: 'notes' in patch ? patch.notes : track.notes,
+    lesson: 'lesson' in patch ? patch.lesson : track.lesson,
   };
   const res = await fetch(`/api/tracks/${track.id}/rating`, {
     method: 'PUT',
@@ -53,6 +54,7 @@ async function putRating(track, patch) {
   const saved = await res.json();
   track.rating = saved.rating;
   track.notes = saved.notes;
+  track.lesson = saved.lesson;
 }
 
 const debounce = (fn, ms) => {
@@ -137,21 +139,31 @@ function trackCard(track) {
     rate.appendChild(b);
   }
 
-  const notes = document.createElement('textarea');
-  notes.className = 'notes';
-  notes.placeholder = 'notes — what works, what to change…';
-  notes.value = track.notes ?? '';
-  const saveNotes = debounce(async () => {
-    try {
-      await putRating(track, { notes: notes.value });
-      notes.classList.add('saved');
-      setTimeout(() => notes.classList.remove('saved'), 600);
-    } catch (err) {
-      console.error(err);
-      flashError(notes);
-    }
-  }, 600);
-  notes.addEventListener('input', saveNotes);
+  const autosaveArea = (className, placeholder, value, field) => {
+    const ta = document.createElement('textarea');
+    ta.className = className;
+    ta.placeholder = placeholder;
+    ta.value = value ?? '';
+    const save = debounce(async () => {
+      try {
+        await putRating(track, { [field]: ta.value });
+        ta.classList.add('saved');
+        setTimeout(() => ta.classList.remove('saved'), 600);
+      } catch (err) {
+        console.error(err);
+        flashError(ta);
+      }
+    }, 600);
+    ta.addEventListener('input', save);
+    return ta;
+  };
+
+  const feedback = document.createElement('div');
+  feedback.className = 'feedback';
+  feedback.append(
+    autosaveArea('notes', 'notes — what works, what to change… (this track only)', track.notes, 'notes'),
+    autosaveArea('notes lesson', 'lesson for future tracks — applies to every new batch…', track.lesson, 'lesson'),
+  );
 
   const code = document.createElement('details');
   code.className = 'code';
@@ -159,7 +171,7 @@ function trackCard(track) {
   $('.instruments', code).textContent = (track.meta?.instruments ?? []).join(' · ');
   $('pre', code).textContent = track.code;
 
-  card.append(playBtn, meta, rate, notes, code);
+  card.append(playBtn, meta, rate, feedback, code);
   return card;
 }
 
