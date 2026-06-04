@@ -9,7 +9,7 @@ const page = (p) => fileURLToPath(new URL(p, import.meta.url));
 // SPA fallback would serve index.html for it.
 const rewriteStems = (server) => {
   server.middlewares.use((req, _res, next) => {
-    if (req.url === '/stems' || req.url?.startsWith('/stems?')) req.url = '/stems.html';
+    if (req.url === '/stems' || req.url === '/stems/' || req.url?.startsWith('/stems?')) req.url = '/stems.html';
     next();
   });
 };
