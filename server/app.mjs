@@ -16,14 +16,17 @@ export function createApp(store) {
   app.put('/api/tracks/:id/rating', wrap(async (req, res) => {
     const { id } = req.params;
     if (!ID_RE.test(id)) return res.status(400).json({ error: 'invalid track id' });
-    const { rating, notes } = req.body ?? {};
+    const { rating, notes, lesson } = req.body ?? {};
     if (rating != null && !(Number.isInteger(rating) && rating >= 1 && rating <= 5)) {
       return res.status(400).json({ error: 'rating must be an integer 1-5' });
     }
     if (notes != null && typeof notes !== 'string') {
       return res.status(400).json({ error: 'notes must be a string' });
     }
-    res.json(await store.saveRating(id, { rating, notes }));
+    if (lesson != null && typeof lesson !== 'string') {
+      return res.status(400).json({ error: 'lesson must be a string' });
+    }
+    res.json(await store.saveRating(id, { rating, notes, lesson }));
   }));
 
   // JSON error responses (body-parser 400s and async store failures land here).

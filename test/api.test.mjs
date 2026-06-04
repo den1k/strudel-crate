@@ -42,4 +42,17 @@ describe('API', () => {
     const res = await request(app).put('/api/tracks/..%2Fevil/rating').send({ rating: 3 });
     expect(res.status).toBe(400);
   });
+
+  it('PUT saves and echoes lesson', async () => {
+    const res = await request(app)
+      .put('/api/tracks/a/rating')
+      .send({ rating: 3, notes: 'n', lesson: 'less reverb on pads' });
+    expect(res.status).toBe(200);
+    expect(res.body).toMatchObject({ id: 'a', rating: 3, notes: 'n', lesson: 'less reverb on pads' });
+  });
+
+  it('rejects non-string lesson', async () => {
+    const res = await request(app).put('/api/tracks/a/rating').send({ lesson: 42 });
+    expect(res.status).toBe(400);
+  });
 });
