@@ -116,4 +116,16 @@ describe('validateTrack', () => {
     t2.meta.instruments = [];
     expect((await validateTrack(t2)).error).toMatch(/instruments/);
   });
+
+  it('rejects whitespace-only description', async () => {
+    const t = goodTrack();
+    t.description = '   ';
+    expect((await validateTrack(t)).error).toMatch(/description/);
+  });
+
+  it('rejects meta missing an individual string field', async () => {
+    const t = goodTrack();
+    delete t.meta.genre;
+    expect((await validateTrack(t)).error).toMatch(/genre/);
+  });
 });

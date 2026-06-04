@@ -63,7 +63,7 @@ function declaredBpm(code) {
 
 // Full track validation: required fields + meta schema + bpm↔setcpm, then the code itself.
 export async function validateTrack(track) {
-  const missing = REQUIRED_FIELDS.filter((f) => track[f] == null || track[f] === '');
+  const missing = REQUIRED_FIELDS.filter((f) => track[f] == null || (typeof track[f] === 'string' && track[f].trim() === ''));
   if (missing.length) return { ok: false, error: `missing fields: ${missing.join(', ')}` };
   const m = track.meta;
   if (m == null || typeof m !== 'object' || Array.isArray(m)) {

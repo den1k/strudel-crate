@@ -39,4 +39,13 @@ describe('buildDigest', () => {
     expect(digest).toContain('— techno · 130bpm');
     expect(digest).toContain('— house · 100bpm');
   });
+
+  it('handles meta with only one of genre/bpm', () => {
+    const digest = buildDigest([
+      { ...track('g', 5, ''), meta: { genre: 'techno' } },
+      { ...track('b', 4, ''), meta: { bpm: 140 } },
+    ]);
+    expect(digest).toContain('— techno');
+    expect(digest).toContain('— 140bpm');
+  });
 });

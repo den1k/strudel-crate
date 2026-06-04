@@ -105,7 +105,7 @@ function trackCard(track) {
     m.genre,
     m.bpm && `${m.bpm} bpm`,
     m.key,
-    m.energy && '▮'.repeat(m.energy) + '▯'.repeat(5 - m.energy),
+    m.energy && '▮'.repeat(Math.min(m.energy, 5)) + '▯'.repeat(Math.max(0, 5 - m.energy)),
     m.mood,
   ].filter(Boolean);
   for (const value of chipValues) {
