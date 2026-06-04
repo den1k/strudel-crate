@@ -7,9 +7,9 @@ export function createStore({ tracksDir, ratingsDir }) {
   async function getRating(id) {
     try {
       const r = JSON.parse(await readFile(join(ratingsDir, `${id}.json`), 'utf8'));
-      return { rating: r.rating ?? null, notes: r.notes ?? '' };
+      return { rating: r.rating ?? null, notes: r.notes ?? '', lesson: r.lesson ?? '' };
     } catch {
-      return { rating: null, notes: '' };
+      return { rating: null, notes: '', lesson: '' };
     }
   }
 
@@ -32,12 +32,13 @@ export function createStore({ tracksDir, ratingsDir }) {
     return tracks;
   }
 
-  async function saveRating(id, { rating, notes }) {
+  async function saveRating(id, { rating, notes, lesson }) {
     await mkdir(ratingsDir, { recursive: true });
     const record = {
       id,
       rating: rating ?? null,
       notes: notes ?? '',
+      lesson: lesson ?? '',
       updatedAt: new Date().toISOString(),
     };
     await writeFile(join(ratingsDir, `${id}.json`), JSON.stringify(record, null, 2) + '\n');
