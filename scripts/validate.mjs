@@ -51,6 +51,7 @@ const REQUIRED_FIELDS = ['id', 'title', 'prompt', 'batch', 'description', 'code'
 
 const isNonEmptyString = (v) => typeof v === 'string' && v.trim() !== '';
 
+// Assumes at most one setcpm call (the guide forbids more); first match wins.
 // BPM declared by the code: setcpm(N/4) → N, setcpm(N) → N×4, none → 120 (strudel default).
 function declaredBpm(code) {
   const frac = code.match(/setcpm\(\s*(\d+(?:\.\d+)?)\s*\/\s*4\s*\)/);

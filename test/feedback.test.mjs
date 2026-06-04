@@ -30,4 +30,13 @@ describe('buildDigest', () => {
     const digest = buildDigest(tracks);
     expect((digest.match(/CODE\d/g) ?? []).length).toBe(5);
   });
+
+  it('appends genre and bpm when meta is present', () => {
+    const digest = buildDigest([
+      { ...track('hi', 5, ''), meta: { genre: 'techno', bpm: 130 } },
+      { ...track('lo', 1, 'meh'), meta: { genre: 'house', bpm: 100 } },
+    ]);
+    expect(digest).toContain('— techno · 130bpm');
+    expect(digest).toContain('— house · 100bpm');
+  });
 });

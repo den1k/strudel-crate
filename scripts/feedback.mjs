@@ -2,6 +2,11 @@
 import { fileURLToPath } from 'node:url';
 import { createStore } from '../server/store.mjs';
 
+const metaSuffix = (t) =>
+  t.meta?.genre || t.meta?.bpm
+    ? ` — ${[t.meta?.genre, t.meta?.bpm && `${t.meta.bpm}bpm`].filter(Boolean).join(' · ')}`
+    : '';
+
 export function buildDigest(tracks) {
   const rated = tracks.filter((t) => t.rating != null);
   if (rated.length === 0) {
@@ -13,7 +18,7 @@ export function buildDigest(tracks) {
   if (top.length) {
     lines.push('', '## Top rated — emulate what works here');
     for (const t of top) {
-      lines.push('', `### ${'★'.repeat(t.rating)} "${t.title}" (${t.id})`);
+      lines.push('', `### ${'★'.repeat(t.rating)} "${t.title}" (${t.id})${metaSuffix(t)}`);
       if (t.notes) lines.push(`notes: ${t.notes}`);
       lines.push('```', t.code, '```');
     }
@@ -23,7 +28,7 @@ export function buildDigest(tracks) {
   if (low.length) {
     lines.push('', '## Low rated — avoid these mistakes');
     for (const t of low) {
-      lines.push(`- ${'★'.repeat(t.rating)} "${t.title}": ${t.notes || '(no notes)'}`);
+      lines.push(`- ${'★'.repeat(t.rating)} "${t.title}"${metaSuffix(t)}: ${t.notes || '(no notes)'}`);
     }
   }
   return lines.join('\n');
