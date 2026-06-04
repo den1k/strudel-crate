@@ -1,4 +1,8 @@
-import { initStrudel } from '@strudel/web';
+import * as core from '@strudel/core';
+import * as mini from '@strudel/mini';
+import * as tonal from '@strudel/tonal';
+import * as webaudio from '@strudel/webaudio';
+import { initAudioOnFirstClick, registerSynthSounds, samples } from '@strudel/webaudio';
 import { mountEditor, getEditor, isStarted } from './editor.js';
 import { nextPlayingId } from './playing-state.js';
 import banks from '../shared/sample-banks.json';
@@ -7,17 +11,23 @@ const state = { tracks: [], playingId: null, samplesReady: false, batch: 'all', 
 const $ = (sel, el = document) => el.querySelector(sel);
 
 // --- strudel init: load the same banks the validator allowlists ---------
-// initStrudel's evalScope makes `samples` a global before prebake runs.
-const ready = initStrudel({
-  prebake: () =>
-    Promise.all(
-      banks.map((b) =>
-        b.shorthand
-          ? globalThis.samples(b.shorthand)
-          : globalThis.samples(b.json, b.base, { prebake: b.prebake, tag: b.tag }),
-      ),
+// NOT @strudel/web: its dist inlines private copies of core/webaudio, so
+// sounds registered through it are invisible to editor.js's webaudioOutput
+// (two sound registries — silent playback). evalScope mirrors
+// scripts/strudel-env.mjs but with real audio instead of stubs, keeping the
+// webapp on the exact module instances the editors play through.
+initAudioOnFirstClick(); // resume the AudioContext on the first user gesture
+const ready = (async () => {
+  await core.evalScope(core, mini, tonal, webaudio);
+  await Promise.all([
+    registerSynthSounds(),
+    ...banks.map((b) =>
+      b.shorthand
+        ? samples(b.shorthand)
+        : samples(b.json, b.base, { prebake: b.prebake, tag: b.tag }),
     ),
-});
+  ]);
+})();
 ready.then(() => {
   state.samplesReady = true;
   renderTransport();
@@ -37,7 +47,13 @@ function codeSection(track) {
   section.innerHTML = `<summary>code</summary><p class="instruments"></p><p class="eval-error" hidden></p><div class="editor"></div>`;
   $('.instruments', section).textContent = (track.meta?.instruments ?? []).join(' · ');
   section.addEventListener('toggle', () => {
-    if (section.open) ensureEditor(track); // lazy-mount on first open
+    if (!section.open) return;
+    // accordion: only one editor open at a time (closing fires the others'
+    // toggle listeners, which no-op because they're closed)
+    for (const other of codeSections.values()) {
+      if (other !== section) other.open = false;
+    }
+    ensureEditor(track); // lazy-mount on first open
   });
   codeSections.set(track.id, section);
   return section;
@@ -84,8 +100,9 @@ async function play(track) {
   renderTransport();
   await ready; // audio context unlocks via this click
   if (state.playingId !== track.id) return; // user moved on while samples loaded
+  // editor mounts hidden inside the closed <details>; the user opens it
+  // explicitly when they want to watch the code (keeps cards compact)
   const editor = ensureEditor(track);
-  codeSection(track).open = true; // reveal the editor so highlighting is visible
   editor.evaluate();
 }
 
