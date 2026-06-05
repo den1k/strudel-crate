@@ -5,17 +5,15 @@ const ID_RE = /^[A-Za-z0-9_-]+$/; // rating files are written as <id>.json — n
 // Express 4 doesn't catch async handler rejections — route them to the error handler.
 const wrap = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
 
-export function createApp(store) {
-  const app = express();
-  app.use(express.json());
-
-  app.get('/api/tracks', wrap(async (_req, res) => {
+// One set of list + rating routes per collection (tracks, stems) at /api/<name>.
+function collectionRoutes(app, name, store) {
+  app.get(`/api/${name}`, wrap(async (_req, res) => {
     res.json(await store.listTracks());
   }));
 
-  app.put('/api/tracks/:id/rating', wrap(async (req, res) => {
+  app.put(`/api/${name}/:id/rating`, wrap(async (req, res) => {
     const { id } = req.params;
-    if (!ID_RE.test(id)) return res.status(400).json({ error: 'invalid track id' });
+    if (!ID_RE.test(id)) return res.status(400).json({ error: 'invalid id' });
     const { rating, notes, lesson } = req.body ?? {};
     if (rating != null && !(Number.isInteger(rating) && rating >= 1 && rating <= 5)) {
       return res.status(400).json({ error: 'rating must be an integer 1-5' });
@@ -28,6 +26,12 @@ export function createApp(store) {
     }
     res.json(await store.saveRating(id, { rating, notes, lesson }));
   }));
+}
+
+export function createApp(stores) {
+  const app = express();
+  app.use(express.json());
+  for (const [name, store] of Object.entries(stores)) collectionRoutes(app, name, store);
 
   // JSON error responses (body-parser 400s and async store failures land here).
   app.use((err, _req, res, _next) => {

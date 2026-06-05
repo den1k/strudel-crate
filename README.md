@@ -9,6 +9,9 @@ rate, and annotate them in a local webapp; ratings feed back into the next batch
 2. `npm run dev` → open http://localhost:5173 (first load fetches sample banks — give it a minute)
 3. Play tracks, rate 1–5, leave notes on what to change.
 4. Generate the next batch — agents read your ratings/notes and steer toward what you liked.
+5. Sound sorcery: `/generate-stems "alien sound"` writes 30 single-sound,
+   sound-design stems to `stems/` — listen and rate them at
+   http://localhost:5173/stems (nav links crate ↔ stems).
 
 By default every generated track is a complete 3–6 minute piece with an intro,
 an elaborate middle, and an outro.
@@ -19,6 +22,7 @@ an elaborate middle, and an outro.
 - `npm test` — unit tests
 - `node scripts/validate.mjs tracks/<id>.json` — validate a track headlessly
 - `npm run feedback` — print the ratings digest agents see
+- `node scripts/feedback.mjs stems` — the same digest for stem ratings
 - `npm run build-sounds` — regenerate the sound allowlist (only needed if `shared/sample-banks.json` changes)
 
 ## How a track is "valid"

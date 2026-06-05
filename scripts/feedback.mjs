@@ -34,6 +34,8 @@ export function buildDigest(tracks) {
 }
 
 if (process.argv[1] && process.argv[1] === fileURLToPath(import.meta.url)) {
-  const store = createStore({ tracksDir: 'tracks', ratingsDir: 'data/ratings' });
+  const store = process.argv[2] === 'stems'
+    ? createStore({ tracksDir: 'stems', ratingsDir: 'data/stem-ratings' })
+    : createStore({ tracksDir: 'tracks', ratingsDir: 'data/ratings' });
   console.log(buildDigest(await store.listTracks()));
 }
