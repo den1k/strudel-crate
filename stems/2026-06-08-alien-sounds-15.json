@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-alien-sounds-15",
+  "title": "Hollow Drift",
+  "prompt": "alien sounds",
+  "batch": "2026-06-08-alien-sounds",
+  "description": "A low hollow FM pad that breathes through a slow pitch-envelope drift, the FM index swelling and the harmonicity stepping so its inharmonic core opens and closes like an alien lung. A wide band-pass sweep and long delay tails drag it across the stereo field over a 32-cycle arc.",
+  "meta": {
+    "bpm": 120,
+    "genre": "fm pad",
+    "mood": "hollow",
+    "key": "atonal",
+    "instruments": ["fm sine pad"],
+    "energy": 2
+  },
+  "code": "setcpm(120/4)\nstack(\n  note(\"<c1 <c1 eb1> g0 <bb0 f1>>/2\").s(\"sine\")\n    .fm(sine.slow(23).range(1.5, 9)).fmh(\"<0.5 1.5 0.25 2>/8\")\n    .penv(sine.slow(31).range(-7, 5)).pattack(2.5).pdecay(6)\n    .bpf(sine.slow(17).range(180, 1400)).resonance(9).ftype(\"ladder\")\n    .lpenv(2).lpattack(1.5).lpdecay(3)\n    .vib(\"<0.3 0.5>/8\").vibmod(sine.slow(13).range(0.1, 0.8))\n    .attack(3).decay(2).sustain(0.7).release(4)\n    .pan(sine.slow(19).range(0.2, 0.8))\n    .off(1/4, x => x.add(note(7)).gain(0.3).pan(0.7))\n    .delay(\"0.5:0.5:0.7\").room(0.8).gain(0.75)\n)",
+  "createdAt": "2026-06-08T21:29:59Z"
+}

@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-alien-sounds-23",
+  "title": "Throat of the Hollow Star",
+  "prompt": "alien sounds",
+  "batch": "2026-06-08-alien-sounds",
+  "description": "A screaming formant voice built from a hard-driven sawtooth: vowels morph through a-e-i-o-u while a fast tremolo gate chops it into a stuttering alien wail. Over 16 cycles the band-pass sweep, FM grit and vibrato depth all swell so the scream rises from a hollow moan to a shredding shriek before resetting.",
+  "meta": {
+    "bpm": 124,
+    "genre": "formant lead",
+    "mood": "screaming",
+    "key": "atonal",
+    "instruments": ["formant vocal lead"],
+    "energy": 4
+  },
+  "code": "setcpm(124/4)\nstack(\n  note(\"<g3 [g3 bb3] c4 <bb3 d4>>/2\").s(\"sawtooth\")\n    .vowel(\"<a e i o u e>/3\")\n    .fm(sine.slow(24).range(1, 7)).fmh(\"<1 1.5 2 0.5>/8\")\n    .vib(\"<7 11 13>/8\").vibmod(sine.slow(13).range(0.3, 2.2))\n    .bpf(sine.slow(16).range(500, 3600)).resonance(sine.slow(11).range(10, 20))\n    .shape(saw.slow(16).range(0.2, 0.6)).crush(\"<16 10 7>/16\")\n    .tremolosync(\"<4 8 6 12>/4\").tremolodepth(sine.slow(7).range(0.4, 0.95))\n    .pan(sine.slow(9).range(0.15, 0.85))\n    .sometimesBy(0.18, x => x.speed(-1))\n    .attack(0.01).decay(0.18).sustain(0.7).release(0.08)\n    .delay(\"0.4:0.375:0.6\").room(0.7).gain(0.7)\n)",
+  "createdAt": "2026-06-08T21:29:59Z"
+}

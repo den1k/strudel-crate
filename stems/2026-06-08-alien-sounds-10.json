@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-alien-sounds-10",
+  "title": "Mercury Tongue",
+  "prompt": "alien sounds",
+  "batch": "2026-06-08-alien-sounds",
+  "description": "A high-register sawtooth lead sculpted by a resonant ladder filter envelope, gated into liquid stutters by euclidean rhythm and tremolo. Over 16 cycles the filter sweep, gate density, vibrato depth and pitch arc all drift on prime clocks so the voice keeps melting into new alien shapes.",
+  "meta": {
+    "bpm": 124,
+    "genre": "subtractive lead",
+    "mood": "liquid",
+    "key": "atonal",
+    "instruments": ["resonant sawtooth lead"],
+    "energy": 4
+  },
+  "code": "setcpm(124/4)\nstack(\n  note(\"<c5 [eb5 g5] bb5 <f5 ab5>>(<5 3 7 5>/4,8)\").s(\"sawtooth\")\n    .lpf(sine.slow(24).range(900, 6500)).resonance(sine.slow(13).range(12, 20)).ftype(\"ladder\")\n    .lpenv(sine.slow(16).range(2, 7)).lpattack(0.005).lpdecay(0.09).lpsustain(0.2)\n    .vib(\"<7 9 6>/8\").vibmod(sine.slow(11).range(0.3, 2.2))\n    .penv(\"<0 7 -4 0>/8\").pattack(0.002).pdecay(0.06)\n    .tremolosync(\"<4 8 6>/8\").tremolodepth(sine.slow(19).range(0.3, 0.9))\n    .crush(\"<16 10 8>/16\")\n    .attack(0.004).decay(0.18).sustain(0.4).release(0.05)\n    .pan(sine.slow(7).range(0.2, 0.8))\n    .sometimesBy(0.12, x => x.speed(-1))\n    .off(1/8, x => x.add(note(12)).gain(0.3).delay(\"0.4:0.28:0.6\"))\n    .delay(\"0.5:0.375:0.55\").room(0.6).gain(0.7)\n)",
+  "createdAt": "2026-06-08T21:29:59Z"
+}

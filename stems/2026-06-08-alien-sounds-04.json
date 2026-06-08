@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-alien-sounds-04",
+  "title": "Hollow Engine",
+  "prompt": "alien sounds",
+  "batch": "2026-06-08-alien-sounds",
+  "description": "A low metallic FM bass that drifts through a slow ladder-filter journey while its FM index and harmonicity climb, turning a clean sine into a clanging, detuned alien drone. Over the loop the timbre swells from a dark hum into a ringing inharmonic growl and back.",
+  "meta": {
+    "bpm": 116,
+    "genre": "fm bass",
+    "mood": "menacing",
+    "key": "C minor",
+    "instruments": ["fm sine bass"],
+    "energy": 3
+  },
+  "createdAt": "2026-06-08T21:29:59Z",
+  "code": "setcpm(116/4)\nstack(\n  note(\"<c1 c1 eb1 <g0 bb0>>*2\").s(\"sine\")\n    .fm(sine.slow(24).range(2, 13)).fmh(\"<1 1.5 2.01 0.5 3.99>/5\")\n    .penv(\"<0 0 7 -5>/8\").pattack(0.002).pdecay(0.1)\n    .lpf(sine.slow(31).range(180, 2600)).resonance(sine.slow(17).range(6, 17)).ftype(\"ladder\")\n    .lpenv(4).lpattack(0.008).lpdecay(0.18)\n    .vib(\"<3 5 7>/8\").vibmod(sine.slow(13).range(0.1, 0.9))\n    .attack(0.005).decay(0.22).sustain(0.55).release(0.07)\n    .shape(0.34).crush(\"<16 16 10 8>/16\")\n    .pan(sine.slow(11).range(0.3, 0.7))\n    .off(1/8, x => x.add(note(12.05)).gain(0.28).pan(0.78).fm(9))\n    .delay(\"0.4:0.375:0.6\").room(0.25).gain(0.85)\n)"
+}

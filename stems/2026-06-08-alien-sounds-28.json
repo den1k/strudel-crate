@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-alien-sounds-28",
+  "title": "Liquid Numerals",
+  "prompt": "alien sounds",
+  "batch": "2026-06-08-alien-sounds",
+  "description": "A single 'numbers' voice sample mangled into a liquid alien creature: chopped and striated into granular clouds, rhythmically gated with euclid and ply, and pitched across the full spectrum by a stepped speed pattern. Over 32 cycles the chop density, band-pass sweep, and squiz pitch-mangle all drift on prime-ish clocks so the loop melts and re-forms without repeating.",
+  "meta": {
+    "bpm": 124,
+    "genre": "granular sample mangle",
+    "mood": "liquid",
+    "key": "atonal",
+    "instruments": ["mangled numbers sample"],
+    "energy": 3
+  },
+  "code": "setcpm(124/4)\nstack(\n  s(\"numbers\").n(\"<0 3 5 7 2>/2\")\n    .chop(\"<8 16 4 32>/8\").striate(\"<2 4 3>/4\")\n    .speed(\"<1 -1 0.5 2 -0.5>/2\")\n    .squiz(sine.slow(19).range(0, 3))\n    .ply(\"<1 2 1 3>/4\")\n    .euclid(\"<5 7 3 5>/2\", 8)\n    .cut(1)\n    .bpf(sine.slow(24).range(300, 4500)).resonance(sine.slow(13).range(6, 18))\n    .lpf(saw.slow(11).range(800, 7000))\n    .coarse(\"<1 1 2 4>/8\").crush(\"<16 10 7>/16\")\n    .pan(sine.slow(7).range(0.1, 0.9))\n    .sometimesBy(0.2, x => x.speed(-1))\n    .delay(\"0.45:0.375:0.72\").room(sine.slow(29).range(0.3, 0.85))\n    .gain(0.85)\n)",
+  "createdAt": "2026-06-08T21:29:59Z"
+}

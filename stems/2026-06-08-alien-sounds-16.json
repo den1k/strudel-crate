@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-alien-sounds-16",
+  "title": "Chitin Knock",
+  "prompt": "alien sounds",
+  "batch": "2026-06-08-alien-sounds",
+  "description": "A single FM-synth percussion hit in the mid register, sculpted dry and clicky with a steep pitch-envelope knock. Over 16 cycles the FM index, harmonicity steps, and knock depth morph the hit from a hollow wooden tick into a metallic alien chirp and back.",
+  "meta": {
+    "bpm": 128,
+    "genre": "designed percussion",
+    "mood": "skittering",
+    "key": "atonal",
+    "instruments": ["fm percussion hit"],
+    "energy": 3
+  },
+  "createdAt": "2026-06-08T21:29:59Z",
+  "code": "setcpm(128/4)\nstack(\n  note(\"c4 ~ <c4 eb4> [~ c4] c4 ~ [c4 g4] ~\").s(\"sine\")\n    .fm(sine.slow(16).range(3, 11)).fmh(\"<2 3.5 1.5 5>/4\")\n    .penv(sine.slow(24).range(14, 30)).pattack(0.001).pdecay(saw.slow(13).range(0.03, 0.07))\n    .attack(0.001).decay(0.09).sustain(0).release(0.02)\n    .lpf(sine.slow(32).range(1800, 5200)).resonance(9).ftype(\"ladder\")\n    .lpenv(2.5).lpattack(0.002).lpdecay(0.05)\n    .shape(0.3).coarse(\"<1 1 2 1>/8\")\n    .pan(sine.slow(7).range(0.25, 0.75))\n    .sometimesBy(0.12, x => x.speed(-1))\n    .off(0.02, x => x.add(note(7)).gain(0.2).crush(7))\n    .room(0.18).gain(0.9)\n)"
+}

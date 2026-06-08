@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-alien-sounds-12",
+  "title": "Tidal Cavern Drift",
+  "prompt": "alien sounds",
+  "batch": "2026-06-08-alien-sounds",
+  "description": "A cavernous noise-sculpted pad built from brown noise that slowly journeys a resonant low-pass filter from a subterranean rumble up to a hissing full-spectrum shimmer and back. Vowel formants and a phaser breathe over a wet, panning reverb so the texture feels like alien wind moving through a vast wet cave.",
+  "meta": {
+    "bpm": 120,
+    "genre": "noise texture",
+    "mood": "cavernous",
+    "key": "atonal",
+    "instruments": ["brown noise pad"],
+    "energy": 2
+  },
+  "code": "setcpm(120/4)\nstack(\n  s(\"brown\").gain(0.85)\n    .attack(2).decay(4).sustain(0.8).release(3)\n    .lpf(sine.slow(32).range(180, 7000)).resonance(sine.slow(13).range(6, 18)).ftype(\"ladder\")\n    .lpenv(sine.slow(24).range(0.5, 3)).lpattack(2).lpdecay(6)\n    .hpf(saw.slow(29).range(40, 300))\n    .vowel(\"<a o u e>/4\")\n    .phaser(sine.slow(17).range(0.1, 0.6)).phaserdepth(0.7)\n    .crush(sine.slow(19).range(16, 7))\n    .pan(sine.slow(11).range(0.15, 0.85))\n    .room(0.9).roomsize(8).delay(\"0.4:0.5:0.7\").orbit(2)\n    .off(0.125, x => x.add(note(7)).gain(0.3).speed(sine.slow(23).range(0.9, 1.1)))\n)",
+  "createdAt": "2026-06-08T21:29:59Z"
+}

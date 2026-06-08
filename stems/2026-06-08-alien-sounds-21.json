@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-alien-sounds-21",
+  "title": "Cicada Vacuum",
+  "prompt": "alien sounds",
+  "batch": "2026-06-08-alien-sounds",
+  "description": "A high, metallic pink/brown-noise riser that climbs a resonant band-pass through the upper register while a tremolo and a stepped gate chop it into stuttering insectoid swarms. Over 16 cycles the noise source darkens, the resonance tightens to a screaming ring, and the gating accelerates before resetting.",
+  "meta": {
+    "bpm": 120,
+    "genre": "noise riser",
+    "mood": "eerie",
+    "key": "atonal",
+    "instruments": ["resonant noise riser"],
+    "energy": 4
+  },
+  "code": "setcpm(120/4)\nstack(\n  s(\"<pink brown pink white>/4\")\n    .bpf(saw.slow(16).range(1200, 7800)).resonance(sine.slow(13).range(14, 26))\n    .lpf(sine.slow(32).range(5000, 11000))\n    .hpf(900)\n    .crush(\"<10 8 6 5>/8\").coarse(\"<1 2 1 4>/4\")\n    .shape(0.4)\n    .tremolosync(\"<4 8 6 16>/8\").tremolodepth(sine.slow(11).range(0.4, 0.95))\n    .mask(\"<1 1 [1 0] [1 0 1 1]>/2\")\n    .pan(sine.slow(7).range(0.1, 0.9))\n    .delay(\"0.4:0.1875:0.72\").room(0.6)\n    .gain(0.8)\n    .off(0.0625, x => x.add(note(12)).gain(0.3).bpf(9000))\n)\n",
+  "createdAt": "2026-06-08T21:29:59Z"
+}

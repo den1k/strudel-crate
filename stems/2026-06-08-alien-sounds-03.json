@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-alien-sounds-03",
+  "title": "Cavern Maw",
+  "prompt": "alien sounds",
+  "batch": "2026-06-08-alien-sounds",
+  "description": "A sub-register 808 voice that breathes alien life: noise bleeds into the body as an FM index swells, while euclidean tremolo gating chops it into a pulsing throb. Over 32 cycles the pitch envelope, vowel formant and cavernous delay sweep through each other so the loop never resettles.",
+  "meta": {
+    "bpm": 124,
+    "genre": "sub bass",
+    "mood": "cavernous",
+    "key": "atonal",
+    "instruments": ["fm sub 808"],
+    "energy": 4
+  },
+  "createdAt": "2026-06-08T21:29:59Z",
+  "code": "setcpm(124/4)\nstack(\n  note(\"<c1 c1 eb1 g0 c1 [eb1 f1] g0 c1>(<5 3 7>,8)/2\").s(\"sine\")\n    .fm(sine.slow(16).range(1.5, 9)).fmh(\"<0.5 1 1.5 2>/4\")\n    .noise(sine.slow(23).range(0, 0.35))\n    .penv(\"<12 0 -7 0>/8\").pattack(0.002).pdecay(0.09)\n    .lpf(sine.slow(32).range(180, 2200)).resonance(14).ftype(\"ladder\")\n    .lpenv(2.5).lpattack(0.006).lpdecay(0.18)\n    .vowel(\"<a o u>/3\")\n    .tremolosync(\"<4 8 6>/8\").tremolodepth(sine.slow(13).range(0.2, 0.9))\n    .attack(0.004).decay(0.22).sustain(0.55).release(0.08)\n    .shape(0.32)\n    .pan(sine.slow(7).range(0.2, 0.8))\n    .sometimesBy(0.12, x => x.speed(-1))\n    .off(1/8, x => x.add(note(12)).gain(0.22).crush(6))\n    .delay(\"0.4:0.5:0.65\").room(0.8).orbit(2)\n    .gain(0.9)\n)"
+}

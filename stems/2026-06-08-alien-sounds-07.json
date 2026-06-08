@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-alien-sounds-07",
+  "title": "Gravity Well",
+  "prompt": "alien sounds",
+  "batch": "2026-06-08-alien-sounds",
+  "description": "An FM bass voice that slides from subterranean reese growl up into shrieking full-spectrum highs as its pitch envelope accelerates and the FM index swells. Wet delay tails and a deep room let each note smear into the next like signals bending around a gravity well.",
+  "meta": {
+    "bpm": 124,
+    "genre": "fm bass",
+    "mood": "menacing",
+    "key": "atonal",
+    "instruments": ["fm reese bass"],
+    "energy": 4
+  },
+  "code": "setcpm(124/4)\nstack(\n  note(\"<c1 c1 [c1 eb1] g0 c1 [g0 bb0] f1 <eb1 c2>>/2\").s(\"sine\")\n    .fm(sine.slow(19).range(2, 13)).fmh(\"<1 1.5 0.5 2 1>/4\")\n    .penv(\"<0 7 24 -7 36 -12>/8\").pattack(0.004).pdecay(sine.slow(11).range(0.06, 0.4))\n    .accelerate(saw.slow(23).range(-0.4, 0.6))\n    .lpf(sine.slow(32).range(180, 5200)).resonance(15).ftype(\"ladder\")\n    .lpenv(sine.slow(13).range(1, 6)).lpattack(0.005).lpdecay(0.18)\n    .vib(\"<3 5 7>/8\").vibmod(sine.slow(17).range(0.1, 1.2))\n    .attack(0.005).decay(0.22).sustain(0.55).release(0.08)\n    .shape(sine.slow(29).range(0.15, 0.5))\n    .pan(sine.slow(7).range(0.2, 0.8))\n    .off(3/16, x => x.add(note(12)).gain(0.3).pan(0.75).fm(8))\n    .delay(\"0.6:0.375:0.72\").room(sine.slow(24).range(0.4, 0.9))\n    .gain(0.85)\n)",
+  "createdAt": "2026-06-08T21:29:59Z"
+}

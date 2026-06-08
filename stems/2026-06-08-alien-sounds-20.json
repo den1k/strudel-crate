@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-alien-sounds-20",
+  "title": "Ascension Shriek",
+  "prompt": "alien sounds",
+  "batch": "2026-06-08-alien-sounds",
+  "description": "A wet FM riser that hangs high in the register, its FM index and harmonicity boiling while a pitch envelope and accelerating glide drag each note steeply upward into a noise-flecked scream. Over 16 cycles the band-pass sweep climbs, the glide steepens, and noise blooms before the loop resets.",
+  "meta": {
+    "bpm": 124,
+    "genre": "fm noise riser",
+    "mood": "uneasy",
+    "key": "atonal",
+    "instruments": ["fm shriek riser"],
+    "energy": 4
+  },
+  "code": "setcpm(124/4)\nstack(\n  note(\"<a4 c5 <e5 a5>>/2\").s(\"sine\")\n    .fm(sine.slow(13).range(3, 16)).fmh(\"<1 2 1.5 3>/4\")\n    .penv(saw.slow(32).range(8, 30)).pattack(0.001).pdecay(sine.slow(16).range(0.4, 0.12))\n    .accelerate(saw.slow(16).range(0.3, 2.5))\n    .vib(\"<5 7 11>/8\").vibmod(sine.slow(7).range(0.3, 1.8))\n    .noise(sine.slow(24).range(0.02, 0.3))\n    .bpf(saw.slow(16).range(700, 6500)).resonance(sine.slow(11).range(8, 18))\n    .attack(0.01).decay(0.3).sustain(0.6).release(0.2)\n    .pan(sine.slow(9).range(0.2, 0.8))\n    .off(1/6, x => x.add(note(12)).gain(0.3).speed(1.5))\n    .delay(\"0.6:0.375:0.72\").room(0.8).gain(0.7)\n)",
+  "createdAt": "2026-06-08T21:29:59Z"
+}

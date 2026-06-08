@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-alien-sounds-27",
+  "title": "Chitin Transmission",
+  "prompt": "alien sounds",
+  "batch": "2026-06-08-alien-sounds",
+  "description": "A single insect sample chopped and striated into a granular swarm that crawls across the stereo field, lurching between forward and reversed playback at half and double speed. Over 24 cycles a band-pass sweep, crush degradation and a slow pan LFO morph it from a tight broken chitter into a wide, hollow alien broadcast.",
+  "meta": {
+    "bpm": 112,
+    "genre": "granular sample mangle",
+    "mood": "broken, alien, restless",
+    "key": "atonal",
+    "instruments": ["mangled insect sample"],
+    "energy": 3
+  },
+  "code": "setcpm(112/4)\nstack(\n  s(\"insect*2\").n(\"<0 1 2 1>/2\")\n    .chop(\"<8 16 12 32>/8\").striate(\"<1 2 4>/6\")\n    .speed(\"<1 -1 0.5 -0.5 2>/2\")\n    .bpf(sine.slow(24).range(350, 4200)).resonance(sine.slow(13).range(6, 18))\n    .crush(\"<16 8 6 10>/16\").coarse(\"<1 1 2 4>/4\")\n    .shape(saw.slow(32).range(0.1, 0.45))\n    .pan(sine.slow(7).range(0.1, 0.9))\n    .sometimesBy(0.2, x => x.speed(-2))\n    .off(0.125, x => x.speed(-1).bpf(2600).gain(0.35).pan(0.2))\n    .delay(\"0.4:0.333:0.6\").room(sine.slow(16).range(0.2, 0.8))\n    .gain(0.85)\n)\n",
+  "createdAt": "2026-06-08T21:29:59Z"
+}

@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-alien-sounds-05",
+  "title": "Throat of the Hull",
+  "prompt": "alien sounds",
+  "batch": "2026-06-08-alien-sounds",
+  "description": "A screaming reese bass in the low register: detuned sawtooth layers beat against each other while a deep FM index and ladder-filter envelope claw the timbre open into a metallic shriek. Over 24 cycles the fm depth, vowel formant and stereo-drifting pan LFOs all travel on different clocks, so the voice slowly mutates from a growl into an alien scream and back.",
+  "meta": {
+    "bpm": 124,
+    "genre": "reese bass",
+    "mood": "menacing",
+    "key": "F minor",
+    "instruments": ["detuned reese bass"],
+    "energy": 4
+  },
+  "code": "setcpm(124/4)\nstack(\n  note(\"<f1 f1 ab1 <c2 eb1>>*2\").s(\"sawtooth\")\n    .detune(sine.slow(11).range(0.08, 0.4))\n    .fm(sine.slow(24).range(1.5, 11)).fmh(\"<1 0.5 1.5 2>/8\")\n    .vowel(\"<a e o u>/6\")\n    .lpf(sine.slow(32).range(180, 3400)).resonance(17).ftype(\"ladder\")\n    .lpenv(\"<2 4 6>/8\").lpattack(0.01).lpdecay(0.18)\n    .vib(\"<3 5 7>/8\").vibmod(sine.slow(13).range(0.1, 1.2))\n    .shape(sine.slow(19).range(0.2, 0.55)).crush(\"<16 16 8 6>/16\")\n    .attack(0.005).decay(0.22).sustain(0.55).release(0.08)\n    .pan(sine.slow(7).range(0.12, 0.88))\n    .jux(rev)\n    .off(0.01, x => x.add(note(0.12)).gain(0.4).pan(sine.slow(17).range(0.85, 0.15)))\n    .delay(\"0.4:0.375:0.6\").room(0.4)\n    .gain(0.82)\n)",
+  "createdAt": "2026-06-08T21:29:59Z"
+}

@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-alien-sounds-22",
+  "title": "Decaying Transmission",
+  "prompt": "alien sounds",
+  "batch": "2026-06-08-alien-sounds",
+  "description": "A detuned sawtooth swarm climbs from sub-bass murk to a screaming full-spectrum riser while a degradation arc ramps distortion and pitch-mangling squiz, so a clean alien drone slowly corrodes into a broken, glitching transmission before resetting. Filter, drive and squiz all travel on prime-ish clocks so the corrosion never repeats the same way.",
+  "meta": {
+    "bpm": 120,
+    "genre": "noise riser",
+    "mood": "broken, menacing",
+    "key": "atonal",
+    "instruments": ["detuned sawtooth swarm"],
+    "energy": 4
+  },
+  "code": "setcpm(120/4)\nstack(\n  note(\"<c1 c1 g0 c2>/2\").s(\"sawtooth\")\n    .add(note(saw.slow(24).range(0, 36)))\n    .detune(sine.slow(13).range(0.1, 0.9))\n    .off(0.011, x => x.add(note(0.2)).gain(0.5))\n    .off(0.019, x => x.add(note(-0.3)).gain(0.5))\n    .lpf(saw.slow(16).range(180, 9000)).resonance(sine.slow(11).range(8, 19)).ftype(\"ladder\")\n    .lpenv(sine.slow(8).range(1, 5)).lpattack(0.01).lpdecay(0.2)\n    .distort(sine.slow(32).range(0, 6).mul(saw.slow(16).range(0.2, 1)))\n    .squiz(\"<1 1 2 4>/8\".mul(saw.slow(16).range(1, 2)))\n    .crush(saw.slow(16).range(16, 5))\n    .vib(sine.slow(7).range(2, 9)).vibmod(sine.slow(17).range(0.1, 1.2))\n    .pan(sine.slow(9).range(0.2, 0.8))\n    .room(0.4).delay(\"0.4:0.375:0.6\")\n    .attack(0.02).release(0.1)\n    .gain(0.8)\n)\n",
+  "createdAt": "2026-06-08T21:29:59Z"
+}

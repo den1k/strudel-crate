@@ -1,0 +1,19 @@
+{
+  "id": "2026-06-08-alien-sounds-30",
+  "title": "Cavern Drift",
+  "prompt": "alien sounds",
+  "batch": "2026-06-08-alien-sounds",
+  "description": "A single 'space' sample shattered into granular shards by chop and striate, pitched into the cavern with negative speed and low playback rate. The grain count, sample rate crush and band-pass all crawl on prime-numbered LFOs while pan LFOs and jux smear the debris across a wide reverberant field.",
+  "meta": {
+    "bpm": 96,
+    "genre": "granular sample mangle",
+    "mood": "cavernous",
+    "key": "atonal",
+    "instruments": [
+      "mangled space sample"
+    ],
+    "energy": 2
+  },
+  "createdAt": "2026-06-08T21:29:59Z",
+  "code": "setcpm(96/4)\nstack(\n  s(\"space\").n(\"<0 2 1 3>/4\")\n    .chop(\"<8 16 12 24>/8\").striate(\"<2 4 3>/16\")\n    .speed(\"<0.5 -0.5 0.25 -0.75>/4\").cut(1)\n    .coarse(sine.slow(23).range(1, 8))\n    .crush(\"<16 10 7>/16\")\n    .bpf(sine.slow(17).range(120, 1400)).resonance(15).ftype(\"ladder\")\n    .lpf(sine.slow(31).range(400, 2200))\n    .pan(sine.slow(7).range(0.08, 0.92))\n    .squiz(perlin.slow(13).range(0, 2))\n    .sometimesBy(0.18, x => x.speed(-1))\n    .jux(rev)\n    .delay(\"0.55:0.5:0.78\").room(0.9).orbit(2)\n    .gain(0.8)\n)"
+}

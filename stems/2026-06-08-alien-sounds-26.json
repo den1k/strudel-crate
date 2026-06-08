@@ -1,0 +1,19 @@
+{
+  "id": "2026-06-08-alien-sounds-26",
+  "title": "Chrome Carrier Choir",
+  "prompt": "alien sounds",
+  "batch": "2026-06-08-alien-sounds",
+  "description": "A vowel formant layered over a metallic FM carrier, sung by something that isn't human. Pitch-envelope swoops drag each utterance up and down across the full register while vowels cycle and the FM index climbs, so the voice morphs from a low chrome groan into a piercing alien shriek over a 32-cycle pass.",
+  "meta": {
+    "bpm": 116,
+    "genre": "formant fm lead",
+    "mood": "uncanny",
+    "key": "atonal",
+    "instruments": [
+      "formant fm voice"
+    ],
+    "energy": 4
+  },
+  "code": "setcpm(116/4)\nstack(\n  note(\"<c2 g3 [eb4 c3] <a4 f2>>/2\").s(\"fm\")\n    .fm(sine.slow(24).range(2, 13)).fmh(\"<1 1.5 3.5 0.5>/4\")\n    .vowel(\"<a e i o u o e>/3\")\n    .penv(\"<12 -7 19 -12>/8\").pattack(0.02).pdecay(0.4).pcurve(1)\n    .vib(\"<5 7 11>/8\").vibmod(sine.slow(13).range(0.3, 2.2))\n    .bpf(sine.slow(17).range(350, 4200)).resonance(16).ftype(\"ladder\")\n    .crush(\"<16 8 6 10>/16\").shape(0.3)\n    .pan(sine.slow(7).range(0.12, 0.88))\n    .sometimesBy(0.15, x => x.speed(-1))\n    .off(1/6, x => x.add(note(7)).vowel(\"i\").gain(0.3).pan(0.2))\n    .delay(\"0.45:0.375:0.65\").room(0.6).gain(0.72)\n)",
+  "createdAt": "2026-06-08T21:29:59Z"
+}

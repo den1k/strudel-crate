@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-alien-sounds-19",
+  "title": "Screaming Void",
+  "prompt": "alien sounds",
+  "batch": "2026-06-08-alien-sounds",
+  "description": "A doubled white-noise bed sculpted by a resonant filter that crawls across the entire spectrum, screaming as the resonance peaks and feedback delay smears the upper register. Over 32 cycles the band sweeps low to high while resonance, drive and panning drift on prime-numbered clocks so the wail never settles.",
+  "meta": {
+    "bpm": 120,
+    "genre": "noise riser",
+    "mood": "screaming",
+    "key": "atonal",
+    "instruments": ["resonant white-noise scream"],
+    "energy": 5
+  },
+  "code": "setcpm(120/4)\nstack(\n  s(\"white*2\")\n    .bpf(saw.slow(32).range(120, 9000)).resonance(sine.slow(13).range(14, 28)).ftype(\"ladder\")\n    .lpf(sine.slow(24).range(2000, 12000)).lpenv(\"<2 5 8>/8\").lpattack(0.02).lpdecay(0.3)\n    .hpf(sine.slow(29).range(80, 1200))\n    .shape(sine.slow(11).range(0.2, 0.6)).crush(\"<16 10 6 12>/8\")\n    .gain(sine.slow(7).range(0.5, 0.95))\n    .pan(sine.slow(17).range(0.1, 0.9))\n    .attack(0.05).release(0.3)\n    .sometimesBy(0.2, x => x.speed(-1))\n    .delay(\"0.5:0.375:0.72\").room(0.6).orbit(2)\n    .gain(0.85)\n)\n",
+  "createdAt": "2026-06-08T21:29:59Z"
+}

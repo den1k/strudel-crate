@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-alien-sounds-24",
+  "title": "Liquid Vowel Drifter",
+  "prompt": "alien sounds",
+  "batch": "2026-06-08-alien-sounds",
+  "description": "A high-register formant voice that morphs through shifting vowels while a deep, slow vibrato and band-pass sweep give it a liquid, watery glide. Stereo pan LFOs and a reversed jux smear it across the field so it never sits still over its 24-cycle pass.",
+  "meta": {
+    "bpm": 120,
+    "genre": "formant lead",
+    "mood": "liquid",
+    "key": "atonal",
+    "instruments": ["formant vowel synth"],
+    "energy": 2
+  },
+  "createdAt": "2026-06-08T21:29:59Z",
+  "code": "setcpm(120/4)\nstack(\n  note(\"<c5 [e5 g5] a5 <d5 f5>>/2\").s(\"sawtooth\")\n    .vowel(\"<a e i o u y>/3\")\n    .vib(\"<3 5 7>/8\").vibmod(sine.slow(13).range(0.3, 2.2))\n    .bpf(sine.slow(24).range(800, 4800)).resonance(sine.slow(17).range(8, 19))\n    .lpenv(2).lpattack(0.02).lpdecay(0.3)\n    .pan(sine.slow(7).range(0.1, 0.9))\n    .attack(0.04).decay(0.25).sustain(0.6).release(0.3)\n    .shape(0.2)\n    .sometimesBy(0.18, x => x.speed(-1))\n    .jux(rev)\n    .off(0.125, x => x.add(note(12)).gain(0.3).vowel(\"<i o>/2\"))\n    .delay(\"0.4:0.375:0.6\").room(0.8).gain(0.7)\n)"
+}

@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-alien-sounds-25",
+  "title": "Hollow Vowel Drift",
+  "prompt": "alien sounds",
+  "batch": "2026-06-08-alien-sounds",
+  "description": "A hollow formant voice in the mid register that cycles through vowels while a band-pass sweep and slow vibrato breathe across the loop. Occasional reversed and half-speed notes warp the phrasing so the chant never settles, drifting like an alien throat-singer over a 24-cycle arc.",
+  "meta": {
+    "bpm": 116,
+    "genre": "formant lead",
+    "mood": "hollow",
+    "key": "atonal",
+    "instruments": ["formant vowel synth"],
+    "energy": 3
+  },
+  "createdAt": "2026-06-08T21:29:59Z",
+  "code": "setcpm(116/4)\nstack(\n  note(\"<c3 [c3 eb3] g3 <bb3 f3>>/2\").s(\"sawtooth\")\n    .vowel(\"<a o u e i o>/3\")\n    .vib(\"<3 5 7>/8\").vibmod(sine.slow(13).range(0.3, 1.8))\n    .bpf(sine.slow(24).range(350, 2600)).resonance(sine.slow(17).range(8, 18))\n    .crush(\"<16 12 8 10>/16\").coarse(\"<1 1 2 1>/4\")\n    .pan(sine.slow(7).range(0.2, 0.8))\n    .sometimesBy(0.18, x => x.speed(-1))\n    .sometimesBy(0.12, x => x.speed(0.5))\n    .attack(0.02).decay(0.2).sustain(0.7).release(0.2)\n    .off(1/6, x => x.add(note(7)).gain(0.3).vowel(\"i\"))\n    .delay(\"0.4:0.5:0.6\").room(sine.slow(32).range(0.4, 0.85)).gain(0.7)\n)"
+}

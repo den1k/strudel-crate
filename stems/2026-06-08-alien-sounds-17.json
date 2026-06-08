@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-alien-sounds-17",
+  "title": "Corroding Beacon",
+  "prompt": "alien sounds",
+  "batch": "2026-06-08-alien-sounds",
+  "description": "A single high, metallic percussion hit sculpted from a struck-metal source layered with a sliver of white noise, fired in a shifting tick pattern. Over 16 cycles it travels from a clean glassy ping into a bit-crushed, downsampled corrosion as the degradation LFOs climb, while a band-pass sweep and panning keep the transient alive.",
+  "meta": {
+    "bpm": 124,
+    "genre": "designed percussion",
+    "mood": "corroded",
+    "key": "atonal",
+    "instruments": ["sculpted metallic hit"],
+    "energy": 4
+  },
+  "code": "setcpm(124/4)\nstack(\n  s(\"metal*4\").n(\"<0 2 1 3>/2\")\n    .penv(\"<18 24 30>/8\").pattack(0.001).pdecay(0.05)\n    .speed(sine.slow(13).range(1.4, 2.6))\n    .crush(saw.slow(16).range(16, 4))\n    .coarse(\"<1 1 2 4 8>/8\")\n    .shape(sine.slow(11).range(0.1, 0.55))\n    .bpf(sine.slow(24).range(1200, 6500)).resonance(15)\n    .hpf(800)\n    .pan(sine.slow(7).range(0.1, 0.9))\n    .sometimesBy(0.15, x => x.speed(-1))\n    .decay(0.12).sustain(0).release(0.04)\n    .delay(\"0.35:0.1875:0.55\").room(0.4).orbit(2)\n    .gain(0.9)\n    .off(1/8, x => x.add(note(7)).gain(0.3).crush(6))\n  ,\n  s(\"white*4\").mask(\"<1 0 1 1>/2\")\n    .penv(36).pattack(0.001).pdecay(0.03)\n    .hpf(sine.slow(17).range(3000, 9000)).resonance(8)\n    .coarse(sine.slow(16).range(1, 10))\n    .decay(0.04).sustain(0).release(0.02)\n    .pan(sine.slow(9).range(0.85, 0.15))\n    .gain(0.35)\n)",
+  "createdAt": "2026-06-08T21:29:59Z"
+}

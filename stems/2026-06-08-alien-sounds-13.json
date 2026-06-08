@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-alien-sounds-13",
+  "title": "Glossolalia Drift",
+  "prompt": "alien sounds",
+  "batch": "2026-06-08-alien-sounds",
+  "description": "A liquid formant pad that mouths slow alien vowels in the mid register, its band-pass throat sweeping while two prime-period pan LFOs drift the voice across the stereo field. Over 32 cycles the vowel sequence, vibrato depth, and filter all glide so the breath never lands in the same place twice.",
+  "meta": {
+    "bpm": 110,
+    "genre": "formant pad",
+    "mood": "liquid",
+    "key": "C minor",
+    "instruments": ["formant vowel pad"],
+    "energy": 2
+  },
+  "code": "setcpm(110/4)\nstack(\n  note(\"<c3 [eb3 g3] f3 <g3 bb3>>/2\").s(\"sawtooth\")\n    .vowel(\"<a e i o u e>/3\")\n    .vib(\"<2 3 5>/8\").vibmod(sine.slow(13).range(0.15, 1.1))\n    .bpf(sine.slow(24).range(350, 2600)).resonance(sine.slow(17).range(6, 16))\n    .attack(0.8).decay(0.4).sustain(0.7).release(1.2)\n    .shape(sine.slow(29).range(0.1, 0.35))\n    .pan(sine.slow(7).range(0.1, 0.9))\n    .off(0.02, x => x.add(note(0.12)).pan(tri.slow(11).range(0.85, 0.15)).gain(0.5))\n    .sometimesBy(0.12, x => x.speed(-1))\n    .delay(\"0.45:0.5:0.6\").room(sine.slow(32).range(0.5, 0.9))\n    .gain(0.7)\n)",
+  "createdAt": "2026-06-08T21:29:59Z"
+}

@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-alien-sounds-18",
+  "title": "Hull Breach Knock",
+  "prompt": "alien sounds",
+  "batch": "2026-06-08-alien-sounds",
+  "description": "A single low designed percussion hit built from a short-decay square voice and a snapping lowpass envelope, gated into broken euclidean stutters by ply and a glitching mask. Over 24 cycles the filter env opens, the pitch envelope deepens, and the stutter rate mutates so the hit drifts from a dry knock to a malfunctioning metallic clatter.",
+  "meta": {
+    "bpm": 116,
+    "genre": "designed percussion",
+    "mood": "broken, mechanical, ominous",
+    "key": "atonal",
+    "instruments": ["subtractive square hit"],
+    "energy": 4
+  },
+  "createdAt": "2026-06-08T21:29:59Z",
+  "code": "setcpm(116/4)\nstack(\n  note(\"<g1 g1 [g1 ~] eb1>(<3 5 3 7>,8)\").s(\"square\")\n    .ply(\"<1 1 2 <1 3>>/4\")\n    .penv(sine.slow(24).range(-8, -22)).pattack(0.001).pdecay(\"<0.04 0.06 0.03>/8\")\n    .lpf(sine.slow(19).range(180, 1600)).resonance(sine.slow(13).range(8, 18)).ftype(\"ladder\")\n    .lpenv(sine.slow(24).range(2, 7)).lpattack(0.002).lpdecay(\"<0.05 0.09 0.04>/4\")\n    .attack(0.001).decay(0.12).sustain(0).release(0.02)\n    .shape(sine.slow(17).range(0.2, 0.55)).crush(\"<16 8 6 10>/8\")\n    .mask(\"<1 1 1 [1 0 1 1]>/2\")\n    .sometimesBy(0.18, x => x.speed(-1).coarse(4))\n    .off(0.02, x => x.add(note(0.15)).gain(0.3).pan(0.7).hpf(400))\n    .pan(sine.slow(11).range(0.3, 0.7))\n    .room(0.22).delay(\"0.3:0.1875:0.5\").orbit(2)\n    .gain(0.95)\n)"
+}

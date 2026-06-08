@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-alien-sounds-11",
+  "title": "Hollow Drifter",
+  "prompt": "alien sounds",
+  "batch": "2026-06-08-alien-sounds",
+  "description": "A detuned supersaw lead that drifts up through the full register while a slow filter journey opens from sub-bass murk to glassy highs. Layered jux/off detune copies and a cycling vowel give it a hollow, breathing alien vocal character that never settles.",
+  "meta": {
+    "bpm": 110,
+    "genre": "supersaw lead",
+    "mood": "hollow",
+    "key": "atonal",
+    "instruments": ["detuned supersaw lead"],
+    "energy": 3
+  },
+  "code": "setcpm(110/4)\nstack(\n  note(\"<c2 g3 eb4 [bb4 f5] c3 g4>/2\").s(\"supersaw\")\n    .detune(sine.slow(19).range(0.1, 0.9)).unison(5)\n    .vowel(\"<a o u e>/3\")\n    .vib(\"<3 5 7>/8\").vibmod(sine.slow(13).range(0.1, 1.2))\n    .lpf(sine.slow(32).range(120, 7000)).resonance(sine.slow(24).range(6, 17)).ftype(\"ladder\")\n    .lpenv(4).lpattack(0.01).lpdecay(0.25)\n    .phaser(sine.slow(11).range(0.2, 1.1)).phaserdepth(0.7)\n    .attack(0.02).decay(0.3).sustain(0.6).release(0.2)\n    .shape(0.25)\n    .jux(rev)\n    .off(0.02, x => x.add(note(0.12)).gain(0.4).pan(0.7))\n    .pan(sine.slow(7).range(0.2, 0.8))\n    .sometimesBy(0.12, x => x.speed(-1))\n    .delay(\"0.4:0.375:0.6\").room(0.6).gain(0.8)\n)",
+  "createdAt": "2026-06-08T21:29:59Z"
+}

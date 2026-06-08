@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-alien-sounds-09",
+  "title": "Chrome Larynx",
+  "prompt": "alien sounds",
+  "batch": "2026-06-08-alien-sounds",
+  "description": "An FM lead in the mid register with a clangorous metallic core: the FM index swells and the harmonicity ratio steps through inharmonic values so the timbre keeps re-tuning itself. A stereo-drifting pan LFO and a jux-reversed echo throw the voice across the field while a slow band-pass sweep and cycling vowel formants morph it from a hollow chime into a screaming metallic creature over a 16-cycle arc.",
+  "meta": {
+    "bpm": 124,
+    "genre": "fm metallic lead",
+    "mood": "uneasy, otherworldly",
+    "key": "atonal",
+    "instruments": ["fm metallic lead"],
+    "energy": 3
+  },
+  "createdAt": "2026-06-08T21:29:59Z",
+  "code": "setcpm(124/4)\nstack(\n  note(\"<c4 [eb4 g4] bb3 <f4 a4>>/2\").s(\"sine\")\n    .fm(sine.slow(16).range(2, 11)).fmh(\"<1.41 2.76 0.5 3.33>/8\")\n    .vowel(\"<a e o i>/4\")\n    .vib(\"<5 7 11>/8\").vibmod(tri.slow(13).range(0.2, 1.3))\n    .bpf(sine.slow(24).range(500, 3600)).resonance(16)\n    .crush(\"<16 10 8 12>/16\").shape(0.3)\n    .pan(sine.slow(7).range(0.1, 0.9))\n    .jux(rev)\n    .off(1/8, x => x.add(note(12)).gain(0.3).pan(saw.slow(9).range(0.85, 0.15)))\n    .attack(0.01).decay(0.2).sustain(0.6).release(0.12)\n    .delay(\"0.4:0.375:0.6\").room(0.6).gain(0.78)\n)"
+}

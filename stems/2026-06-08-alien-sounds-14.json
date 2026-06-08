@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-alien-sounds-14",
+  "title": "Chrome Halo Decay",
+  "prompt": "alien sounds",
+  "batch": "2026-06-08-alien-sounds",
+  "description": "A high, metallic supersaw pad built from a detuned ladder-filtered cluster that swells open then slowly corrodes: crush and coarse ramp up across the loop while resonance and a band-pass sweep give it a singing chrome formant. Over 32 cycles the airy halo degrades into a gritty alien artifact and resets.",
+  "meta": {
+    "bpm": 116,
+    "genre": "supersaw pad",
+    "mood": "metallic",
+    "key": "atonal",
+    "instruments": ["supersaw pad"],
+    "energy": 3
+  },
+  "code": "setcpm(116/4)\nstack(\n  note(\"<a5 [a5 c6] e6 <d6 g6>>/4\").s(\"supersaw\")\n    .detune(sine.slow(19).range(0.2, 0.9)).unison(5)\n    .lpf(sine.slow(32).range(900, 6500)).resonance(sine.slow(23).range(8, 19)).ftype(\"ladder\")\n    .lpenv(sine.slow(17).range(1, 5)).lpattack(0.4).lpdecay(0.9)\n    .bpf(saw.slow(29).range(1800, 7200)).bpq(6)\n    .crush(saw.slow(16).range(16, 5)).coarse(saw.slow(13).range(1, 6))\n    .attack(1.2).decay(0.6).sustain(0.7).release(2.5)\n    .pan(sine.slow(11).range(0.2, 0.8))\n    .off(0.02, x => x.add(note(0.15)).gain(0.35))\n    .room(0.7).delay(\"0.4:0.5:0.6\").gain(0.7)\n)",
+  "createdAt": "2026-06-08T21:29:59Z"
+}
