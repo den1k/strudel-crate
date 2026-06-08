@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-beachy-dance-reggaeton-13",
+  "title": "Sun-Water Shimmer",
+  "prompt": "beachy dance reggaeton",
+  "batch": "2026-06-08-beachy-dance-reggaeton",
+  "description": "A glistening high-register sine/triangle bell-pad that pulses like sunlight scattered on water. Tremolo glisten, slow filter opening, and prime-cycle LFOs on pan, tremolo depth, and HPF create a long-evolving wash that never repeats. An octave-sparkle echo layer and huge reverb lift it weightlessly above the mix.",
+  "meta": {
+    "bpm": 96,
+    "genre": "shimmer pad",
+    "mood": "luminous, weightless, tropical",
+    "key": "C major",
+    "instruments": ["sine bell-pad"],
+    "energy": 2
+  },
+  "code": "setcpm(96/4)\nstack(\n  note(\"<[c5,e5,g5] [d5,f5,a5] [e5,g5,b5] [c5,e5,g5]>/4\").s(\"sine\")\n    .attack(0.8).decay(0.2).sustain(0.9).release(2.0)\n    .hpf(sine.slow(11).range(800, 2800))\n    .lpf(sine.slow(17).range(3200, 9000))\n    .tremolosync(\"<4 8 16>/8\").tremolodepth(sine.slow(13).range(0.2, 0.7))\n    .pan(sine.slow(31).range(0.1, 0.9))\n    .vib(sine.slow(24).range(2, 5)).vibmod(0.15)\n    .off(0.01, x => x.add(note(12.05)).gain(0.35).pan(sine.slow(17).range(0.7, 0.3)))\n    .room(0.95).roomsize(0.9)\n    .delay(\"0.45:0.375:0.65\")\n    .gain(0.85)\n    .postgain(0.8)\n)",
+  "createdAt": "2026-06-08T22:02:47Z"
+}

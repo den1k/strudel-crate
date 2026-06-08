@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-beachy-dance-reggaeton-09",
+  "title": "Tropical Casio Stab Cloud",
+  "prompt": "beachy dance reggaeton",
+  "batch": "2026-06-08-beachy-dance-reggaeton",
+  "description": "A casio keyboard sample mangled beyond recognition — chopped into 16 grains, striated, speed-stepped through forward/reverse/half-time/double-time, and filtered into a plucky tropical stab cloud that the original sample never contained. Three mutually-prime LFO clocks (7, 13, 16 cycles) drive filter drift, stereo pan, and speed steps so the granular cloud breathes and shifts continuously across the 16-cycle morph arc.",
+  "meta": {
+    "bpm": 96,
+    "genre": "granular sample stab",
+    "mood": "tropical, shimmering, sun-drenched",
+    "key": "atonal",
+    "instruments": ["granulated casio stab cloud"],
+    "energy": 3
+  },
+  "createdAt": "2026-06-08T22:02:47Z",
+  "code": "setcpm(96/4)\nstack(\n  s(\"casio*8\")\n    .chop(16)\n    .speed(\"<1 -1 0.5 2 1 -0.5 2 1>/4\")\n    .striate(4)\n    .cut(1)\n    .n(\"<0 1 2 0 1 0 2 1>/8\")\n    .lpf(sine.slow(7).range(400, 4800))\n    .resonance(sine.slow(13).range(3, 14))\n    .pan(sine.slow(16).range(0.1, 0.9))\n    .crush(\"<12 8 10 6>/4\")\n    .coarse(\"<1 2 1 4>/16\")\n    .room(sine.slow(13).range(0.2, 0.65))\n    .delay(\"0.4:0.375:0.55\")\n    .gain(0.85)\n)"
+}

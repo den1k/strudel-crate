@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-beachy-dance-reggaeton-07",
+  "title": "Pan Drum Shimmer",
+  "prompt": "beachy dance reggaeton",
+  "batch": "2026-06-08-beachy-dance-reggaeton",
+  "createdAt": "2026-06-08T22:02:47Z",
+  "description": "A Caribbean steel-pan lead built from FM sine with inharmonic ratios, delivering that hammered-metal ping on a stepped reggaeton riff in the mid-high register. The FM harmonicity morphs across a 5-bar arc while the index rides a slow 16-cycle LFO, the pitch-envelope click shifts on a 13-cycle curve, and a stereo delay + room verb add island shimmer — the sound evolves from bright dry pluck to warm reverberant glow and back.",
+  "meta": {
+    "bpm": 98,
+    "genre": "fm steel-pan lead",
+    "mood": "bright, sunny, bouncy",
+    "key": "D minor",
+    "instruments": ["fm steel-pan lead"],
+    "energy": 4
+  },
+  "code": "setcpm(98/4)\nstack(\n  note(\"<d4 f4 a4 c5> <f4 a4 d5 f5> <a4 c5 e5 a5> <g4 bb4 d5 g5>*2\").s(\"sine\")\n    .fm(sine.slow(16).range(2, 9))\n    .fmh(\"<2.01 3.99 1.5 2.01 3.99>/5\")\n    .penv(sine.slow(13).range(2, 7)).pattack(0.001).pdecay(0.04)\n    .lpf(sine.slow(24).range(1800, 6400)).resonance(6)\n    .attack(0.001).decay(0.18).sustain(0.25).release(0.08)\n    .pan(sine.slow(7).range(0.2, 0.8))\n    .delay(\"0.5:0.375:0.7\").room(0.35)\n    .off(0.5, x => x.add(note(12)).gain(0.28).pan(sine.slow(17).range(0.1, 0.9)))\n    .gain(0.88)\n)"
+}

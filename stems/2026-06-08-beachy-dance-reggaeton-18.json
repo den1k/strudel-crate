@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-beachy-dance-reggaeton-18",
+  "title": "Seasick Sine",
+  "prompt": "beachy dance reggaeton",
+  "batch": "2026-06-08-beachy-dance-reggaeton",
+  "description": "A deep, hollow sine sub that breathes and sways like an anchored buoy in slow swells — long sustained notes drift with a gentle seasick vibrato on a 17-cycle sine, while a ladder low-pass filter exhales on an 11-cycle breath and resonance glimmers on a 31-cycle arc. Faint FM warmth and subtle stepped harmonics keep it alive over 32 cycles without ever losing the round, meditative weight of the pure sub register.",
+  "meta": {
+    "bpm": 100,
+    "genre": "sine sub bass",
+    "mood": "deep, hollow, meditative",
+    "key": "C minor",
+    "instruments": ["hollow sine sub bass"],
+    "energy": 2
+  },
+  "createdAt": "2026-06-08T22:02:47Z",
+  "code": "setcpm(100/4)\nstack(\n  note(\"<c1 eb1 g0 c1>/2\")\n    .s(\"sine\")\n    .vib(\"<2 3>/8\").vibmod(sine.slow(17).range(0.05, 0.4))\n    .fm(sine.slow(31).range(0.1, 0.9)).fmh(\"<1 1 1.01 1>/4\")\n    .lpf(sine.slow(11).range(220, 900)).resonance(sine.slow(31).range(2, 8)).ftype(\"ladder\")\n    .lpenv(sine.slow(13).range(0.5, 2.5)).lpattack(0.04).lpdecay(0.6)\n    .shape(\"<0.08 0.1 0.12 0.08>/8\")\n    .pan(sine.slow(17).range(0.38, 0.62))\n    .attack(0.06).decay(0.4).sustain(0.8).release(0.25)\n    .room(0.18).delay(\"0.08:0.5:0.3\").gain(0.9)\n    .off(0.25, x => x.add(note(12)).gain(0.18).lpf(400))\n)"
+}

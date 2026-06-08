@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-beachy-dance-reggaeton-05",
+  "title": "Eh-Oh-Ay Chop",
+  "prompt": "beachy dance reggaeton",
+  "batch": "2026-06-08-beachy-dance-reggaeton",
+  "description": "A synthetic vocal-chop hook built on a sawtooth with cycling vowels that fake an \"eh-oh-ay\" scat phrase bouncing in a dembow-ish 3+3+2 stab pattern. Over 24 cycles the formant arc travels from open vowels to closed then back, the bandpass sweeps from bright to warm, vibrato deepens and widens, and pan drifts on mutually-prime LFOs — turning a crisp pop chop into a woozy, sun-bleached call-and-response that never fully repeats.",
+  "meta": {
+    "bpm": 96,
+    "genre": "formant vocal chop",
+    "mood": "playful",
+    "key": "A minor",
+    "instruments": ["synthetic vocal formant chop"],
+    "energy": 3
+  },
+  "code": "setcpm(96/4)\nstack(\n  note(\"<[a4 ~ a4 ~] [a4 ~ ~ a4] [a4 a4 ~ ~] [a4 ~ a4 a4]>/2\").s(\"sawtooth\")\n    .vowel(\"<e o a e i o a u>/3\")\n    .vib(\"<4 6 9>/8\").vibmod(sine.slow(13).range(0.2, 1.5))\n    .bpf(sine.slow(17).range(800, 3800)).resonance(14)\n    .lpf(sine.slow(24).range(1200, 5000))\n    .shape(sine.slow(19).range(0.15, 0.48))\n    .pan(sine.slow(7).range(0.18, 0.82))\n    .attack(0.002).decay(0.12).sustain(0.45).release(0.06)\n    .sometimesBy(0.15, x => x.speed(-1))\n    .off(3/16, x => x.add(note(-7)).vowel(\"o\").gain(0.28).pan(sine.slow(11).range(0.3, 0.7)))\n    .delay(\"0.38:0.25:0.5\").room(0.45).gain(0.88)\n)",
+  "createdAt": "2026-06-08T22:02:47Z"
+}

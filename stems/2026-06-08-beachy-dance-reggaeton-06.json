@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-beachy-dance-reggaeton-06",
+  "title": "Mangrove Drop",
+  "prompt": "beachy dance reggaeton",
+  "batch": "2026-06-08-beachy-dance-reggaeton",
+  "description": "A growly detuned Reese bass that breathes and menaces beneath tropical sunshine — two sawtooth layers widen into a seething low-end wall, while mutually-prime LFOs on detune, filter cutoff, resonance, FM index, and tremolo depth ensure the wub never realigns, travelling from a lean verse growl through a grit-heavy drop to a tremolo-gated ratchet finish.",
+  "meta": {
+    "bpm": 98,
+    "genre": "reese bass",
+    "mood": "menacing",
+    "key": "C minor",
+    "instruments": ["detuned sawtooth reese bass"],
+    "energy": 4
+  },
+  "createdAt": "2026-06-08T22:02:47Z",
+  "code": "setcpm(98/4)\nstack(\n  note(\"<c1 c1 g0 c1>*4\").s(\"sawtooth\")\n    .detune(sine.slow(19).range(0.08, 0.38))\n    .fm(sine.slow(11).range(0.5, 6)).fmh(\"<1 1.5 0.5 2>/8\")\n    .off(0.006, x => x.add(note(0.22)).gain(0.45).pan(sine.slow(23).range(0.25, 0.75)))\n    .lpf(sine.slow(17).range(180, 1800)).resonance(sine.slow(13).range(4, 14)).ftype(\"ladder\")\n    .lpenv(\"<2 4 3 6>/16\").lpattack(0.002).lpdecay(0.18)\n    .tremolosync(\"<4 8 4 16>/11\").tremolodepth(sine.slow(29).range(0.1, 0.72))\n    .shape(sine.slow(23).range(0.15, 0.55))\n    .crush(\"<16 12 8 6>/16\")\n    .attack(0.005).decay(0.14).sustain(0.65).release(0.08)\n    .ply(\"<1 1 2 1>/16\")\n    .sometimesBy(0.1, x => x.speed(-1))\n    .pan(sine.slow(7).range(0.3, 0.7))\n    .room(0.12).delay(\"0.3:0.19:0.45\")\n    .postgain(1.05).gain(0.9)\n)"
+}

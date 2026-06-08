@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-beachy-dance-reggaeton-04",
+  "title": "Tide Breath Supersaw Pad",
+  "prompt": "beachy dance reggaeton",
+  "batch": "2026-06-08-beachy-dance-reggaeton",
+  "description": "A lush detuned supersaw chord pad rooted in C minor/Bb that opens and closes like the tide — a slow ladder-filter sweep breathes with the ocean while mutually-prime LFOs (11, 13, 17, 24, 31, 32 cycles) on cutoff, detune, pan, and reverb depth ensure the wash never settles. Big cavernous room and slapback delay drench it in beachside space.",
+  "meta": {
+    "bpm": 98,
+    "genre": "supersaw pad",
+    "mood": "dreamy, warm, tropical",
+    "key": "C minor",
+    "instruments": ["detuned supersaw pad"],
+    "energy": 2
+  },
+  "code": "setcpm(98/4)\nstack(\n  note(\"<[c3,eb3,g3] [bb2,d3,f3]>/4\").s(\"supersaw\")\n    .detune(sine.slow(24).range(0.1, 0.4))\n    .lpf(sine.slow(32).range(300, 3800)).resonance(sine.slow(17).range(2, 8)).ftype(\"ladder\")\n    .pan(sine.slow(11).range(0.2, 0.8))\n    .attack(2).decay(0.5).sustain(0.85).release(3)\n    .off(0.005, x => x.add(note(0.18)).gain(0.5).pan(sine.slow(13).range(0.7, 0.3)))\n    .jux(rev)\n    .room(sine.slow(31).range(0.55, 0.95))\n    .delay(sine.slow(11).range(0.15, 0.45)).delaytime(0.375).delayfeedback(0.55)\n    .gain(0.82)\n)",
+  "createdAt": "2026-06-08T22:02:47Z"
+}

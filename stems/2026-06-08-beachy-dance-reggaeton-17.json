@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-beachy-dance-reggaeton-17",
+  "title": "Tropic Stab",
+  "prompt": "beachy dance reggaeton",
+  "batch": "2026-06-08-beachy-dance-reggaeton",
+  "description": "A bright supersaw chord-stab lead locked to an offbeat dembow stab pattern — each hit bites with a fast filter envelope that opens wider across the loop as the ladder-filter cutoff climbs on a slow 24-cycle arc. Detune drifts lazily on a 13-cycle sine for supersaw thickness, while pan swings on a mutually-prime 11-cycle LFO and dotted-eighth delay throws notes into the festival crowd. Over 28 cycles the stab morphs from tight and punchy to wide and shimmering before cycling back.",
+  "meta": {
+    "bpm": 100,
+    "genre": "supersaw stab lead",
+    "mood": "bright, punchy, tropical",
+    "key": "C minor",
+    "instruments": ["supersaw stab lead"],
+    "energy": 4
+  },
+  "createdAt": "2026-06-08T22:02:47Z",
+  "code": "setcpm(100/4)\nstack(\n  note(\"<[~ eb4] [~ g4] [~ eb4] [~ [g4 bb4]]>/2\")\n    .s(\"supersaw\")\n    .detune(sine.slow(13).range(0.2, 0.9).add(\"<0 0.3 0 0.5 0 0.2>/7\"))\n    .lpf(sine.slow(24).range(600, 4800)).resonance(sine.slow(11).range(3, 11)).ftype(\"ladder\")\n    .lpenv(sine.slow(17).range(3, 8)).lpattack(0.01).lpdecay(0.2)\n    .attack(0.005).decay(0.18).sustain(0.3).release(0.08)\n    .pan(sine.slow(11).range(0.25, 0.75))\n    .shape(sine.slow(32).range(0.05, 0.28))\n    .delay(\"0.5:0.375:0.6\")\n    .room(sine.slow(17).range(0.1, 0.35))\n    .off(0.375, x => x.add(note(7)).gain(0.28).pan(sine.slow(13).range(0.7, 0.3)))\n    .gain(0.92)\n)"
+}

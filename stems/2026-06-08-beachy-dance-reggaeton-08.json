@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-beachy-dance-reggaeton-08",
+  "title": "Sea-Spray Wave Wash",
+  "prompt": "beachy dance reggaeton",
+  "batch": "2026-06-08-beachy-dance-reggaeton",
+  "description": "A full-spectrum white-noise riser that breathes like an ocean wave — a slow filter surge rises from 180 Hz to 7 kHz with a resonance peak, while a counter-sweep on HPF pulls the bottom back out; LFOs on mutually-prime periods (8, 13, 17, 24, 32 cycles) keep the pan drift, resonance shimmer, and wet tail constantly shifting so the wash never sits still. A faint pink-noise sub-blend adds warmth and body at low gain.",
+  "meta": {
+    "bpm": 96,
+    "genre": "noise riser",
+    "mood": "surging, oceanic, euphoric",
+    "key": "atonal",
+    "instruments": ["white noise wave riser"],
+    "energy": 3
+  },
+  "createdAt": "2026-06-08T22:02:47Z",
+  "code": "setcpm(96/4)\nstack(\n  s(\"white*2\")\n    .lpf(saw.slow(8).range(180, 7000))\n    .hpf(saw.slow(17).range(80, 1200))\n    .resonance(sine.slow(13).range(4, 18))\n    .pan(sine.slow(24).range(0.1, 0.9))\n    .room(sine.slow(32).range(0.55, 0.95))\n    .gain(0.85),\n  s(\"pink\")\n    .lpf(tri.slow(13).range(300, 2400))\n    .resonance(sine.slow(17).range(2, 8))\n    .pan(sine.slow(8).range(0.3, 0.7))\n    .room(0.7)\n    .gain(0.35)\n)"
+}

@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-beachy-dance-reggaeton-23",
+  "title": "Driftwood Aether",
+  "prompt": "beachy dance reggaeton",
+  "batch": "2026-06-08-beachy-dance-reggaeton",
+  "description": "A mangled 'space' dirt sample stretched into a drifting ambient beach atmosphere — wind-like, oceanic, airy. Over 24 cycles the filter opens and closes on a slow tide, reverse chops tumble in and out on prime-period LFOs, and the stereo pan drifts like a warm coastal breeze.",
+  "meta": {
+    "bpm": 95,
+    "genre": "ambient sample texture",
+    "mood": "airy, drifting, oceanic",
+    "key": "atonal",
+    "instruments": ["mangled space sample", "granular beach atmosphere"],
+    "energy": 1
+  },
+  "code": "setcpm(95/4)\nstack(\n  s(\"space\").n(\"<0 1 2 3>/11\")\n    .chop(8)\n    .speed(\"<0.5 -0.5 0.25 -0.25 0.5>/4\")\n    .striate(4)\n    .lpf(sine.slow(17).range(280, 2800))\n    .resonance(sine.slow(13).range(2, 9))\n    .pan(sine.slow(11).range(0.05, 0.95))\n    .room(0.92).roomsize(0.98)\n    .delay(\"0.6:0.45:0.75\")\n    .gain(sine.slow(24).range(0.55, 0.85))\n    .hpf(120)\n    .orbit(1)\n)",
+  "createdAt": "2026-06-08T22:02:47Z"
+}

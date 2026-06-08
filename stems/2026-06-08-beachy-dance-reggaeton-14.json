@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-beachy-dance-reggaeton-14",
+  "title": "Liquid Talkbox Solo",
+  "prompt": "beachy dance reggaeton",
+  "batch": "2026-06-08-beachy-dance-reggaeton",
+  "description": "A sawtooth talkbox-style formant lead that glides through vowel shapes on a slow clock, singing legato melodies in a mid register. Vibrato warble, band-pass sweep, and a wandering pan LFO ride mutually-prime clocks so the loop stays alive across a 24-cycle arc — like a human voice filtered through a talk-box solo.",
+  "meta": {
+    "bpm": 95,
+    "genre": "talkbox lead",
+    "mood": "liquid",
+    "key": "C major",
+    "instruments": ["sawtooth talkbox formant lead"],
+    "energy": 3
+  },
+  "code": "setcpm(95/4)\nstack(\n  note(\"<c4 e4 g4 <a4 f4>>/2\").s(\"sawtooth\")\n    .vowel(\"<a o u e i>/4\")\n    .vib(3.5).vibmod(sine.slow(13).range(0.3, 1.8))\n    .bpf(sine.slow(17).range(500, 3400)).resonance(sine.slow(24).range(6, 16))\n    .lpf(sine.slow(7).range(1800, 5200))\n    .pan(sine.slow(11).range(0.2, 0.8))\n    .attack(0.12).decay(0.3).sustain(0.75).release(0.4)\n    .shape(0.2)\n    .off(0.01, x => x.add(note(0.12)).gain(0.35).pan(0.7))\n    .delay(\"0.45:0.375:0.65\").room(0.6)\n    .gain(0.78)\n)",
+  "createdAt": "2026-06-08T22:02:47Z"
+}

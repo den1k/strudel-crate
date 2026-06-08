@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-beachy-dance-reggaeton-16",
+  "title": "Mango Wobble",
+  "prompt": "beachy dance reggaeton",
+  "batch": "2026-06-08-beachy-dance-reggaeton",
+  "description": "A rubbery FM sine bass whose timbre bounces between round and growly as the fm index travels on a slow 24-cycle LFO — tropical, playful, and locked to the dembow pocket. Over 28 cycles, harmonicity steps through off-ratio intervals for metallic sweetness, the ladder filter wobbles rhythmically on a prime-11 clock, and a stepped fm-index pattern ratchets the growl while pan and shape drift on 7 and 17-cycle sines — never settling, always sunny.",
+  "meta": {
+    "bpm": 100,
+    "genre": "fm bass",
+    "mood": "bouncy, sunny, tropical",
+    "key": "C minor",
+    "instruments": ["fm sine wobble bass"],
+    "energy": 3
+  },
+  "createdAt": "2026-06-08T22:02:47Z",
+  "code": "setcpm(100/4)\nstack(\n  note(\"<c1 c1 eb1 c1 c1 g0 c1 bb0>/2\")\n    .s(\"sine\")\n    .fm(sine.slow(24).range(1.5, 9).add(\"<0 2 4 1 3 0 5 2>/7\"))\n    .fmh(\"<1 1.5 2.01 0.5 3.99 1 2.5 0.75>/5\")\n    .penv(\"<3 0 5 0 7 0 3 2>/8\").pattack(0.001).pdecay(0.06)\n    .lpf(sine.slow(11).range(280, 1800)).resonance(sine.slow(13).range(4, 14)).ftype(\"ladder\")\n    .lpenv(\"<2 1 4 1>/4\").lpattack(0.003).lpdecay(0.18)\n    .vib(\"<0 0 0.4 0 0.6>/7\").vibmod(sine.slow(17).range(0.1, 0.8))\n    .shape(sine.slow(17).range(0.15, 0.42))\n    .pan(sine.slow(7).range(0.3, 0.7))\n    .attack(0.005).decay(0.22).sustain(0.55).release(0.08)\n    .ply(\"<1 1 1 2>/16\")\n    .off(0.125, x => x.add(note(12)).gain(0.22).pan(sine.slow(11).range(0.15, 0.85)))\n    .room(0.12).delay(\"0.18:0.25:0.35\").gain(0.88)\n)"
+}

@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-beachy-dance-reggaeton-20",
+  "title": "Pink Gate Sweeper",
+  "prompt": "beachy dance reggaeton",
+  "batch": "2026-06-08-beachy-dance-reggaeton",
+  "description": "A rhythmically gated pink-noise band-sweep that doubles as a transition downlifter. The tremolo gate-rate and filter center drift on mutually-prime LFO clocks (8, 13, 17, 24 cycles) so the shaker-like groove never locks into a static pattern, while a slow downward HPF arc supplies the downlifter tension.",
+  "meta": {
+    "bpm": 100,
+    "genre": "gated noise",
+    "mood": "surging",
+    "key": "atonal",
+    "instruments": ["pink noise shaker sweep"],
+    "energy": 3
+  },
+  "code": "setcpm(100/4)\nstack(\n  s(\"pink\")\n    .tremolosync(sine.slow(8).range(4, 16))\n    .tremolodepth(sine.slow(13).range(0.5, 1))\n    .hpf(sine.slow(17).range(300, 1800))\n    .lpf(sine.slow(24).range(2000, 6000))\n    .resonance(sine.slow(11).range(2, 9))\n    .pan(sine.slow(7).range(0.15, 0.85))\n    .shape(0.25)\n    .room(0.18)\n    .gain(0.82)\n)",
+  "createdAt": "2026-06-08T22:02:47Z"
+}

@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-beachy-dance-reggaeton-15",
+  "title": "Gamelan Glint Cloud",
+  "prompt": "beachy dance reggaeton",
+  "batch": "2026-06-08-beachy-dance-reggaeton",
+  "description": "A granular metallic percussion cloud built from a mangled metal dirt sample — chopped into 12 grains, pitch-mangled with squiz, and run through a drifting bandpass filter for a tropical-gamelan shimmer. Over 16 cycles the filter center, stereo pan, and playback speed all travel on mutually-prime LFO clocks (7, 13, 16 cycles) so the cloud never repeats, glinting like sun bouncing off corrugated tin on a beach.",
+  "meta": {
+    "bpm": 98,
+    "genre": "granular metal cloud",
+    "mood": "shimmering, tropical, glinting",
+    "key": "atonal",
+    "instruments": ["granular mangled metal sample"],
+    "energy": 3
+  },
+  "code": "setcpm(98/4)\nstack(\n  s(\"metal*8\").n(\"<0 1 2 3 4 5 6 7>/8\")\n    .chop(12)\n    .squiz(\"<1 2 4 2>/4\")\n    .speed(sine.slow(13).range(0.5, 1.5).mul(\"<1 1 -1 1>/16\"))\n    .bpf(sine.slow(7).range(800, 4200)).resonance(14)\n    .lpf(sine.slow(16).range(1200, 6000))\n    .pan(sine.slow(13).range(0.1, 0.9))\n    .room(0.6).delay(\"0.4:0.375:0.5\")\n    .cut(1)\n    .shape(0.25)\n    .gain(0.85)\n)",
+  "createdAt": "2026-06-08T22:02:47Z"
+}

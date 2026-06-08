@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-beachy-dance-reggaeton-25",
+  "title": "Grit Tide",
+  "prompt": "beachy dance reggaeton",
+  "batch": "2026-06-08-beachy-dance-reggaeton",
+  "description": "An aggressively saturated sawtooth sub that starts with a punchy knock and swells into full corrosion — distortion, bitcrush, shape and ladder resonance all ride mutually-prime LFO clocks (11, 13, 19, 32 cycles) so the grime never settles into a pattern. A pitched ghost an octave up (hpf'd) adds metallic shimmer to the drop while the filter wobble mimics the swell and retreat of a dirty beach-dance break.",
+  "meta": {
+    "bpm": 96,
+    "genre": "distorted sub bass",
+    "mood": "aggressive, gritty, swaggering",
+    "key": "A minor",
+    "instruments": ["sawtooth distorted 808 sub bass"],
+    "energy": 5
+  },
+  "code": "setcpm(96/4)\nstack(\n  note(\"<a0 a0 [a0 c1] f0>*4\").s(\"sawtooth\")\n    .penv(\"<12 12 16 -6>/8\").pattack(0.001).pdecay(0.06)\n    .lpf(sine.slow(19).range(120, 1600)).resonance(sine.slow(13).range(9, 22)).ftype(\"ladder\")\n    .lpenv(saw.slow(11).range(3, 9)).lpattack(0.004).lpdecay(0.20)\n    .attack(0.003).decay(0.25).sustain(0.5).release(0.05)\n    .distort(saw.slow(13).range(0.4, 5.5))\n    .crush(saw.slow(32).range(14, 3))\n    .shape(sine.slow(19).range(0.3, 0.75))\n    .coarse(\"<1 1 1 2>/8\")\n    .off(1/8, x => x.add(note(12)).gain(0.30).pan(0.75).hpf(500))\n    .room(0.10).gain(0.95)\n)",
+  "createdAt": "2026-06-08T22:02:47Z"
+}

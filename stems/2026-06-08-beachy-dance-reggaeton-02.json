@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-beachy-dance-reggaeton-02",
+  "title": "Coral Tide Sub",
+  "prompt": "beachy dance reggaeton",
+  "batch": "2026-06-08-beachy-dance-reggaeton",
+  "description": "A deep, round reggaeton sub bass rooted in a sine core with subtle FM warmth riding a dembow-flavored stepped pitch arc. Slow ladder-filter breathing, a gentle vibrato swell, and a softly saturated gain travel keep the sub alive across a 32-cycle morph loop — clean enough to sit under any groove, deep enough to shake the floor.",
+  "meta": {
+    "bpm": 98,
+    "genre": "reggaeton sub bass",
+    "mood": "deep, warm, danceable",
+    "key": "C minor",
+    "instruments": ["sine sub bass"],
+    "energy": 3
+  },
+  "code": "setcpm(98/4)\nstack(\n  note(\"<c1 c1 eb1 g0>*4\").s(\"sine\")\n    .fm(sine.slow(11).range(0.3, 2.2)).fmh(\"<1 1 1.5 0.5>/8\")\n    .penv(\"<0 0 12 -5>/8\").pattack(0.001).pdecay(0.08)\n    .lpf(sine.slow(24).range(180, 1100)).resonance(sine.slow(17).range(3, 10)).ftype(\"ladder\")\n    .lpenv(2).lpattack(0.005).lpdecay(0.18)\n    .vib(sine.slow(31).range(0.1, 0.6)).vibmod(0.4)\n    .attack(0.004).decay(0.22).sustain(0.55).release(0.08)\n    .shape(sine.slow(13).range(0.08, 0.28)).crush(\"<14 14 12 10>/16\")\n    .pan(sine.slow(7).range(0.38, 0.62))\n    .off(1/8, x => x.add(note(12)).gain(0.28).pan(0.7).hpf(400))\n    .room(0.12).gain(0.88)\n)",
+  "createdAt": "2026-06-08T22:02:47Z"
+}

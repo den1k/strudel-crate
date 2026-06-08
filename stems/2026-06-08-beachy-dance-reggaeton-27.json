@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-beachy-dance-reggaeton-27",
+  "title": "Dembow Shaker Ghost",
+  "prompt": "beachy dance reggaeton",
+  "batch": "2026-06-08-beachy-dance-reggaeton",
+  "description": "A crisp 16th-note shaker groove built entirely from filtered white noise — tight hat envelope with near-zero decay. Brightness, pan sway, and accent dynamics morph on mutually-prime LFO clocks (7, 11, 13, 17 cycles) so the top-end shimmer shifts continuously without ever repeating. Dry and punchy with a slow hpf sweep that opens the sizzle across the loop.",
+  "meta": {
+    "bpm": 100,
+    "genre": "designed shaker",
+    "mood": "crisp, driving, salty",
+    "key": "atonal",
+    "instruments": ["noise shaker hat"],
+    "energy": 4
+  },
+  "code": "setcpm(100/4)\nstack(\n  s(\"white*16\")\n    .decay(0.022).sustain(0).release(0.008)\n    .hpf(sine.slow(11).range(5000, 9500))\n    .gain(\"<1 0.6 0.8 0.5 1 0.55 0.75 0.5 1 0.65 0.8 0.5 1 0.6 0.85 0.5>\")\n    .pan(sine.slow(7).range(0.2, 0.8))\n    .tremolosync(sine.slow(13).range(3, 6)).tremolodepth(sine.slow(17).range(0.1, 0.45))\n    .shape(sine.slow(19).range(0.05, 0.28))\n    .lpf(sine.slow(23).range(11000, 18000))\n    .postgain(1.05)\n    .room(0.04)\n    .gain(0.9)\n)",
+  "createdAt": "2026-06-08T22:02:47Z"
+}

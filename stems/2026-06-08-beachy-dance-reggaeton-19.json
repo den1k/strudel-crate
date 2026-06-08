@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-beachy-dance-reggaeton-19",
+  "title": "Tumbao Conga Drift",
+  "prompt": "beachy dance reggaeton",
+  "batch": "2026-06-08-beachy-dance-reggaeton",
+  "description": "A warm tuned hand-drum voice built from layered sine and triangle oscillators playing a rolling tumbao conga groove in the low-mid register. The pitch envelope drops sharply on each hit to mimic the skin-slap transient, while filter cutoff, pan, and pitch step cycle on mutually-prime LFO clocks (7, 11, 13, 17 cycles) so open and muted tones drift through new combinations over ~30 seconds before repeating. Over the full arc the tone morphs from warm and round to snappier and brighter, then settles back — an organic, breathing conga that never sits still.",
+  "meta": {
+    "bpm": 96,
+    "genre": "tuned conga",
+    "mood": "warm, rolling, organic",
+    "key": "C2 area (low-mid tuned drum)",
+    "instruments": ["tuned conga hand-drum (sine/triangle body)"],
+    "energy": 3
+  },
+  "code": "setcpm(96/4)\nstack(\n  note(\"<c2 c2 eb2 c2> [c2 g2] <c2 bb1> [c2 c2 eb2 g2]\")\n    .s(\"sine\")\n    .penv(\"<7 7 12 4>/8\").pattack(0.001).pdecay(0.12)\n    .lpf(sine.slow(11).range(300, 1800)).resonance(sine.slow(7).range(2, 9))\n    .lpenv(sine.slow(13).range(1, 5)).lpdecay(0.18)\n    .gain(\"<1 0.6 1 0.5 1 0.75 1 0.55>/1\".slow(2))\n    .attack(0.001).decay(\"<0.18 0.14 0.22 0.12>/8\").sustain(0).release(0.05)\n    .shape(sine.slow(17).range(0.1, 0.45))\n    .pan(sine.slow(7).range(0.25, 0.75))\n    .off(0.125, x => x.add(note(12)).gain(0.22).pan(0.15))\n    .room(0.18)\n    .postgain(0.9)\n    .gain(0.92)\n  ,\n  note(\"<c2 c2 eb2 c2> [c2 g2] <c2 bb1> [c2 c2 eb2 g2]\")\n    .s(\"triangle\")\n    .penv(\"<5 5 9 3>/8\").pattack(0.001).pdecay(0.08)\n    .lpf(sine.slow(13).range(200, 900))\n    .attack(0.001).decay(0.1).sustain(0).release(0.03)\n    .shape(0.25)\n    .gain(0.35)\n    .room(0.1)\n)",
+  "createdAt": "2026-06-08T22:02:47Z"
+}

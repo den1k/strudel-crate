@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-beachy-dance-reggaeton-29",
+  "title": "Arpy Shore Topline",
+  "prompt": "beachy dance reggaeton",
+  "batch": "2026-06-08-beachy-dance-reggaeton",
+  "description": "A sample-based melodic pluck lead built from the arpy dirt sample pitched into a clean reggaeton riff — chopped for stutter articulation and filtered with a slow-blooming envelope. Over 16 cycles the lpf sweeps open, the delay throws drift wider, and a pan LFO on a mutually-prime period keeps the stereo field gently swaying like a shore breeze.",
+  "meta": {
+    "bpm": 98,
+    "genre": "sample pluck lead",
+    "mood": "warm, breezy, melodic",
+    "key": "A minor",
+    "instruments": ["arpy sample pluck lead"],
+    "energy": 3
+  },
+  "createdAt": "2026-06-08T22:02:47Z",
+  "code": "setcpm(98/4)\nstack(\n  note(\"<a4 c5 e5 g5 a4 c5 e5 [g5 f5]>/2\").s(\"arpy\")\n    .n(\"<0 1 2 3>/7\")\n    .chop(\"<4 8 4 16>/4\")\n    .lpf(sine.slow(16).range(600, 4200))\n    .resonance(sine.slow(13).range(4, 14))\n    .lpenv(sine.slow(11).range(1, 6))\n    .lpattack(0.01).lpdecay(sine.slow(17).range(0.08, 0.35))\n    .attack(0.005).decay(0.18).sustain(0.45).release(0.12)\n    .crush(sine.slow(19).range(10, 16))\n    .pan(sine.slow(7).range(0.2, 0.8))\n    .delay(\"0.5:0.375:0.6\")\n    .room(sine.slow(23).range(0.2, 0.6))\n    .gain(0.85)\n)"
+}

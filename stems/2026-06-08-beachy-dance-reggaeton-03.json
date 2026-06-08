@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-beachy-dance-reggaeton-03",
+  "title": "Dembow Clap Morph",
+  "prompt": "beachy dance reggaeton",
+  "batch": "2026-06-08-beachy-dance-reggaeton",
+  "description": "A sculpted reggaeton dembow clap-snare hit built from a tonal mid-register sine snap layered over a white-noise body. Placed in the signature dembow \"~ x ~ x\" pattern with ghost variations, the hit's tone, decay, grit and width evolve over 16 cycles via mutually-prime LFOs — growing from a dry click into a wider, crunchier slap and back, never settling into a static timbre.",
+  "meta": {
+    "bpm": 100,
+    "genre": "designed clap",
+    "mood": "dry, punchy, sun-bleached",
+    "key": "atonal",
+    "instruments": ["designed dembow clap-snare"],
+    "energy": 3
+  },
+  "code": "setcpm(100/4)\nstack(\n  // Star: tonal snap layer — short sine pitch-drop for the \"crack\" top\n  note(\"<g3 g3 g3 ab3>/16\").s(\"sine\")\n    .struct(\"~ x ~ x\")\n    .penv(\"<24 24 18 20>/8\").pattack(0.001).pdecay(\"<0.04 0.05 0.03 0.06>/11\")\n    .attack(0.001).decay(sine.slow(13).range(0.04, 0.12)).sustain(0).release(0.01)\n    .lpf(sine.slow(7).range(900, 3200)).resonance(sine.slow(11).range(2, 9)).ftype(\"ladder\")\n    .lpenv(sine.slow(17).range(1, 5)).lpattack(0.001).lpdecay(0.06)\n    .crush(sine.slow(13).range(6, 14))\n    .shape(sine.slow(7).range(0.1, 0.45))\n    .pan(sine.slow(11).range(0.3, 0.7))\n    .gain(0.85),\n  // Support: noise body — the clap/snare broadband crack, kept subtle\n  s(\"white\")\n    .struct(\"~ x ~ <x [x ~]>/16\")\n    .attack(0.001).decay(sine.slow(11).range(0.04, 0.14)).sustain(0).release(0.01)\n    .hpf(sine.slow(17).range(800, 2400))\n    .lpf(sine.slow(13).range(3000, 8000))\n    .crush(sine.slow(7).range(8, 16))\n    .shape(sine.slow(16).range(0.05, 0.3))\n    .pan(sine.slow(13).range(0.25, 0.75))\n    .gain(0.38)\n)",
+  "createdAt": "2026-06-08T22:02:47Z"
+}

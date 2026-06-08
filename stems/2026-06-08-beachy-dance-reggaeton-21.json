@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-beachy-dance-reggaeton-21",
+  "title": "Dub Echo Skank",
+  "prompt": "beachy dance reggaeton",
+  "batch": "2026-06-08-beachy-dance-reggaeton",
+  "description": "An offbeat dub-reggae organ skank built from a square/triangle blend — short stab chords landed on the upbeats, drenched in heavy dub delay throws and a slowly morphing ladder filter. Over 28 cycles, four mutually-prime LFOs (7, 13, 17, 24 cycles) drift the filter cutoff, delay feedback, pan spread, and drive independently so the echo wash never repeats the same shade, giving that classic sun-soaked, reverberant reggaeton dub vibe.",
+  "meta": {
+    "bpm": 100,
+    "genre": "dub skank stab",
+    "mood": "sunny, hypnotic, echo-drenched",
+    "key": "C minor",
+    "instruments": ["dub organ skank chord"],
+    "energy": 3
+  },
+  "createdAt": "2026-06-08T22:02:47Z",
+  "code": "setcpm(100/4)\nstack(\n  note(\"<[c3,eb3,g3] [bb2,d3,f3]>/4\")\n    .s(\"square\")\n    .struct(\"~ x ~ x\")\n    .attack(0.005).decay(sine.slow(13).range(0.08, 0.22)).sustain(0.0).release(0.04)\n    .lpf(sine.slow(7).range(420, 2200)).resonance(sine.slow(17).range(3, 11)).ftype(\"ladder\")\n    .lpenv(sine.slow(24).range(1.5, 5)).lpattack(0.005).lpdecay(0.18)\n    .shape(sine.slow(17).range(0.18, 0.42))\n    .pan(sine.slow(13).range(0.25, 0.75))\n    .delay(\"0.75:0.375:0.8\")\n    .delayfeedback(sine.slow(7).range(0.45, 0.72))\n    .room(0.55).roomsize(0.7)\n    .off(0.75, x => x.gain(0.28).pan(sine.slow(11).range(0.1, 0.9)).lpf(800))\n    .gain(0.82)\n)"
+}

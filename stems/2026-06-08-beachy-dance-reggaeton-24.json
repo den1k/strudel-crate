@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-beachy-dance-reggaeton-24",
+  "title": "Sunset Whistle",
+  "prompt": "beachy dance reggaeton",
+  "batch": "2026-06-08-beachy-dance-reggaeton",
+  "description": "A wistful whistle-flute topline melody in C major, built from a triangle wave blended with a whisper of breath noise. The melodic phrase slowly rotates through a 4-bar legato arc while vibrato depth, filter brightness, pan position, and delay wash all drift on mutually-prime LFO clocks (7, 13, 17, 24 cycles), so the hook feels alive and never exactly repeats — a romantic beach-sunset hook that blooms over roughly 48 cycles before cycling back.",
+  "meta": {
+    "bpm": 96,
+    "genre": "whistle lead",
+    "mood": "wistful, breezy, romantic",
+    "key": "C major",
+    "instruments": ["breathy triangle whistle lead"],
+    "energy": 2
+  },
+  "code": "setcpm(96/4)\nstack(\n  note(\"<c5 e5 g5 <a5 f5>>/2\")\n    .s(\"triangle\")\n    .noise(0.06)\n    .vib(\"<5 6>/8\").vibmod(sine.slow(13).range(0.1, 0.6))\n    .lpf(sine.slow(17).range(1800, 5500)).resonance(3)\n    .attack(0.08).decay(0.3).sustain(0.75).release(0.35)\n    .pan(sine.slow(7).range(0.25, 0.75))\n    .delay(\"0.5:0.375:0.5\").room(0.55)\n    .off(0.25, x => x.add(note(12)).gain(0.18).pan(0.85))\n    .gain(0.82)\n)",
+  "createdAt": "2026-06-08T22:02:47Z"
+}

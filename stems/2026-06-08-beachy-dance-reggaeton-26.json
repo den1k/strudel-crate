@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-beachy-dance-reggaeton-26",
+  "title": "Clanging Clavo",
+  "prompt": "beachy dance reggaeton",
+  "batch": "2026-06-08-beachy-dance-reggaeton",
+  "description": "A metallic FM bass-lead in the mid-low register — clangy and rubbery, almost singing. Inharmonic fmh ratios give it a bell-like clang while a melodic bass riff carries a reggaeton hook. FM index, filter, and pan LFOs run on mutually-prime cycles (7, 13, 16, 17, 24) so the loop stays alive through its 32-cycle arc.",
+  "meta": {
+    "bpm": 100,
+    "genre": "fm metallic bass",
+    "mood": "clangy, melodic, rubbery",
+    "key": "C minor",
+    "instruments": ["fm metallic bass-lead"],
+    "energy": 3
+  },
+  "code": "setcpm(100/4)\nstack(\n  note(\"<c2 eb2 g1 bb1>*2\").s(\"sine\")\n    .fmh(\"<2.01 3.99 1.5 5.0>/4\")\n    .fm(sine.slow(16).range(3, 11))\n    .add(note(\"<0 0 7 0 5 0 2 0>/7\"))\n    .penv(\"<6 0 10 0 8 0 4 2>/8\").pattack(0.001).pdecay(0.04)\n    .lpf(sine.slow(13).range(400, 3200)).resonance(sine.slow(17).range(6, 16)).ftype(\"ladder\")\n    .lpenv(\"<3 1 5 2>/4\").lpattack(0.002).lpdecay(0.12)\n    .pan(sine.slow(7).range(0.2, 0.8))\n    .attack(0.003).decay(0.18).sustain(0.55).release(0.08)\n    .shape(sine.slow(24).range(0.15, 0.45))\n    .off(0.01, x => x.add(note(12)).gain(0.28).pan(sine.slow(11).range(0.7, 0.3)))\n    .delay(\"0.3:0.25:0.5\").room(0.18)\n    .gain(0.88)\n)",
+  "createdAt": "2026-06-08T22:02:47Z"
+}
