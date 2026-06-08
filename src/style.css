@@ -177,3 +177,12 @@ body {
 @media (max-width: 760px) {
   .track { grid-template-columns: 56px 1fr; grid-template-areas: 'play meta' 'play rate' 'code code' 'notes notes'; }
 }
+
+.versions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.version {
+  background: transparent; color: var(--dim);
+  border: 1px solid var(--line); font-family: var(--mono); font-size: 11px;
+  padding: 2px 8px; cursor: pointer;
+}
+.version:hover { color: var(--acid); border-color: var(--acid); }
+.version.on { background: var(--acid); color: var(--bg); border-color: var(--acid); }
