@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-dirty-bass-05",
+  "title": "Sewer 808",
+  "prompt": "dirty bass",
+  "batch": "2026-06-08-dirty-bass",
+  "description": "A saturated sub/808 voice built from square and saw with a filter envelope that snarls on each hit. Over 32 cycles the cutoff opens, the drive thickens, and stereo pan LFOs drift the grit left and right so the low end never sits still.",
+  "meta": {
+    "bpm": 140,
+    "genre": "808 sub bass",
+    "mood": "gritty",
+    "key": "F minor",
+    "instruments": ["saturated 808 sub bass"],
+    "energy": 4
+  },
+  "code": "setcpm(140/4)\nstack(\n  note(\"<f1 f1 c2 [f1 ab1]>*2\").s(\"square\")\n    .penv(\"<12 0 7 -3>/8\").pattack(0.001).pdecay(0.07)\n    .lpf(sine.slow(32).range(180, 1400)).resonance(15).ftype(\"ladder\")\n    .lpenv(sine.slow(19).range(2, 6)).lpattack(0.004).lpdecay(0.13)\n    .attack(0.003).decay(0.22).sustain(0.55).release(0.08)\n    .shape(sine.slow(23).range(0.3, 0.55)).distort(\"<1.2 1.6 2.2>/16\")\n    .coarse(\"<1 1 2>/8\")\n    .pan(sine.slow(7).range(0.2, 0.8))\n    .off(1/8, x => x.add(note(0.12)).gain(0.3).pan(tri.slow(11).range(0.8, 0.2)))\n    .room(0.12).gain(0.95),\n  note(\"f1*2\").s(\"sine\")\n    .lpf(120).attack(0.005).decay(0.3).sustain(0.6).release(0.1)\n    .gain(0.35)\n)",
+  "createdAt": "2026-06-08T21:50:36Z"
+}

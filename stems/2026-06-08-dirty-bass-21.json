@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-dirty-bass-21",
+  "title": "Throat of the Furnace",
+  "prompt": "dirty bass",
+  "batch": "2026-06-08-dirty-bass",
+  "description": "A screaming dirty-bass riser built from a detuned sawtooth core fused with a layer of white noise, dragged upward by a slow pitch-glide while a resonant ladder filter journeys from sub-rumble to a top-end shriek across the full register. Over 32 cycles the noise blend, FM scream and filter sweep climb on separate clocks so each pass tears open wider before snapping back.",
+  "meta": {
+    "bpm": 124,
+    "genre": "noise riser bass",
+    "mood": "screaming",
+    "key": "atonal",
+    "instruments": ["dirty sawtooth noise bass"],
+    "energy": 5
+  },
+  "code": "setcpm(124/4)\nstack(\n  note(\"<c1 c1 c1 c2>*2\").s(\"sawtooth\")\n    .noise(sine.slow(24).range(0.15, 0.85))\n    .fm(saw.slow(16).range(2, 11)).fmh(\"<1 2 1.5 3>/8\")\n    .accelerate(saw.slow(32).range(0, 7))\n    .penv(\"<0 7 14 24>/8\").pattack(0.002).pdecay(0.5)\n    .lpf(saw.slow(32).range(120, 7500)).resonance(19).ftype(\"ladder\")\n    .lpenv(6).lpattack(0.01).lpdecay(0.3)\n    .shape(sine.slow(11).range(0.3, 0.6)).distort(\"<1 1 2 3>/16\")\n    .attack(0.01).decay(0.25).sustain(0.6).release(0.1)\n    .pan(sine.slow(7).range(0.2, 0.8))\n    .sometimesBy(0.2, x => x.crush(\"<8 5>\"))\n    .off(1/16, x => x.add(note(0.12)).gain(0.3).hpf(900))\n    .room(0.3).delay(\"0.4:0.375:0.6\").gain(0.9)\n)",
+  "createdAt": "2026-06-08T21:50:36Z"
+}

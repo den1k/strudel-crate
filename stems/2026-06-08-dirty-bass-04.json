@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-dirty-bass-04",
+  "title": "Acid Tar Pit",
+  "prompt": "dirty bass",
+  "batch": "2026-06-08-dirty-bass",
+  "description": "A low FM sub/808 voice that starts clean and deep, then a slow degradation arc ramps the bitcrush down to a few bits while the FM index climbs into screaming, metallic overtones. Over 16 cycles the coarse downsampler grits up and a ladder filter screams open before the loop resets.",
+  "meta": {
+    "bpm": 132,
+    "genre": "fm bass",
+    "mood": "filthy",
+    "key": "F minor",
+    "instruments": ["fm sub bass"],
+    "energy": 5
+  },
+  "code": "setcpm(132/4)\nstack(\n  note(\"<f1 f1 [f1 c1] <ab0 db1>>*2\").s(\"sine\")\n    .fm(sine.slow(16).range(2, 13)).fmh(\"<1 1.5 2 0.5>/4\")\n    .penv(\"<0 0 12 -7>/8\").pattack(0.001).pdecay(0.07)\n    .crush(saw.slow(16).range(16, 3))\n    .coarse(\"<1 1 2 4 8>/2\".add(perlin.range(0, 2)))\n    .distort(sine.slow(24).range(0.1, 0.9))\n    .lpf(sine.slow(32).range(220, 3200)).resonance(15).ftype(\"ladder\")\n    .lpenv(4).lpattack(0.005).lpdecay(0.16)\n    .attack(0.004).decay(0.22).sustain(0.55).release(0.06)\n    .vib(\"<3 5 8>/8\").vibmod(sine.slow(13).range(0.1, 1.2))\n    .off(1/8, x => x.add(note(12)).gain(0.22).pan(0.8).crush(4))\n    .room(0.12).gain(0.9)\n)",
+  "createdAt": "2026-06-08T21:50:36Z"
+}

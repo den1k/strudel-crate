@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-dirty-bass-02",
+  "title": "Corroded Sub",
+  "prompt": "dirty bass",
+  "batch": "2026-06-08-dirty-bass",
+  "description": "A sawtooth 808 sub driven through a resonant ladder filter envelope, starting clean and low before a slow degradation arc ramps distortion, bitcrush and metallic resonance until the voice is fully corroded. Over 16 cycles the pitch envelope knock, ladder cutoff and dirt all travel on separate clocks so the loop never repeats the same grime twice.",
+  "meta": {
+    "bpm": 128,
+    "genre": "808 sub bass",
+    "mood": "menacing",
+    "key": "C minor",
+    "instruments": ["sawtooth sub/808 bass"],
+    "energy": 4
+  },
+  "code": "setcpm(128/4)\nstack(\n  note(\"<c1 c1 [c1 eb1] g0>*4\").s(\"sawtooth\")\n    .penv(\"<10 10 14 -4>/8\").pattack(0.001).pdecay(0.07)\n    .lpf(sine.slow(24).range(180, 1900)).resonance(sine.slow(13).range(7, 18)).ftype(\"ladder\")\n    .lpenv(saw.slow(16).range(2, 7)).lpattack(0.005).lpdecay(0.18)\n    .attack(0.003).decay(0.22).sustain(0.55).release(0.06)\n    .distort(saw.slow(16).range(0.2, 3.5))\n    .crush(saw.slow(32).range(16, 5))\n    .shape(sine.slow(11).range(0.2, 0.55))\n    .coarse(\"<1 1 2 4>/8\")\n    .off(1/8, x => x.add(note(12)).gain(0.28).pan(0.7).hpf(400))\n    .room(0.12).gain(0.92)\n)",
+  "createdAt": "2026-06-08T21:50:36Z"
+}

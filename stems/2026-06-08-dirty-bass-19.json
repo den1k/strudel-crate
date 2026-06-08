@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-dirty-bass-19",
+  "title": "Gristle Bell",
+  "prompt": "dirty bass",
+  "batch": "2026-06-08-dirty-bass",
+  "description": "A gritty saw bass-stab in the mid register, sculpted by a snapping ladder filter envelope so each hit cracks like struck metal. Over 24 cycles it degrades through swelling distortion and a descending crush bit-depth, the broken character thickening as a detuned echo smears the tail.",
+  "meta": {
+    "bpm": 132,
+    "genre": "subtractive bass stab",
+    "mood": "broken, abrasive",
+    "key": "F minor",
+    "instruments": ["distorted saw bass stab"],
+    "energy": 4
+  },
+  "createdAt": "2026-06-08T21:50:36Z",
+  "code": "setcpm(132/4)\nstack(\n  note(\"<f2 f2 [~ ab2] f2 c2 f2 [eb2 ~] db2>*2\").s(\"sawtooth\")\n    .penv(\"<0 0 7 -5>/8\").pattack(0.001).pdecay(0.04)\n    .lpf(sine.slow(24).range(420, 2600)).resonance(sine.slow(13).range(9, 19)).ftype(\"ladder\")\n    .lpenv(sine.slow(16).range(2.5, 5.5)).lpattack(0.004).lpdecay(0.11)\n    .attack(0.002).decay(0.16).sustain(0.18).release(0.05)\n    .distort(sine.slow(24).range(0.2, 1.4))\n    .crush(\"<16 12 9 6>/8\")\n    .coarse(\"<1 1 2 3>/16\")\n    .shape(0.32)\n    .pan(sine.slow(7).range(0.32, 0.68))\n    .sometimesBy(0.12, x => x.speed(-1))\n    .off(0.02, x => x.add(note(0.12)).gain(0.3).pan(0.75))\n    .delay(\"0.28:0.1875:0.55\").room(0.18).gain(0.92)\n)"
+}

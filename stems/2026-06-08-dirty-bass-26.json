@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-dirty-bass-26",
+  "title": "Brasswort",
+  "prompt": "dirty bass",
+  "batch": "2026-06-08-dirty-bass",
+  "description": "A low FM bass carrier wearing a shifting vowel mask, so it talks in metallic vowels while the pitch envelope snaps and sags underneath. Over 16 cycles the FM index climbs, the vowels rotate a/e/o/u, the filter sweeps and the pitch-morph deepens, turning a clean fm bass into a buzzing brass-throated growl.",
+  "meta": {
+    "bpm": 116,
+    "genre": "fm formant bass",
+    "mood": "metallic, vocal, menacing",
+    "key": "C minor",
+    "instruments": ["fm vowel bass"],
+    "energy": 4
+  },
+  "code": "setcpm(116/4)\nstack(\n  note(\"<c1 c1 eb1 g0>*2\").s(\"sine\")\n    .fm(sine.slow(16).range(2, 11)).fmh(\"<1 2 1.5 0.5>/4\")\n    .vowel(\"<a e o u>/2\")\n    .penv(\"<0 7 -5 12>/8\").pattack(0.002).pdecay(sine.slow(24).range(0.06, 0.22))\n    .bpf(sine.slow(32).range(220, 2600)).resonance(15).ftype(\"ladder\")\n    .lpenv(3).lpattack(0.005).lpdecay(0.18)\n    .attack(0.004).decay(0.22).sustain(0.55).release(0.07)\n    .shape(sine.slow(13).range(0.2, 0.5)).crush(\"<16 8 6>/16\")\n    .pan(sine.slow(7).range(0.2, 0.8))\n    .sometimesBy(0.12, x => x.speed(-1))\n    .off(1/8, x => x.add(note(12)).gain(0.25).vowel(\"i\"))\n    .room(0.2).gain(0.9)\n)",
+  "createdAt": "2026-06-08T21:50:36Z"
+}

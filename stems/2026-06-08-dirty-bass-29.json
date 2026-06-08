@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-dirty-bass-29",
+  "title": "Hivebelly Crawl",
+  "prompt": "dirty bass",
+  "batch": "2026-06-08-dirty-bass",
+  "description": "An insect-swarm sample dragged down into sub territory and shredded with striate/squiz so it reads as a writhing dirty bass. Euclidean ply-gating chops the grain while a slow ladder filter sweep, drifting squiz mangle, and tremolo gate crossfade over 24 cycles before looping.",
+  "meta": {
+    "bpm": 124,
+    "genre": "sample-mangle bass",
+    "mood": "grimy",
+    "key": "atonal",
+    "instruments": ["mangled insect sub-bass"],
+    "energy": 4
+  },
+  "code": "setcpm(124/4)\nstack(\n  s(\"insect(<3 5>,8,<0 2>)\")\n    .speed(\"<0.12 0.14 0.1 0.16>/4\")\n    .striate(\"<8 16 12 24>/8\")\n    .squiz(sine.slow(19).range(1, 4.5))\n    .ply(\"<1 2 1 3>/4\")\n    .cut(1)\n    .lpf(sine.slow(24).range(180, 1900)).resonance(15).ftype(\"ladder\")\n    .lpenv(\"<2 4 1>/6\").lpattack(0.005).lpdecay(0.12)\n    .crush(\"<8 6 5 7>/8\").shape(sine.slow(11).range(0.25, 0.55))\n    .tremolosync(\"<4 8 6>/8\").tremolodepth(sine.slow(13).range(0.2, 0.8))\n    .pan(sine.slow(7).range(0.2, 0.8))\n    .sometimesBy(0.12, x => x.speed(-0.12))\n    .delay(\"0.3:0.166:0.6\").room(0.25)\n    .gain(0.9)\n)",
+  "createdAt": "2026-06-08T21:50:36Z"
+}

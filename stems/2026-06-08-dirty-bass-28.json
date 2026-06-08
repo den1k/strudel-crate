@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-dirty-bass-28",
+  "title": "Foundry Slag",
+  "prompt": "dirty bass",
+  "batch": "2026-06-08-dirty-bass",
+  "description": "A mid-register bass built entirely from a mangled 'metal' dirt sample: chopped into grains and pitched far down with negative speed so it grinds like molten slag pouring through a band-pass. Over 16 cycles the chop count, downward speed, crush bits and distortion all drift, degrading a clean metallic clang into a corroded, sputtering low growl.",
+  "meta": {
+    "bpm": 124,
+    "genre": "sample-mangle bass",
+    "mood": "metallic",
+    "key": "atonal",
+    "instruments": ["mangled metal-sample bass"],
+    "energy": 4
+  },
+  "createdAt": "2026-06-08T21:50:36Z",
+  "code": "setcpm(124/4)\nstack(\n  s(\"metal*2\").n(\"<0 2 1 3>/2\")\n    .chop(\"<8 16 12 24>/4\")\n    .speed(\"<0.18 0.14 0.22 0.12>/2\").shape(sine.slow(16).range(0.25, 0.55))\n    .bpf(sine.slow(13).range(180, 1400)).resonance(sine.slow(11).range(8, 18)).bpenv(\"<2 4 3 5>/8\")\n    .crush(\"<14 8 6 9>/8\").distort(saw.slow(24).range(0.2, 0.7)).coarse(\"<1 2 1 4>/4\")\n    .attack(0.004).release(0.08)\n    .pan(sine.slow(7).range(0.3, 0.7))\n    .sometimesBy(0.18, x => x.speed(-0.16).crush(5))\n    .off(1/8, x => x.add(note(-12)).gain(0.3).chop(6).bpf(320))\n    .delay(\"0.35:0.1875:0.5\").room(0.22).gain(0.95)\n)"
+}

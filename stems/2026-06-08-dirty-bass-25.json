@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-dirty-bass-25",
+  "title": "Vowelgut",
+  "prompt": "dirty bass",
+  "batch": "2026-06-08-dirty-bass",
+  "description": "A growling vowel-bass built from a sawtooth driven through cycling formants, so it sounds like a mouth chewing on a sub note. Over 16 cycles the vowels migrate and a degradation arc creeps in — crush bits drop, soft-drive deepens and a band-pass squeezes shut — turning a clean groan into a broken, mid-register snarl.",
+  "meta": {
+    "bpm": 132,
+    "genre": "formant bass",
+    "mood": "menacing",
+    "key": "C minor",
+    "instruments": ["formant vowel bass"],
+    "energy": 4
+  },
+  "code": "setcpm(132/4)\nstack(\n  note(\"<c2 c2 eb2 [g1 bb1]>*2\").s(\"sawtooth\")\n    .vowel(\"<a o e u a i o u>/2\")\n    .vib(\"<3 5 7>/8\").vibmod(sine.slow(13).range(0.3, 1.8))\n    .crush(saw.slow(16).range(16, 4))\n    .shape(sine.slow(24).range(0.2, 0.62))\n    .coarse(\"<1 1 2 4>/4\")\n    .bpf(sine.slow(11).range(420, 2600)).resonance(17).ftype(\"ladder\")\n    .lpenv(2.5).lpattack(0.005).lpdecay(0.12)\n    .attack(0.006).decay(0.18).sustain(0.6).release(0.08)\n    .pan(sine.slow(7).range(0.2, 0.8))\n    .sometimesBy(0.12, x => x.speed(-1))\n    .off(1/8, x => x.add(note(12)).vowel(\"i\").gain(0.22).pan(0.75))\n    .room(0.22).gain(0.92)\n)",
+  "createdAt": "2026-06-08T21:50:36Z"
+}

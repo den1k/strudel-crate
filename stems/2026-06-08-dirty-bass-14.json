@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-dirty-bass-14",
+  "title": "Mudlark Gospel",
+  "prompt": "dirty bass",
+  "batch": "2026-06-08-dirty-bass",
+  "description": "A detuned mid-register saw bass-lead that preaches in the gutter: two jux/off-stacked voices grind against each other while a 32-cycle ladder filter sweep drags the tone from clogged murk to a snarling open growl. Crush, shape and a stepped FM index keep the character broken and corroded as the slow filter journey breathes underneath.",
+  "meta": {
+    "bpm": 124,
+    "genre": "detuned saw bass",
+    "mood": "grimy, defiant, broken",
+    "key": "F minor",
+    "instruments": ["detuned saw bass-lead"],
+    "energy": 4
+  },
+  "code": "setcpm(124/4)\nstack(\n  note(\"<f2 f2 ab2 [eb2 c2]>*2\").s(\"sawtooth\")\n    .fm(sine.slow(19).range(1.5, 6)).fmh(\"<1 2 1.5 0.5>/4\")\n    .penv(\"<0 -7 0 5>/8\").pattack(0.001).pdecay(0.06)\n    .lpf(sine.slow(32).range(180, 2600)).resonance(sine.slow(23).range(8, 17)).ftype(\"ladder\")\n    .lpenv(sine.slow(11).range(1.5, 4)).lpattack(0.01).lpdecay(0.18)\n    .crush(\"<8 6 5 7>/8\").shape(sine.slow(17).range(0.25, 0.55)).coarse(\"<1 1 2 1>/4\")\n    .attack(0.005).decay(0.18).sustain(0.55).release(0.07)\n    .jux(rev)\n    .off(0.01, x => x.add(note(0.12)).gain(0.5))\n    .off(1/8, x => x.add(note(7)).gain(0.3).pan(0.75))\n    .pan(sine.slow(13).range(0.2, 0.8))\n    .delay(\"0.3:0.375:0.55\").room(0.2).gain(0.9)\n)",
+  "createdAt": "2026-06-08T21:50:36Z"
+}

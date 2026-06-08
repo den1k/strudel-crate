@@ -1,0 +1,19 @@
+{
+  "id": "2026-06-08-dirty-bass-08",
+  "title": "Wobble Drainpipe",
+  "prompt": "dirty bass",
+  "batch": "2026-06-08-dirty-bass",
+  "description": "A detuned sawtooth Reese growling through a resonant ladder filter, gated by an accelerating tremolo wobble that doubles its rate across the loop. Over 32 cycles the ladder cutoff sweeps open, FM grit and distortion bite in, and the wobble fractures into broken neuro stutters before resetting.",
+  "meta": {
+    "bpm": 140,
+    "genre": "reese bass",
+    "mood": "menacing",
+    "key": "F minor",
+    "instruments": [
+      "detuned sawtooth reese bass"
+    ],
+    "energy": 5
+  },
+  "code": "setcpm(140/4)\nstack(\n  note(\"<f1 f1 c1 <db1 g0>>*2\").s(\"sawtooth\")\n    .detune(sine.slow(24).range(0.12, 0.4))\n    .off(0.005, x => x.add(note(0.18)).gain(0.5))\n    .fm(saw.slow(16).range(0, 6)).fmh(\"<1 0.5 2>/8\")\n    .lpf(sine.slow(32).range(180, 2600)).resonance(sine.slow(13).range(9, 18)).ftype(\"ladder\")\n    .lpenv(\"<2 4 7>/8\").lpattack(0.005).lpdecay(0.12)\n    .tremolosync(\"<2 4 8 16>/8\").tremolodepth(sine.slow(11).range(0.5, 0.95))\n    .ply(\"<1 1 2 <2 4>>/4\")\n    .crush(\"<16 16 8 6>/16\").shape(sine.slow(19).range(0.2, 0.55))\n    .sometimesBy(0.12, x => x.speed(-1))\n    .attack(0.003).decay(0.15).sustain(0.7).release(0.05)\n    .pan(sine.slow(7).range(0.35, 0.65))\n    .room(0.12).delay(\"0.3:0.1875:0.5\")\n    .gain(0.9)\n)",
+  "createdAt": "2026-06-08T21:50:36Z"
+}

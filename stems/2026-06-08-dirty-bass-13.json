@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-dirty-bass-13",
+  "title": "Verdigris Sting",
+  "prompt": "dirty bass",
+  "batch": "2026-06-08-dirty-bass",
+  "description": "A high-register acid bass-lead: a single resonant sawtooth squelches through a ladder filter envelope while euclidean stabs and a synced tremolo chop it into a rhythmic gate. Over 16 cycles the filter sweep, resonance and crush all drift, melting from a clean metallic ping into a corroded screaming acid line.",
+  "meta": {
+    "bpm": 128,
+    "genre": "acid bass-lead",
+    "mood": "metallic",
+    "key": "C minor",
+    "instruments": ["resonant saw acid bass"],
+    "energy": 4
+  },
+  "createdAt": "2026-06-08T21:50:36Z",
+  "code": "setcpm(128/4)\nstack(\n  note(\"<c3 [c3 eb3] g3 <bb3 f3>>(<5 7 5 3>/2,8)\").s(\"sawtooth\")\n    .lpf(sine.slow(16).range(400, 4200)).resonance(sine.slow(11).range(12, 22)).ftype(\"ladder\")\n    .lpenv(\"<5 7 9 6>/4\").lpattack(0.005).lpdecay(0.11).lpsustain(0.2)\n    .penv(\"<0 7 0 -3>/8\").pattack(0.001).pdecay(0.05)\n    .tremolosync(\"<2 4 8 4>/8\").tremolodepth(sine.slow(13).range(0.3, 0.85))\n    .crush(\"<16 10 7 8>/8\").shape(sine.slow(24).range(0.2, 0.5)).distort(0.3)\n    .attack(0.003).decay(0.18).sustain(0.45).release(0.05)\n    .pan(sine.slow(7).range(0.25, 0.75))\n    .off(1/8, x => x.add(note(12)).gain(0.28).crush(6).pan(0.85))\n    .delay(\"0.4:0.1875:0.55\").room(0.2).gain(0.9)\n)"
+}

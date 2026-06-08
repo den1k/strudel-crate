@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-dirty-bass-03",
+  "title": "Sewer Sub",
+  "prompt": "dirty bass",
+  "batch": "2026-06-08-dirty-bass",
+  "description": "A sub/808 bass voice fed through grinding noise, bitcrush and hard drive, gated into broken stutters by euclid and ply. Over 24 cycles the noise blend, crush depth and tremolo rate crawl in different directions so the grime never settles into a fixed groove.",
+  "meta": {
+    "bpm": 140,
+    "genre": "808 sub bass",
+    "mood": "filthy",
+    "key": "F minor",
+    "instruments": ["distorted sine sub bass"],
+    "energy": 4
+  },
+  "code": "setcpm(140/4)\nstack(\n  note(\"<f1 f1 [f1 ab1] <c2 db2>>(<3 5 3 5>,8)\").s(\"sine\")\n    .penv(\"<12 18 8 24>/8\").pattack(0.001).pdecay(0.07)\n    .noise(sine.slow(24).range(0.05, 0.55))\n    .fm(sine.slow(13).range(1, 6)).fmh(\"<1 0.5 1.5 2>/4\")\n    .crush(saw.slow(16).range(8, 3))\n    .coarse(\"<1 1 2 4>/8\")\n    .shape(sine.slow(19).range(0.3, 0.75)).distort(\"<0.4 0.8>/4\")\n    .lpf(sine.slow(32).range(180, 2600)).resonance(14).ftype(\"ladder\")\n    .lpenv(4).lpattack(0.005).lpdecay(0.12)\n    .tremolosync(\"<2 4 8 16>/8\").tremolodepth(sine.slow(11).range(0.2, 0.9))\n    .ply(\"<1 1 2 1>/4\")\n    .sometimesBy(0.18, x => x.speed(-1))\n    .attack(0.002).decay(0.18).sustain(0.4).release(0.05)\n    .pan(sine.slow(7).range(0.35, 0.65))\n    .off(1/16, x => x.add(note(12)).gain(0.22).crush(4).pan(0.7))\n    .room(0.18).gain(0.9)\n)",
+  "createdAt": "2026-06-08T21:50:36Z"
+}

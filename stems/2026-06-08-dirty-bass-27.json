@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-dirty-bass-27",
+  "title": "Bilge Crawler",
+  "prompt": "dirty bass",
+  "batch": "2026-06-08-dirty-bass",
+  "description": "A mangled metal sample dragged down into the sub register and chopped into granular grit, lurching between forward and reversed playback. Over 16 cycles the chop count thickens, a ladder filter crawls upward, and the squiz pitch-mangle deepens until the loop folds back on itself.",
+  "meta": {
+    "bpm": 116,
+    "genre": "mangled sample bass",
+    "mood": "grimy, broken, subterranean",
+    "key": "atonal",
+    "instruments": ["mangled metal sample sub"],
+    "energy": 4
+  },
+  "createdAt": "2026-06-08T21:50:36Z",
+  "code": "setcpm(116/4)\nstack(\n  s(\"metal*2\").n(\"<0 1 2 0>/2\")\n    .speed(\"<0.22 -0.18 0.3 -0.15>/2\")\n    .chop(\"<8 12 16 24>/8\")\n    .striate(\"<2 4 3>/8\")\n    .squiz(sine.slow(24).range(1, 5))\n    .coarse(\"<2 4 8 4>/4\")\n    .crush(\"<8 6 5>/16\")\n    .lpf(saw.slow(16).range(180, 1900)).resonance(15).ftype(\"ladder\")\n    .lpenv(sine.slow(13).range(1, 4)).lpattack(0.01).lpdecay(0.18)\n    .shape(0.4)\n    .sometimesBy(0.2, x => x.speed(-1))\n    .pan(sine.slow(7).range(0.2, 0.8))\n    .delay(\"0.4:0.375:0.6\").room(0.3).gain(0.9)\n)"
+}

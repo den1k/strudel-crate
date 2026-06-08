@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-dirty-bass-16",
+  "title": "Rust Leviathan",
+  "prompt": "dirty bass",
+  "batch": "2026-06-08-dirty-bass",
+  "description": "An FM bass-drone that wakes from a clean low hum and slowly rusts apart: the crusher and downsampler bite deeper across the loop while the FM index climbs into clangorous metal, dragging harmonics from sub-fundamental up to a shrieking treble snarl. By the end it's a broken, full-spectrum leviathan groan before resetting to its quiet origin.",
+  "meta": {
+    "bpm": 84,
+    "genre": "fm bass drone",
+    "mood": "menacing",
+    "key": "C minor",
+    "instruments": ["fm sine bass drone"],
+    "energy": 4
+  },
+  "code": "setcpm(84/4)\nstack(\n  note(\"<c1 c1 <eb1 g0> c1>/2\").s(\"sine\")\n    .fm(sine.slow(24).range(1.5, 13)).fmh(\"<1 2 1.5 0.5>/8\")\n    .penv(\"<0 0 7 -12>/16\").pattack(0.002).pdecay(0.4)\n    .crush(saw.slow(32).range(16, 3.5))\n    .coarse(\"<1 1 2 4 8>/8\")\n    .shape(sine.slow(20).range(0.1, 0.6))\n    .lpf(sine.slow(28).range(180, 4200)).resonance(saw.slow(16).range(4, 17)).ftype(\"ladder\")\n    .lpenv(4).lpattack(0.01).lpdecay(0.3)\n    .vib(\"<3 5>/8\").vibmod(sine.slow(13).range(0.1, 1.2))\n    .attack(0.01).decay(0.3).sustain(0.7).release(0.2)\n    .pan(sine.slow(7).range(0.3, 0.7))\n    .off(1/4, x => x.add(note(12)).gain(0.3).crush(5).pan(0.75))\n    .room(sine.slow(40).range(0.1, 0.45)).delay(\"0.4:0.5:0.55\")\n    .gain(0.88)\n)",
+  "createdAt": "2026-06-08T21:50:36Z"
+}

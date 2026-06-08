@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-dirty-bass-12",
+  "title": "Throatlatch",
+  "prompt": "dirty bass",
+  "batch": "2026-06-08-dirty-bass",
+  "description": "A growling FM bass-lead that sits in the low-mid and slowly tears itself apart: over 24 cycles the distortion, FM index and bitcrush all climb on separate clocks while a screaming ladder-filter envelope sharpens, so a controlled snarl degrades into a full-throated scream before the loop resets.",
+  "meta": {
+    "bpm": 138,
+    "genre": "fm growl bass-lead",
+    "mood": "feral",
+    "key": "E minor",
+    "instruments": ["fm growl bass-lead"],
+    "energy": 5
+  },
+  "createdAt": "2026-06-08T21:50:36Z",
+  "code": "setcpm(138/4)\nstack(\n  note(\"<e2 e2 [g2 e2] <b2 d3>>*2\").s(\"sawtooth\")\n    .fm(sine.slow(17).range(2, 12)).fmh(\"<1 1.5 2 0.5>/4\")\n    .penv(\"<0 4 -3 7>/8\").pattack(0.002).pdecay(0.07)\n    .vib(\"<5 7>/8\").vibmod(sine.slow(13).range(0.1, 1.1))\n    .lpf(sine.slow(29).range(420, 3600)).resonance(sine.slow(19).range(10, 19)).ftype(\"ladder\")\n    .lpenv(saw.slow(24).range(2, 7)).lpattack(0.004).lpdecay(0.16)\n    .distort(saw.slow(24).range(0.05, 1.1))\n    .crush(saw.slow(23).range(16, 5))\n    .shape(sine.slow(11).range(0.28, 0.7))\n    .attack(0.004).decay(0.2).sustain(0.55).release(0.06)\n    .pan(sine.slow(7).range(0.2, 0.8))\n    .sometimesBy(0.16, x => x.speed(-1))\n    .off(1/8, x => x.add(note(12)).gain(0.24).pan(0.75).crush(6))\n    .room(0.14).postgain(0.88).gain(0.9)\n)"
+}

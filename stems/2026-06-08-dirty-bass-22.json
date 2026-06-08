@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-dirty-bass-22",
+  "title": "Sinkhole Throat",
+  "prompt": "dirty bass",
+  "batch": "2026-06-08-dirty-bass",
+  "description": "An FM sine bass that swallows itself: each hit fires a steep downward pitch envelope so the tone drops like a collapsing floor, while the FM index, harmonicity and a noise-fed ladder filter morph on mutually-prime LFOs across a 32-cycle arc. The pitch drop accelerates and deepens over the loop, growing from a gritty growl into a broken, choking bass-drop sweep.",
+  "meta": {
+    "bpm": 124,
+    "genre": "fm bass",
+    "mood": "menacing",
+    "key": "atonal",
+    "instruments": ["fm sine bass"],
+    "energy": 4
+  },
+  "createdAt": "2026-06-08T21:50:36Z",
+  "code": "setcpm(124/4)\nstack(\n  note(\"<c1 c1 [c1 eb1] g0>*2\").s(\"sine\")\n    .fm(sine.slow(23).range(3, 13)).fmh(\"<0.5 1 1.5 0.75>/4\")\n    .penv(saw.slow(32).range(-12, -34)).pattack(0.001).pdecay(sine.slow(19).range(0.18, 0.05)).pcurve(1)\n    .accelerate(saw.slow(32).range(-0.3, -1.4))\n    .noise(sine.slow(11).range(0.02, 0.18))\n    .lpf(sine.slow(17).range(180, 2200)).resonance(sine.slow(13).range(8, 17)).ftype(\"ladder\")\n    .lpenv(sine.slow(29).range(2, 5)).lpattack(0.004).lpdecay(0.14)\n    .crush(\"<16 10 7 6>/8\").shape(sine.slow(7).range(0.2, 0.55)).distort(\"<0 0 0.3 0.6>/16\")\n    .attack(0.003).decay(0.22).sustain(0.4).release(0.07)\n    .sometimesBy(0.18, x => x.speed(-1))\n    .pan(sine.slow(9).range(0.3, 0.7))\n    .off(1/8, x => x.add(note(12)).gain(0.22).crush(5).pan(0.75))\n    .room(0.22).delay(\"0.3:0.5:0.55\")\n    .gain(0.9)\n)"
+}

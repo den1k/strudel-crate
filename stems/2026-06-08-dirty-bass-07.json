@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-dirty-bass-07",
+  "title": "Rust Engine",
+  "prompt": "dirty bass",
+  "batch": "2026-06-08-dirty-bass",
+  "description": "A mid-register FM bass built from a sine driven into clangorous territory by a high, slowly-climbing FM index against inharmonic stepped harmonicity. Over a 32-cycle pass the squiz pitch-mangle ramps up and the ladder filter opens, dragging the metallic tone from grindy growl into screaming, degraded rust.",
+  "meta": {
+    "bpm": 124,
+    "genre": "fm bass",
+    "mood": "menacing",
+    "key": "F minor",
+    "instruments": ["fm sine bass"],
+    "energy": 4
+  },
+  "code": "setcpm(124/4)\nstack(\n  note(\"<f1 f1 ab1 c2 [f1 eb1] ab1 db2 c2>*2\").s(\"sine\")\n    .fm(sine.slow(24).range(4, 16)).fmh(\"<1 2.01 1.5 3.01 0.5>/4\")\n    .penv(\"<0 0 10 -7>/8\").pattack(0.002).pdecay(0.07)\n    .squiz(saw.slow(32).range(1, 5))\n    .lpf(sine.slow(19).range(320, 3600)).resonance(15).ftype(\"ladder\")\n    .lpenv(4).lpattack(0.004).lpdecay(0.13)\n    .attack(0.003).decay(0.18).sustain(0.55).release(0.05)\n    .shape(tri.slow(13).range(0.25, 0.6)).crush(\"<16 12 8 6>/16\")\n    .pan(sine.slow(7).range(0.25, 0.75))\n    .off(1/8, x => x.add(note(12)).gain(0.3).squiz(2).pan(0.8))\n    .room(0.18).gain(0.85)\n)",
+  "createdAt": "2026-06-08T21:50:36Z"
+}

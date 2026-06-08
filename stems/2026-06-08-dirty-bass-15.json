@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-dirty-bass-15",
+  "createdAt": "2026-06-08T21:50:36Z",
+  "title": "Aquifer Maw",
+  "prompt": "dirty bass",
+  "batch": "2026-06-08-dirty-bass",
+  "description": "A subterranean brown-noise drone sculpted into a cavernous bass voice: a slow ladder-filter journey crawls up from a sealed rumble to a snarling growl while resonance swells and the noise blend morphs from brown to pink. Crush grit, drifting stereo pan, and a long delay tail keep the dark room breathing across a 32-cycle pass.",
+  "meta": {
+    "bpm": 120,
+    "genre": "noise drone bass",
+    "mood": "cavernous, ominous, hollow",
+    "key": "atonal",
+    "instruments": ["filtered brown-noise bass drone"],
+    "energy": 2
+  },
+  "code": "setcpm(120/4)\nstack(\n  s(\"brown\")\n    .noise(sine.slow(24).range(0, 0.4))\n    .lpf(sine.slow(32).range(90, 1400)).resonance(saw.slow(28).range(6, 17)).ftype(\"ladder\")\n    .lpenv(sine.slow(19).range(1, 5)).lpattack(0.4).lpdecay(2)\n    .hpf(35)\n    .crush(\"<16 12 8 10>/8\").shape(sine.slow(21).range(0.1, 0.45))\n    .pan(sine.slow(13).range(0.25, 0.75))\n    .room(sine.slow(17).range(0.4, 0.85)).roomsize(8)\n    .delay(\"0.4:0.5:0.72\").orbit(2)\n    .attack(2).release(3)\n    .gain(0.85)\n)"
+}

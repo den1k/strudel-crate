@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-dirty-bass-23",
+  "title": "Galvanic Bloom",
+  "prompt": "dirty bass",
+  "batch": "2026-06-08-dirty-bass",
+  "description": "A detuned saw swarm bass that blooms upward from a sub growl into a screaming full-spectrum riser, accelerating in pitch as a band-pass sweep climbs and resonance tightens to a metallic ring. Over the 32-cycle arc the voice corrodes through rising distortion and squiz pitch-mangle, then collapses back to the sub to loop.",
+  "meta": {
+    "bpm": 140,
+    "genre": "noise riser bass",
+    "mood": "metallic",
+    "key": "atonal",
+    "instruments": ["saw swarm bass"],
+    "energy": 5
+  },
+  "code": "setcpm(140/4)\nstack(\n  note(\"<e1 e1 e2 b1>*2\").s(\"sawtooth\")\n    .accelerate(saw.slow(16).range(0, 0.6))\n    .penv(\"<0 0 7 19>/8\").pattack(0.02).pdecay(0.5)\n    .detune(sine.slow(11).range(0.1, 0.9))\n    .off(0.005, x => x.add(note(0.12)).gain(0.5))\n    .off(0.011, x => x.add(note(-0.18)).gain(0.45))\n    .bpf(saw.slow(8).range(180, 5200)).resonance(sine.slow(13).range(8, 19)).ftype(\"ladder\")\n    .lpenv(4).lpattack(0.01).lpdecay(0.3)\n    .distort(saw.slow(32).range(0.1, 4.5))\n    .squiz(\"<1 1 2 4>/16\")\n    .crush(\"<16 12 8 6>/16\")\n    .noise(sine.slow(24).range(0.0, 0.25))\n    .pan(sine.slow(7).range(0.2, 0.8))\n    .attack(0.01).decay(0.3).sustain(0.6).release(0.1)\n    .delay(\"0.3:0.1875:0.6\").room(0.25)\n    .gain(0.9)\n)",
+  "createdAt": "2026-06-08T21:50:36Z"
+}

@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-dirty-bass-20",
+  "title": "Anvil Tide",
+  "prompt": "dirty bass",
+  "batch": "2026-06-08-dirty-bass",
+  "description": "A single noise-blasted bass percussion hit hammered out in shifting euclidean and ply gates, with a hard pitch-envelope thud and a metallic bandpass ring. Across 32 cycles the noise blend, crush, bandpass ring and gating density crawl on separate clocks, so the hit drifts from a dry low knock into a gargling, clanging metallic strike.",
+  "meta": {
+    "bpm": 138,
+    "genre": "designed percussion bass",
+    "mood": "industrial",
+    "key": "atonal",
+    "instruments": ["noise-blasted bass perc"],
+    "energy": 4
+  },
+  "createdAt": "2026-06-08T21:50:36Z",
+  "code": "setcpm(138/4)\nstack(\n  note(\"c1\").s(\"square\")\n    .struct(\"<x(3,8) x(5,8) x(3,8,1) x(7,8)>\")\n    .ply(\"<1 1 2 1 3>/2\")\n    .noise(sine.slow(29).range(0.15, 0.85))\n    .penv(\"<26 20 32 16>/8\").pattack(0.001).pdecay(\"<0.05 0.08 0.04>/8\")\n    .bpf(sine.slow(17).range(180, 2600)).resonance(sine.slow(23).range(9, 19)).ftype(\"ladder\")\n    .lpenv(3).lpattack(0.003).lpdecay(0.12)\n    .crush(saw.slow(31).range(16, 4))\n    .shape(sine.slow(13).range(0.25, 0.7)).distort(\"<0 0.3 0.5 0.2>/8\")\n    .attack(0.001).decay(0.18).sustain(0).release(0.05)\n    .sometimesBy(0.2, x => x.coarse(\"<2 4 8>\").speed(-1))\n    .pan(sine.slow(11).range(0.35, 0.65))\n    .off(1/16, x => x.add(note(12)).gain(0.22).crush(5).bpf(3200))\n    .room(0.18).postgain(0.92).gain(0.95)\n)"
+}

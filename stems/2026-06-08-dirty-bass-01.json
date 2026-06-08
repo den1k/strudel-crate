@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-dirty-bass-01",
+  "title": "Sewer Knock",
+  "prompt": "dirty bass",
+  "batch": "2026-06-08-dirty-bass",
+  "description": "An FM sub/808 that opens with a hard pitch-envelope knock and rots into broken, saturated grit. Over 32 cycles the FM index, harmonicity steps, bitcrush and ladder filter all crawl on separate clocks so the tone slides from clean sub thump to distorted, gargling low-end.",
+  "meta": {
+    "bpm": 140,
+    "genre": "fm 808 bass",
+    "mood": "menacing",
+    "key": "F minor",
+    "instruments": ["fm sub bass"],
+    "energy": 4
+  },
+  "createdAt": "2026-06-08T21:50:36Z",
+  "code": "setcpm(140/4)\nstack(\n  note(\"<f1 f1 [f1 ~] c2>*2\").s(\"sine\")\n    .fm(sine.slow(19).range(3, 13)).fmh(\"<1 2 0.5 1.5>/4\")\n    .penv(\"<24 18 30 12>/8\").pattack(0.001).pdecay(\"<0.06 0.09 0.05>/8\")\n    .lpf(sine.slow(31).range(220, 2400)).resonance(14).ftype(\"ladder\")\n    .lpenv(4).lpattack(0.004).lpdecay(0.14)\n    .crush(saw.slow(23).range(16, 5))\n    .shape(sine.slow(11).range(0.3, 0.75)).distort(\"<0 0.4 0.2>/8\")\n    .attack(0.003).decay(0.22).sustain(0.45).release(0.07)\n    .sometimesBy(0.18, x => x.coarse(\"<2 4 8>\"))\n    .off(1/8, x => x.add(note(12)).gain(0.22).pan(0.7).crush(6))\n    .room(0.12).postgain(0.9).gain(0.92)\n)"
+}

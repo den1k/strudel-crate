@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-dirty-bass-17",
+  "title": "Tar Pit Lantern",
+  "prompt": "dirty bass",
+  "batch": "2026-06-08-dirty-bass",
+  "description": "A sustained subtractive saw drone in the low register, thickened with a detuned echo and ground down with soft drive and bitcrush for a gritty character. Over 32 cycles the ladder filter slowly opens and closes while resonance breathes and dual pan LFOs drift the body and its octave ghost across the stereo field.",
+  "meta": {
+    "bpm": 120,
+    "genre": "bass drone",
+    "mood": "menacing",
+    "key": "C minor",
+    "instruments": ["subtractive saw bass-drone"],
+    "energy": 3
+  },
+  "code": "setcpm(120/4)\nstack(\n  note(\"<c1 c1 eb1 g0>/4\").s(\"sawtooth\")\n    .add(note(\"0,0.08\"))\n    .lpf(sine.slow(32).range(180, 1700)).resonance(sine.slow(13).range(6, 17)).ftype(\"ladder\")\n    .lpenv(2).lpattack(0.02).lpdecay(0.4)\n    .crush(\"<10 8 7 9>/8\").shape(sine.slow(24).range(0.2, 0.55))\n    .vib(\"<0.2 0.4 0.3>/8\").vibmod(sine.slow(17).range(0.1, 0.7))\n    .attack(0.05).decay(0.3).sustain(0.8).release(0.4)\n    .pan(sine.slow(11).range(0.2, 0.8))\n    .off(1/4, x => x.add(note(12)).gain(0.3).pan(saw.slow(9).range(0.85, 0.15)).hpf(400))\n    .room(0.25).gain(0.9)\n)",
+  "createdAt": "2026-06-08T21:50:36Z"
+}

@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-dirty-bass-18",
+  "title": "Knuckle Drag",
+  "prompt": "dirty bass",
+  "batch": "2026-06-08-dirty-bass",
+  "description": "A designed FM bass-knock: a dry, clicky sub-kick whose pitch-envelope snaps down into the low register on every hit. Over 32 cycles the FM index swells and the harmonicity steps through ratios while a ladder filter and a hard-drive amount creep up, so the knock mutates from a tight tap into a distorted, grinding thud and back.",
+  "meta": {
+    "bpm": 116,
+    "genre": "fm bass knock",
+    "mood": "menacing",
+    "key": "atonal",
+    "instruments": ["fm sub-kick bass"],
+    "energy": 4
+  },
+  "code": "setcpm(116/4)\nstack(\n  note(\"<f1 f1 [f1 f1] f1 c1 f1 [~ f1] eb1>*2\").s(\"sine\")\n    .fm(sine.slow(24).range(2, 11)).fmh(\"<0.5 1 2 1.5>/8\")\n    .penv(sine.slow(32).range(28, 40)).pattack(0.001).pdecay(\"<0.04 0.06 0.05>/4\")\n    .lpf(sine.slow(16).range(180, 1900)).resonance(13).ftype(\"ladder\")\n    .lpenv(saw.slow(28).range(1, 4)).lpattack(0.003).lpdecay(0.07)\n    .attack(0.001).decay(0.16).sustain(0).release(0.04)\n    .shape(sine.slow(20).range(0.2, 0.55)).distort(\"<0 0.3 0.6 0.2>/8\")\n    .coarse(\"<1 1 2 1>/4\")\n    .off(1/16, x => x.add(note(0.12)).gain(0.22).pan(0.65).hpf(400))\n    .pan(sine.slow(11).range(0.4, 0.6))\n    .room(0.12).gain(0.95)\n)",
+  "createdAt": "2026-06-08T21:50:36Z"
+}

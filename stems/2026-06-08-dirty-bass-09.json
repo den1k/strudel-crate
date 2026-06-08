@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-08-dirty-bass-09",
+  "title": "Tar Leviathan",
+  "prompt": "dirty bass",
+  "batch": "2026-06-08-dirty-bass",
+  "description": "A wide gritty reese bass built from a detuned sawtooth swarm: layered off-copies drift apart in pitch while pan LFOs smear the swarm across the stereo field. Over 32 cycles it climbs from a subterranean growl through a full-spectrum register as the ladder filter, fm grit and detune width all morph on prime-numbered clocks.",
+  "meta": {
+    "bpm": 140,
+    "genre": "reese bass",
+    "mood": "liquid menacing",
+    "key": "F minor",
+    "instruments": ["detuned sawtooth reese bass"],
+    "energy": 4
+  },
+  "createdAt": "2026-06-08T21:50:36Z",
+  "code": "setcpm(140/4)\nstack(\n  note(\"<f1 f1 ab1 <c2 eb1>>*2\").s(\"sawtooth\")\n    .detune(sine.slow(23).range(0.1, 0.45))\n    .fm(sine.slow(16).range(1.5, 6)).fmh(\"<1 2 1.5 0.5>/8\")\n    .lpf(sine.slow(32).range(180, 3400)).resonance(15).ftype(\"ladder\")\n    .lpenv(\"<2 3 5>/8\").lpattack(0.01).lpdecay(0.18)\n    .vib(\"<3 5>/8\").vibmod(sine.slow(13).range(0.05, 0.3))\n    .shape(0.4).crush(\"<16 12 8>/16\")\n    .attack(0.006).decay(0.2).sustain(0.7).release(0.08)\n    .off(0.005, x => x.add(note(0.12)).pan(sine.slow(7).range(0.05, 0.45)).gain(0.7))\n    .off(0.01, x => x.add(note(-0.12)).pan(sine.slow(11).range(0.55, 0.95)).gain(0.7))\n    .jux(rev)\n    .room(0.2).delay(\"0.3:0.5:0.6\")\n    .gain(0.85)\n)"
+}
