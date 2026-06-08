@@ -1,0 +1,18 @@
+{
+  "id": "2026-06-08-alien-sounds-04-v2",
+  "versionOf": "2026-06-08-alien-sounds-04",
+  "batch": "2026-06-08-alien-sounds",
+  "prompt": "alien sounds",
+  "title": "Hollow Engine v2",
+  "createdAt": "2026-06-08T22:30:00Z",
+  "description": "A hollow FM-sine bass drone that morphs across 24 cycles via traveling fm index, ladder filter sweep, and slow vibrato. This v2 keeps the same FM-sine identity but reads clearly as pitched: integer fmh harmonics replace the inharmonic 2.01/3.99 ratios, the bitcrush is tamed so the fundamental sings, and consonant fifth and octave layers reinforce the root.",
+  "meta": {
+    "bpm": 116,
+    "genre": "fm bass",
+    "mood": "hollow",
+    "key": "C minor",
+    "instruments": ["fm sine bass"],
+    "energy": 3
+  },
+  "code": "setcpm(116/4)\nstack(\n  note(\"<c1 c1 eb1 <g0 bb0>>*2\").s(\"sine\")\n    .fm(sine.slow(24).range(2, 13)).fmh(\"<1 2 3 1 4>/5\")\n    .penv(\"<0 0 7 -5>/8\").pattack(0.002).pdecay(0.1)\n    .lpf(sine.slow(31).range(180, 2600)).resonance(sine.slow(17).range(6, 17)).ftype(\"ladder\")\n    .lpenv(4).lpattack(0.008).lpdecay(0.18)\n    .vib(\"<3 5 7>/8\").vibmod(sine.slow(13).range(0.1, 0.9))\n    .attack(0.005).decay(0.22).sustain(0.55).release(0.07)\n    .shape(0.34).crush(\"<16 16 14 12>/16\")\n    .pan(sine.slow(11).range(0.3, 0.7))\n    .off(1/4, x => x.add(note(7)).gain(0.32).pan(0.22).crush(16))\n    .off(1/8, x => x.add(note(12)).gain(0.28).pan(0.78).fm(9))\n    .delay(\"0.4:0.375:0.6\").room(0.25).gain(0.85)\n)"
+}
