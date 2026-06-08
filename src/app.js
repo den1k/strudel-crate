@@ -6,6 +6,7 @@ import { initAudioOnFirstClick, registerSynthSounds, samples, getAudioContext } 
 import { mountEditor, getEditor, isStarted } from './editor.js';
 import { nextPlayingId } from './playing-state.js';
 import { exportTrack, isExporting } from './export.js';
+import { groupVersions } from './versions.js';
 import banks from '../shared/sample-banks.json';
 
 const $ = (sel, el = document) => el.querySelector(sel);
@@ -161,9 +162,20 @@ export async function initApp({ apiBase, emptyHint }) {
     setTimeout(() => el.classList.remove('error'), 1200);
   };
 
+  // short, human date for version labels, e.g. "Jun 8"
+  const fmtDate = (iso) => {
+    const d = new Date(iso);
+    return Number.isNaN(d.getTime())
+      ? ''
+      : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  };
+
   // --- rendering --------------------------------------------------------------
-  function visibleTracks() {
-    return state.tracks.filter((t) => {
+  // Group into version families, then filter by the LATEST version's props so a
+  // whole family shows/hides as a unit (all versions share a batch).
+  function visibleFamilies() {
+    return groupVersions(state.tracks).filter((fam) => {
+      const t = fam.latest;
       if (state.batch !== 'all' && t.batch !== state.batch) return false;
       if (state.filter === 'unrated') return t.rating == null;
       if (state.filter === 'top') return (t.rating ?? 0) >= 4;
@@ -171,140 +183,165 @@ export async function initApp({ apiBase, emptyHint }) {
     });
   }
 
-  function trackCard(track) {
+  function trackCard(family) {
     const card = document.createElement('article');
-    card.className = 'track' + (track.id === state.playingId ? ' playing' : '');
-    card.dataset.id = track.id;
+    card.className = 'track';
+    let active = family.latest; // spec: default to the latest version
 
-    const playBtn = document.createElement('button');
-    playBtn.className = 'play';
-    playBtn.innerHTML =
-      track.id === state.playingId
-        ? '<span class="eq"><i></i><i></i><i></i></span>'
-        : '▶';
-    playBtn.title = track.id === state.playingId ? 'stop' : 'play';
-    playBtn.addEventListener('click', () =>
-      track.id === state.playingId ? stop() : play(track),
-    );
-
-    const meta = document.createElement('div');
-    meta.className = 'meta';
-    meta.innerHTML = `<h3></h3><span class="id"></span><p class="desc"></p><div class="chips"></div>`;
-    $('h3', meta).textContent = track.title;
-    $('.id', meta).textContent = track.id;
-    $('.desc', meta).textContent = track.description ?? '';
-    const m = track.meta ?? {};
-    const chips = $('.chips', meta);
-    const chipValues = [
-      m.genre,
-      m.bpm && `${m.bpm} bpm`,
-      m.key,
-      m.energy && '▮'.repeat(Math.min(m.energy, 5)) + '▯'.repeat(Math.max(0, 5 - m.energy)),
-      m.mood,
-    ].filter(Boolean);
-    for (const value of chipValues) {
-      const chip = document.createElement('span');
-      chip.className = 'chip';
-      chip.textContent = value;
-      chips.appendChild(chip);
-    }
-
-    const exportRow = document.createElement('div');
-    exportRow.className = 'exports';
-    for (const fmt of ['wav', 'mp3']) {
-      const btn = document.createElement('button');
-      btn.className = 'export';
-      btn.textContent = `↓ ${fmt}`;
-      btn.title = fmt === 'wav' ? 'download lossless wav' : 'download mp3 192kbps';
-      btn.addEventListener('click', async () => {
-        if (isExporting()) return;
-        const all = document.querySelectorAll('button.export');
-        all.forEach((el) => (el.disabled = true));
-        const label = btn.textContent;
-        try {
-          await exportTrack(track, fmt, {
-            stopPlayback: stop, // offline render swaps the global audio context
-            onStatus: (s) => (btn.textContent = s),
-          });
-        } catch (err) {
-          console.error(err);
-          flashError(card);
-        } finally {
-          btn.textContent = label;
-          // re-query: cards may have been rebuilt while the export ran
-          document.querySelectorAll('button.export').forEach((el) => (el.disabled = false));
-        }
-      });
-      exportRow.appendChild(btn);
-    }
-    meta.appendChild(exportRow);
-
-    const rate = document.createElement('div');
-    rate.className = 'rate';
-    for (let n = 1; n <= 5; n++) {
-      const b = document.createElement('button');
-      b.className = 'block' + (track.rating != null && n <= track.rating ? ' on' : '');
-      b.title = `${n}/5`;
-      b.addEventListener('click', async () => {
-        try {
-          await putRating(track, { rating: track.rating === n ? null : n }); // click again to clear
-        } catch (err) {
-          console.error(err);
-          flashError(card);
-          return;
-        }
-        // update blocks in place — a full re-render would wipe unsaved notes in other cards
-        rate.querySelectorAll('.block').forEach((el, i) =>
-          el.classList.toggle('on', track.rating != null && i < track.rating),
-        );
-      });
-      rate.appendChild(b);
-    }
-
-    const autosaveArea = (className, placeholder, value, field) => {
-      const ta = document.createElement('textarea');
-      ta.className = className;
-      ta.placeholder = placeholder;
-      ta.value = value ?? '';
-      const save = debounce(async () => {
-        try {
-          await putRating(track, { [field]: ta.value });
-          ta.classList.add('saved');
-          setTimeout(() => ta.classList.remove('saved'), 600);
-        } catch (err) {
-          console.error(err);
-          flashError(ta);
-        }
-      }, 600);
-      ta.addEventListener('input', save);
-      return ta;
-    };
-
-    const feedback = document.createElement('div');
-    feedback.className = 'feedback';
-    feedback.append(
-      autosaveArea('notes', 'notes — what works, what to change… (this track only)', track.notes, 'notes'),
-      autosaveArea('notes lesson', 'lesson for future tracks — applies to every new batch…', track.lesson, 'lesson'),
-    );
-
-    const code = codeSection(track);
-
-    card.append(playBtn, meta, rate, feedback, code);
+    mountBody();
     return card;
+
+    function mountBody() {
+      card.dataset.id = active.id;
+      card.classList.toggle('playing', active.id === state.playingId);
+      const track = active; // body below is per-version, keyed on `active`
+
+      const playBtn = document.createElement('button');
+      playBtn.className = 'play';
+      playBtn.innerHTML =
+        track.id === state.playingId
+          ? '<span class="eq"><i></i><i></i><i></i></span>'
+          : '▶';
+      playBtn.title = track.id === state.playingId ? 'stop' : 'play';
+      playBtn.addEventListener('click', () =>
+        track.id === state.playingId ? stop() : play(track),
+      );
+
+      const meta = document.createElement('div');
+      meta.className = 'meta';
+      meta.innerHTML = `<h3></h3><span class="id"></span><p class="desc"></p><div class="chips"></div>`;
+      $('h3', meta).textContent = track.title;
+      $('.id', meta).textContent = track.id;
+      $('.desc', meta).textContent = track.description ?? '';
+      const m = track.meta ?? {};
+      const chips = $('.chips', meta);
+      const chipValues = [
+        m.genre,
+        m.bpm && `${m.bpm} bpm`,
+        m.key,
+        m.energy && '▮'.repeat(Math.min(m.energy, 5)) + '▯'.repeat(Math.max(0, 5 - m.energy)),
+        m.mood,
+      ].filter(Boolean);
+      for (const value of chipValues) {
+        const chip = document.createElement('span');
+        chip.className = 'chip';
+        chip.textContent = value;
+        chips.appendChild(chip);
+      }
+
+      // version switcher — only when the family has more than one version
+      if (family.versions.length > 1) {
+        const versions = document.createElement('div');
+        versions.className = 'versions';
+        for (const v of family.versions) {
+          const b = document.createElement('button');
+          b.className = 'version' + (v.id === active.id ? ' on' : '');
+          b.textContent = `v${v.version} · ${fmtDate(v.createdAt)}`;
+          b.title = `version ${v.version} — ${v.createdAt}`;
+          b.addEventListener('click', () => {
+            if (v.id === active.id) return;
+            active = v;
+            mountBody();
+          });
+          versions.appendChild(b);
+        }
+        meta.appendChild(versions);
+      }
+
+      const exportRow = document.createElement('div');
+      exportRow.className = 'exports';
+      for (const fmt of ['wav', 'mp3']) {
+        const btn = document.createElement('button');
+        btn.className = 'export';
+        btn.textContent = `↓ ${fmt}`;
+        btn.title = fmt === 'wav' ? 'download lossless wav' : 'download mp3 192kbps';
+        btn.addEventListener('click', async () => {
+          if (isExporting()) return;
+          document.querySelectorAll('button.export').forEach((el) => (el.disabled = true));
+          const label = btn.textContent;
+          try {
+            await exportTrack(track, fmt, {
+              stopPlayback: stop,
+              onStatus: (s) => (btn.textContent = s),
+            });
+          } catch (err) {
+            console.error(err);
+            flashError(card);
+          } finally {
+            btn.textContent = label;
+            document.querySelectorAll('button.export').forEach((el) => (el.disabled = false));
+          }
+        });
+        exportRow.appendChild(btn);
+      }
+      meta.appendChild(exportRow);
+
+      const rate = document.createElement('div');
+      rate.className = 'rate';
+      for (let n = 1; n <= 5; n++) {
+        const b = document.createElement('button');
+        b.className = 'block' + (track.rating != null && n <= track.rating ? ' on' : '');
+        b.title = `${n}/5`;
+        b.addEventListener('click', async () => {
+          try {
+            await putRating(track, { rating: track.rating === n ? null : n });
+          } catch (err) {
+            console.error(err);
+            flashError(card);
+            return;
+          }
+          rate.querySelectorAll('.block').forEach((el, i) =>
+            el.classList.toggle('on', track.rating != null && i < track.rating),
+          );
+        });
+        rate.appendChild(b);
+      }
+
+      const autosaveArea = (className, placeholder, value, field) => {
+        const ta = document.createElement('textarea');
+        ta.className = className;
+        ta.placeholder = placeholder;
+        ta.value = value ?? '';
+        const save = debounce(async () => {
+          try {
+            await putRating(track, { [field]: ta.value });
+            ta.classList.add('saved');
+            setTimeout(() => ta.classList.remove('saved'), 600);
+          } catch (err) {
+            console.error(err);
+            flashError(ta);
+          }
+        }, 600);
+        ta.addEventListener('input', save);
+        return ta;
+      };
+
+      const feedback = document.createElement('div');
+      feedback.className = 'feedback';
+      feedback.append(
+        autosaveArea('notes', 'notes — what works, what to change… (this track only)', track.notes, 'notes'),
+        autosaveArea('notes lesson', 'lesson for future tracks — applies to every new batch…', track.lesson, 'lesson'),
+      );
+
+      const code = codeSection(track);
+
+      card.replaceChildren(playBtn, meta, rate, feedback, code);
+    }
   }
 
   function renderTracks() {
     const main = $('#tracks');
     main.replaceChildren();
-    const tracks = visibleTracks();
-    if (tracks.length === 0) {
+    const families = visibleFamilies();
+    if (families.length === 0) {
       main.innerHTML = `<p class="empty">nothing here — ${emptyHint}</p>`;
       return;
     }
     const byBatch = new Map();
-    for (const t of tracks) {
-      if (!byBatch.has(t.batch)) byBatch.set(t.batch, []);
-      byBatch.get(t.batch).push(t);
+    for (const fam of families) {
+      const batch = fam.latest.batch;
+      if (!byBatch.has(batch)) byBatch.set(batch, []);
+      byBatch.get(batch).push(fam);
     }
     for (const [batch, list] of [...byBatch.entries()].sort().reverse()) {
       const section = document.createElement('section');
@@ -312,10 +349,10 @@ export async function initApp({ apiBase, emptyHint }) {
       const h2 = document.createElement('h2');
       h2.textContent = batch;
       const promptSpan = document.createElement('span');
-      promptSpan.textContent = list[0].prompt;
+      promptSpan.textContent = list[0].latest.prompt;
       h2.appendChild(promptSpan);
       section.appendChild(h2);
-      list.forEach((t) => section.appendChild(trackCard(t)));
+      list.forEach((fam) => section.appendChild(trackCard(fam)));
       main.appendChild(section);
     }
   }
