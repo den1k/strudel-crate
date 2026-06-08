@@ -8,7 +8,7 @@ import {
   webaudioOutput,
 } from '@strudel/webaudio';
 import { SuperdoughAudioController } from 'superdough/superdoughoutput.mjs';
-import { exportSpec } from './export-spec.js';
+import { exportSpec, collectHaps } from './export-spec.js';
 import { encodeWav, encodeMp3 } from './encoders.js';
 
 const SAMPLE_RATE = 44100;
@@ -58,12 +58,10 @@ async function renderBuffer(pattern, { cps, cycles, seconds }) {
   try {
     await initAudio();
     // ascending onset order matters for graph-state controls like `cut`;
-    // awaiting each call lets samples load into the offline context
-    const haps = pattern
-      .queryArc(0, cycles, { _cps: cps })
-      .sort((a, b) => a.whole.begin.valueOf() - b.whole.begin.valueOf());
-    for (const hap of haps) {
-      if (!hap.hasOnset()) continue;
+    // collectHaps queries cycle-by-cycle (a single throwing cycle can't zero
+    // the whole render) and awaiting each call lets samples load into the
+    // offline context
+    for (const hap of collectHaps(pattern, cycles, cps)) {
       try {
         await webaudioOutput(hap, null, hap.duration / cps, cps, hap.whole.begin.valueOf() / cps);
       } catch (err) {
