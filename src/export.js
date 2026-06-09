@@ -17,12 +17,16 @@ export async function exportTrack(track, format, { onStatus = () => {} } = {}) {
   try {
     onStatus('rendering…');
     const blob = await new Promise((resolve, reject) => {
-      const timer = setTimeout(() => reject(new Error('export timed out')), RENDER_TIMEOUT_MS);
       let started = false;
       function cleanup() {
         clearTimeout(timer);
         window.removeEventListener('message', onMessage);
       }
+      // cleanup() in the timeout too, so a stuck iframe doesn't leak the listener
+      const timer = setTimeout(() => {
+        cleanup();
+        reject(new Error('export timed out'));
+      }, RENDER_TIMEOUT_MS);
       function onMessage(e) {
         if (e.source !== iframe.contentWindow) return; // ignore other frames
         const data = e.data || {};
