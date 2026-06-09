@@ -223,7 +223,6 @@ export async function initApp({ apiBase, emptyHint }) {
         const label = btn.textContent;
         try {
           await exportTrack(track, fmt, {
-            stopPlayback: stop, // offline render swaps the global audio context
             onStatus: (s) => (btn.textContent = s),
           });
         } catch (err) {

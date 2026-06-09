@@ -1,80 +1,50 @@
-import { evaluate } from '@strudel/transpiler';
-import {
-  getAudioContext,
-  setAudioContext,
-  setSuperdoughAudioController,
-  initAudio,
-  resetGlobalEffects,
-  webaudioOutput,
-} from '@strudel/webaudio';
-import { SuperdoughAudioController } from 'superdough/superdoughoutput.mjs';
-import { exportSpec, collectHaps } from './export-spec.js';
-import { encodeWav, encodeMp3 } from './encoders.js';
-
-const SAMPLE_RATE = 44100;
-
-// The offline render swaps the GLOBAL audio context, so exports are exclusive
-// and live playback must be stopped by the caller first.
+// Export is rendered in a hidden, same-origin iframe (export-render.html) that
+// owns its own audio context, so the main page's live playback is never
+// interrupted. This module is the main-page orchestrator: spawn the iframe, run
+// the postMessage protocol, download the returned blob, tear the iframe down.
 let exporting = false;
 export const isExporting = () => exporting;
 
-export async function exportTrack(track, format, { onStatus = () => {}, stopPlayback = () => {} } = {}) {
+const RENDER_TIMEOUT_MS = 5 * 60_000; // offline render is fast; this only guards a stuck iframe
+
+export async function exportTrack(track, format, { onStatus = () => {} } = {}) {
   if (exporting) throw new Error('an export is already running');
   exporting = true;
+  const iframe = document.createElement('iframe');
+  iframe.style.display = 'none';
+  iframe.src = '/export-render.html';
+  const id = `${track.id}:${format}`;
   try {
-    stopPlayback();
     onStatus('rendering…');
-    // setcpm/setcps exist only inside repls (each StrudelMirror registers its
-    // own); the bare transpiler evaluate() can't see them. Exports derive cps
-    // from meta.bpm instead, so a no-op satisfies the reference — same trick
-    // as scripts/strudel-env.mjs. ??= so a repl-registered real one survives.
-    globalThis.setcpm ??= () => {};
-    globalThis.setcps ??= () => {};
-    const { pattern } = await evaluate(track.code);
-    if (typeof pattern?.queryArc !== 'function') {
-      throw new Error('code did not evaluate to a pattern');
-    }
-    const spec = exportSpec(track);
-    const buffer = await renderBuffer(pattern, spec);
-    onStatus('encoding…');
-    const { blob, ext } =
-      format === 'wav'
-        ? { blob: new Blob([encodeWav(buffer)], { type: 'audio/wav' }), ext: 'wav' }
-        : { blob: new Blob(encodeMp3(buffer), { type: 'audio/mpeg' }), ext: 'mp3' };
-    download(blob, `${track.id}.${ext}`);
-  } finally {
-    exporting = false;
-  }
-}
-
-// Mirrors @strudel/webaudio's renderPatternAudio (webaudio.mjs:40) but returns
-// the rendered AudioBuffer instead of force-downloading a WAV, and re-inits
-// live audio afterwards so the editors keep playing.
-async function renderBuffer(pattern, { cps, cycles, seconds }) {
-  await getAudioContext().close(); // park the live context
-  const ctx = new OfflineAudioContext(2, Math.ceil(seconds * SAMPLE_RATE), SAMPLE_RATE);
-  setAudioContext(ctx);
-  setSuperdoughAudioController(new SuperdoughAudioController(ctx));
-  try {
-    await initAudio();
-    // ascending onset order matters for graph-state controls like `cut`;
-    // collectHaps queries cycle-by-cycle (a single throwing cycle can't zero
-    // the whole render) and awaiting each call lets samples load into the
-    // offline context
-    for (const hap of collectHaps(pattern, cycles, cps)) {
-      try {
-        await webaudioOutput(hap, null, hap.duration / cps, cps, hap.whole.begin.valueOf() / cps);
-      } catch (err) {
-        console.warn('[export] hap skipped:', err.message); // one bad hap ≠ dead export
+    const blob = await new Promise((resolve, reject) => {
+      const timer = setTimeout(() => reject(new Error('export timed out')), RENDER_TIMEOUT_MS);
+      let started = false;
+      function cleanup() {
+        clearTimeout(timer);
+        window.removeEventListener('message', onMessage);
       }
-    }
-    return await ctx.startRendering();
+      function onMessage(e) {
+        if (e.source !== iframe.contentWindow) return; // ignore other frames
+        const data = e.data || {};
+        if (data.type === 'ready' && !started) {
+          started = true; // render once, even if 'ready' somehow repeats
+          iframe.contentWindow.postMessage({ type: 'render', id, track, format }, '*');
+        } else if (data.type === 'done' && data.id === id) {
+          cleanup();
+          resolve(data.blob);
+        } else if (data.type === 'error' && data.id === id) {
+          cleanup();
+          reject(new Error(data.message));
+        }
+      }
+      window.addEventListener('message', onMessage);
+      document.body.appendChild(iframe); // load starts here; iframe posts 'ready'
+    });
+    onStatus('encoding…'); // cosmetic — encoding already happened in the iframe
+    download(blob, `${track.id}.${format}`);
   } finally {
-    // restore live audio: fresh default context + worklets/effects re-init
-    setAudioContext(null);
-    setSuperdoughAudioController(null);
-    resetGlobalEffects();
-    await initAudio();
+    iframe.remove(); // terminate the render context on completion or failure
+    exporting = false;
   }
 }
 
