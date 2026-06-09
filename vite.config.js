@@ -22,7 +22,13 @@ export default defineConfig({
   ],
   build: {
     target: 'esnext',
-    rollupOptions: { input: { main: page('./index.html'), stems: page('./stems.html') } },
+    rollupOptions: {
+      input: {
+        main: page('./index.html'),
+        stems: page('./stems.html'),
+        exportRender: page('./export-render.html'),
+      },
+    },
   },
   optimizeDeps: { esbuildOptions: { target: 'esnext' } },
   // API_PROXY lets verification scripts point an isolated vite at an isolated API
