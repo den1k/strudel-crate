@@ -18,3 +18,28 @@ export function exportSpec(track) {
   const cycles = Math.min(parseArrangeCycles(track.code) ?? DEFAULT_CYCLES, MAX_CYCLES);
   return { cps, cycles, seconds: cycles / cps };
 }
+
+// Collect onset haps one cycle at a time, in ascending onset order.
+// Why per-cycle instead of a single queryArc(0, cycles): some valid-enough
+// tracks contain mini-notation that throws mid-query (e.g. `<…> / <notes>`,
+// where the slow operator divides by a non-numeric pattern → NaN Fraction →
+// "Invalid argument"). strudel's queryArc swallows that throw and returns []
+// for the WHOLE range, so a one-shot full query rendered total silence. The
+// live scheduler queries cycle by cycle, so it only loses the offending cycle;
+// the export now does the same — one bad cycle can't zero the whole render.
+export function collectHaps(pattern, cycles, cps) {
+  const haps = [];
+  for (let cycle = 0; cycle < cycles; cycle++) {
+    let cycleHaps;
+    try {
+      cycleHaps = pattern.queryArc(cycle, cycle + 1, { _cps: cps });
+    } catch (err) {
+      console.warn(`[export] cycle ${cycle} query failed: ${err.message}`);
+      continue;
+    }
+    for (const hap of cycleHaps) {
+      if (hap.hasOnset()) haps.push(hap);
+    }
+  }
+  return haps.sort((a, b) => a.whole.begin.valueOf() - b.whole.begin.valueOf());
+}
