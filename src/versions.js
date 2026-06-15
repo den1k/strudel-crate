@@ -18,3 +18,25 @@ export function groupVersions(stems) {
     return { family: fam.family, versions, latest: versions[versions.length - 1] };
   });
 }
+
+// Select families whose LATEST version carries a non-empty note and describe
+// the next version to generate. Linear chains mean "latest with a note" == "a
+// noted item that hasn't had a newer version yet". The new version's title is
+// based on the ROOT (v1) title so suffixes don't stack ("Aaa v3", not "Aaa v2 v3").
+export function pendingRevisions(items) {
+  return groupVersions(items)
+    .filter((fam) => fam.latest.notes?.trim())
+    .map((fam) => {
+      const version = fam.latest.version + 1;
+      return {
+        root: fam.family,
+        nextId: `${fam.family}-v${version}`,
+        version,
+        note: fam.latest.notes.trim(),
+        code: fam.latest.code,
+        batch: fam.latest.batch,
+        prompt: fam.latest.prompt,
+        title: fam.versions[0].title,
+      };
+    });
+}

@@ -12,6 +12,10 @@ Quality bar: original, transformed sound; nothing that sounds like a stock prese
 
 ## Workflow
 
+0. **Revise from notes first:** run the `revise-from-notes` skill with argument
+   `stems` to bring any noted stems up to date with a new version before
+   generating the new batch. (It is a no-op if nothing is noted.)
+
 1. **Read `STEMS_GUIDE.md`** in full (Read tool). Agents must read it themselves
    too — your prompt tells them to.
 

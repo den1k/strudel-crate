@@ -12,6 +12,10 @@ outro (see the guide's arrange() default).
 
 ## Workflow
 
+0. **Revise from notes first:** run the `revise-from-notes` skill with argument
+   `tracks` to bring any noted tracks up to date with a new version before
+   generating the new batch. (It is a no-op if nothing is noted.)
+
 1. **Read `STRUDEL_GUIDE.md`** in full (Read tool). Agents must read it themselves
    too — your prompt tells them to.
 
