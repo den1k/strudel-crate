@@ -2,3 +2,8 @@ node_modules/
 dist/
 .DS_Store
 .env*
+
+# listener ratings/notes are local runtime data (the dev server rewrites them);
+# keep them untracked so branch switches never drop them
+data/ratings/
+data/stem-ratings/
