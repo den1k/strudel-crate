@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createStore } from '../server/store.mjs';
 import { createApp } from '../server/app.mjs';
+import { createJobStore } from '../server/jobs.mjs';
 
 let app, tracksDir, stemsDir;
 beforeEach(async () => {
@@ -91,5 +92,69 @@ describe('stems API', () => {
   it('rejects out-of-range stem ratings', async () => {
     const res = await request(app).put('/api/stems/x/rating').send({ rating: 0 });
     expect(res.status).toBe(400);
+  });
+});
+
+describe('jobs API', () => {
+  let jobApp, enqueued;
+  beforeEach(async () => {
+    const base = await mkdtemp(join(tmpdir(), 'strudel-jobsapi-'));
+    enqueued = [];
+    const jobStore = createJobStore({ jobsDir: join(base, 'jobs') });
+    const runner = { enqueue: async (job) => { enqueued.push(job); } };
+    jobApp = createApp(
+      {
+        tracks: createStore({ tracksDir: join(base, 'tracks'), ratingsDir: join(base, 'r1') }),
+        stems: createStore({ tracksDir: join(base, 'stems'), ratingsDir: join(base, 'r2') }),
+      },
+      { jobStore, runner },
+    );
+  });
+
+  it('POST /api/jobs enqueues a generate-stems job', async () => {
+    const res = await request(jobApp).post('/api/jobs').send({ type: 'generate-stems', prompt: 'alien pads', count: 4 });
+    expect(res.status).toBe(201);
+    expect(res.body).toMatchObject({ type: 'generate-stems', prompt: 'alien pads', count: 4, collection: 'stems', status: 'queued' });
+    expect(enqueued).toHaveLength(1);
+  });
+
+  it('clamps count to 1..30', async () => {
+    const res = await request(jobApp).post('/api/jobs').send({ type: 'generate-tracks', prompt: 'techno', count: 999 });
+    expect(res.body.count).toBe(30);
+  });
+
+  it('rejects an unknown type', async () => {
+    const res = await request(jobApp).post('/api/jobs').send({ type: 'rm-rf', prompt: 'x' });
+    expect(res.status).toBe(400);
+  });
+
+  it('rejects a missing prompt for generate', async () => {
+    const res = await request(jobApp).post('/api/jobs').send({ type: 'generate-stems' });
+    expect(res.status).toBe(400);
+  });
+
+  it('accepts revise-from-notes with a collection prompt', async () => {
+    const res = await request(jobApp).post('/api/jobs').send({ type: 'revise-from-notes', prompt: 'stems' });
+    expect(res.status).toBe(201);
+    expect(res.body).toMatchObject({ type: 'revise-from-notes', collection: 'stems' });
+  });
+
+  it('rejects revise-from-notes with a bad collection', async () => {
+    const res = await request(jobApp).post('/api/jobs').send({ type: 'revise-from-notes', prompt: 'drums' });
+    expect(res.status).toBe(400);
+  });
+
+  it('GET /api/jobs lists queued jobs and GET /:id fetches one', async () => {
+    const created = (await request(jobApp).post('/api/jobs').send({ type: 'generate-stems', prompt: 'p', count: 1 })).body;
+    const list = await request(jobApp).get('/api/jobs');
+    expect(list.body).toHaveLength(1);
+    const one = await request(jobApp).get(`/api/jobs/${created.id}`);
+    expect(one.status).toBe(200);
+    expect(one.body.id).toBe(created.id);
+  });
+
+  it('GET /api/jobs/:id returns 404 for missing job', async () => {
+    const res = await request(jobApp).get('/api/jobs/does-not-exist');
+    expect(res.status).toBe(404);
   });
 });

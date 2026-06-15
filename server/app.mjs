@@ -1,4 +1,7 @@
+import { randomUUID } from 'node:crypto';
+import { join } from 'node:path';
 import express from 'express';
+import { collectionFor } from './runner.mjs';
 
 const ID_RE = /^[A-Za-z0-9_-]+$/; // rating files are written as <id>.json — no path chars
 
@@ -28,10 +31,62 @@ function collectionRoutes(app, name, store) {
   }));
 }
 
-export function createApp(stores) {
+function jobRoutes(app, jobStore, runner) {
+  app.post('/api/jobs', wrap(async (req, res) => {
+    const { type, prompt, count } = req.body ?? {};
+    if (!jobStore.TYPES.has(type)) return res.status(400).json({ error: 'invalid type' });
+
+    const base = {
+      id: randomUUID(),
+      type,
+      createdAt: new Date().toISOString(),
+      status: 'queued',
+      startedAt: null, finishedAt: null, summary: null, error: null,
+      batch: null, newItems: [],
+    };
+
+    let job;
+    if (type === 'revise-from-notes') {
+      if (prompt !== 'stems' && prompt !== 'tracks') {
+        return res.status(400).json({ error: 'collection must be stems or tracks' });
+      }
+      job = { ...base, prompt, count: null, collection: prompt };
+    } else {
+      if (typeof prompt !== 'string' || !prompt.trim() || prompt.length > 500) {
+        return res.status(400).json({ error: 'prompt required (1-500 chars)' });
+      }
+      const n = Math.min(30, Math.max(1, Math.floor(Number(count) || 30)));
+      job = { ...base, prompt: prompt.trim(), count: n, collection: collectionFor(type) };
+    }
+
+    await jobStore.write(job);
+    await runner.enqueue(job);
+    res.status(201).json(job);
+  }));
+
+  app.get('/api/jobs', wrap(async (_req, res) => res.json(await jobStore.list())));
+
+  app.get('/api/jobs/:id', wrap(async (req, res) => {
+    if (!ID_RE.test(req.params.id)) return res.status(400).json({ error: 'invalid id' });
+    const job = await jobStore.get(req.params.id);
+    if (!job) return res.status(404).json({ error: 'not found' });
+    res.json(job);
+  }));
+}
+
+export function createApp(stores, opts = {}) {
   const app = express();
   app.use(express.json());
   for (const [name, store] of Object.entries(stores)) collectionRoutes(app, name, store);
+
+  if (opts.jobStore && opts.runner) jobRoutes(app, opts.jobStore, opts.runner);
+
+  // Production: serve the built SPA (dev uses Vite). Defined AFTER the API so
+  // /api/* always wins; the /stems clean URL mirrors vite.config.js's rewrite.
+  if (opts.distDir) {
+    app.get(['/stems', '/stems/'], (_req, res) => res.sendFile(join(opts.distDir, 'stems.html')));
+    app.use(express.static(opts.distDir));
+  }
 
   // JSON error responses (body-parser 400s and async store failures land here).
   app.use((err, _req, res, _next) => {
