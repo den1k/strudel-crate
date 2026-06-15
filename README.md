@@ -31,3 +31,29 @@ an elaborate middle, and an outro.
 Node, requires it to produce events in its first 8 cycles, and checks every sound referenced across the full arrangement (512-cycle scan)
 against `scripts/sounds.json` — which is generated from the exact sample banks the
 webapp loads. If it validates, the webapp can play it.
+
+## Deploying (private, single-user)
+
+The web UI can trigger the generation skills on the server via headless Claude Code.
+
+**Prerequisites on the box:**
+- `claude` (Claude Code CLI) on `PATH` and logged in (run `claude` once, interactively).
+- This repo checked out; the server runs with its cwd at the repo root.
+
+**Build + run a single port:**
+
+    npm ci
+    npm run build           # emits dist/
+    PORT=3001 node server/index.mjs
+
+Express serves the built UI from `dist/` and the API (including `/api/jobs`) on the
+same `PORT`. Run it under a process manager (pm2 or systemd) so it restarts on
+crash; on boot the runner marks any interrupted job and resumes the queue.
+
+**Security:** the `/api/jobs` endpoint runs Claude Code with a scoped tool
+allowlist (see `server/runner.mjs`). Keep the deployment private — behind a login,
+VPN, or tunnel — since anyone who can reach it can trigger generation runs.
+
+**Redeploy:**
+
+    git pull && npm ci && npm run build && <restart the server>
