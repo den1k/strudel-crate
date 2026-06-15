@@ -38,20 +38,26 @@ export function diffNew(before, after) {
   return [...after].filter((id) => !before.has(id)).sort();
 }
 
-// The trustworthy batch comes from each item file's `batch` field (works for
-// generate ids like 2026-06-15-pads-01 AND revise version ids like ...-v2,
-// which an id-suffix strip can't handle). Null if the new files disagree.
+// The trustworthy batch comes from each new file's `batch` field (works for
+// generate ids like 2026-06-15-pads-01 AND revise version ids like ...-v2).
+// The generate skills auto-run revise as Step 0, so a generate run's new files
+// can include revise version files from OTHER batches; pick the majority batch
+// (the generation batch has `count` files vs scattered single revisions).
+// Null only on a genuine tie for the top batch, or when no new file has a batch.
 async function readBatch(dir, ids) {
-  const batches = new Set();
+  const counts = new Map();
   for (const id of ids) {
     try {
       const item = JSON.parse(await readFile(join(dir, `${id}.json`), 'utf8'));
-      if (item.batch) batches.add(item.batch);
+      if (item.batch) counts.set(item.batch, (counts.get(item.batch) ?? 0) + 1);
     } catch {
       // ignore unreadable/missing files
     }
   }
-  return batches.size === 1 ? [...batches][0] : null;
+  if (counts.size === 0) return null;
+  const sorted = [...counts.entries()].sort((a, b) => b[1] - a[1]);
+  if (sorted.length > 1 && sorted[0][1] === sorted[1][1]) return null; // ambiguous tie
+  return sorted[0][0];
 }
 
 async function idsIn(dir) {

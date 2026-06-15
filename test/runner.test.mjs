@@ -157,6 +157,22 @@ describe2('createRunner worker', () => {
     expect2(done.batch).toBe('2026-06-08-alien');
   });
 
+  it2('picks the majority batch when Step-0 revise adds version files from another batch', async () => {
+    const { spawn, children } = fakeSpawnFactory();
+    const runner = createRunner({ repoRoot, dirs: { stems: 'stems', tracks: 'tracks' }, jobStore, spawn, now: ticks });
+    await jobStore.write(baseJob('gen'));
+    await runner.enqueue(baseJob('gen'));
+    await until(() => children.length === 1);
+    // Step-0 revise wrote a version file from an OLD batch...
+    await writeFile(join2(repoRoot, 'stems', '2026-06-01-old-03-v2.json'), JSON.stringify({ batch: '2026-06-01-old' }));
+    // ...then the generation step wrote the new batch (the majority).
+    await writeFile(join2(repoRoot, 'stems', '2026-06-15-new-01.json'), JSON.stringify({ batch: '2026-06-15-new' }));
+    await writeFile(join2(repoRoot, 'stems', '2026-06-15-new-02.json'), JSON.stringify({ batch: '2026-06-15-new' }));
+    children[0].emit('close', 0);
+    await until(async () => (await jobStore.get('gen')).status === 'done');
+    expect2((await jobStore.get('gen')).batch).toBe('2026-06-15-new');
+  });
+
   it2('returns null batch when new files span multiple batches', async () => {
     const { spawn, children } = fakeSpawnFactory();
     const runner = createRunner({ repoRoot, dirs: { stems: 'stems', tracks: 'tracks' }, jobStore, spawn, now: ticks });
