@@ -1,0 +1,33 @@
+{
+  "sources": [
+    { "id": "four-on-floor-909", "family": "four-on-floor", "appliesTo": "any",
+      "frag": "s(\"bd*4\").bank(\"RolandTR909\").gain(1.1)",
+      "note": "Driving 4/4 kick. Pair with any harmonic engine; vary the bank per batch." },
+    { "id": "broken-808", "family": "broken", "appliesTo": "any",
+      "frag": "s(\"bd ~ [~ bd] ~\").bank(\"RolandTR808\").gain(1.1)",
+      "note": "Broken/syncopated kick; trap or downtempo feel." },
+    { "id": "breakbeat-linn", "family": "breakbeat", "appliesTo": "any",
+      "frag": "s(\"bd ~ sd [bd bd]\").bank(\"LinnDrum\").gain(1.0)",
+      "note": "Breakbeat skeleton; add ghost hats." },
+    { "id": "half-time-dmx", "family": "half-time", "appliesTo": "any",
+      "frag": "s(\"bd ~ ~ ~ sd ~ ~ ~\").bank(\"OberheimDMX\").gain(1.0)",
+      "note": "Half-time heavy groove." },
+    { "id": "no-drums-pad", "family": "beatless", "appliesTo": "any",
+      "frag": "note(\"<c2 ab1>/2\").s(\"sawtooth\").lpf(500).room(0.5).gain(0.5)",
+      "note": "Beatless pad bed; ambient starting point with no kit at all." }
+  ],
+  "signatures": [
+    { "id": "dub-chord-stabs", "appliesTo": "any",
+      "frag": "note(\"~ <[c3,eb3,g3]> ~ <[ab2,c3,eb3]>\").s(\"sawtooth\").lpf(900).room(0.5).gain(0.5)",
+      "note": "Off-beat dub chord stabs." },
+    { "id": "arp-engine", "appliesTo": "any",
+      "frag": "n(\"0 2 4 7\").scale(\"C3:minor\").s(\"square\").decay(0.1).sustain(0).gain(0.5)",
+      "note": "Driving arpeggio." },
+    { "id": "sub-bassline", "appliesTo": "any",
+      "frag": "note(\"<c1 c1 eb1 g0>*4\").s(\"sine\").lpf(300).gain(0.6)",
+      "note": "Rolling sub bassline." },
+    { "id": "piano-led", "appliesTo": "any",
+      "frag": "note(\"<[c3,eb3,g3] [ab2,c3,eb3]>\").s(\"piano\").room(0.4).gain(0.6)",
+      "note": "Felt-piano chord lead." }
+  ]
+}
