@@ -77,10 +77,12 @@ export function createRunner({
   function runClaude(job) {
     return new Promise((resolve) => {
       let out = '';
+      let resolved = false;
+      const settle = (result) => { if (!resolved) { resolved = true; resolve(result); } };
       const child = spawn('claude', buildArgv(job), { cwd: repoRoot });
       child.stdout?.on('data', (d) => { out += d; });
-      child.on('error', () => resolve({ code: -1, out }));
-      child.on('close', (code) => resolve({ code: code ?? -1, out }));
+      child.on('error', () => settle({ code: -1, out }));
+      child.on('close', (code) => settle({ code: code ?? -1, out }));
     });
   }
 
@@ -119,7 +121,7 @@ export function createRunner({
 
   async function enqueue(job) {
     queue.push(job.id);
-    pump();
+    pump().catch((err) => console.error('runner pump failed', err));
     return job;
   }
 
@@ -131,7 +133,7 @@ export function createRunner({
         queue.push(job.id);
       }
     }
-    pump();
+    pump().catch((err) => console.error('runner pump failed', err));
   }
 
   return { enqueue, recover };
