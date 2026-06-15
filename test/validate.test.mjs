@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { validateCode, validateTrack, characterCheck } from '../scripts/validate.mjs';
+import { validateCode, validateTrack, characterCheck, isTrackPath } from '../scripts/validate.mjs';
 
 describe('validateCode', () => {
   it('accepts valid strudel code and counts events', async () => {
@@ -205,5 +205,53 @@ describe('characterCheck', () => {
     const two = characterCheck('note("[c3,e3,g3,b3]")\ns("bd(3,8)")');
     expect(two.present.length).toBe(2);
     expect(two.ok).toBe(false);
+  });
+});
+
+describe('character gate wiring', () => {
+  const genericTrack = () => ({
+    id: 't', title: 'T', prompt: 'p', batch: 'b',
+    description: 'A plain triad sketch under a filter sweep.',
+    meta: { bpm: 120, genre: 'techno', mood: 'flat', key: 'C minor', instruments: ['piano'], energy: 3 },
+    code: 'setcpm(120/4)\nstack(note("<[c3,eb3,g3] [ab2,c3,eb3]>").s("piano").lpf(sine.slow(8).range(400,1200)).room(0.4), s("bd ~ ~ ~ sd ~ ~ ~").bank("CasioRZ1"), s("hh*8").bank("CasioRZ1").degradeBy(0.2))',
+    createdAt: 'x',
+  });
+  const richTrack = () => {
+    const t = genericTrack();
+    t.code = 'setcpm(120/4)\nstack(note("[c3,eb3,g3,bb3]").s("sawtooth").crush(6), s("bd(3,8)").bank("RolandTR909"), s("hh*8").bank("RolandTR909").every(4, x => x.fast(2)))';
+    return t;
+  };
+
+  it('does NOT gate by default (existing behavior preserved)', async () => {
+    expect((await validateTrack(genericTrack())).ok).toBe(true);
+  });
+
+  it('gates the generic track when character:true', async () => {
+    const result = await validateTrack(genericTrack(), { character: true });
+    expect(result.ok).toBe(false);
+    expect(result.error).toMatch(/lacks character/);
+  });
+
+  it('passes a rich track when character:true', async () => {
+    expect((await validateTrack(richTrack(), { character: true })).ok).toBe(true);
+  });
+
+  it('still reports a playability error before the character error', async () => {
+    const t = genericTrack();
+    t.code = 'note("c3 e3"';  // syntax error
+    const result = await validateTrack(t, { character: true });
+    expect(result.error).toMatch(/evaluation failed/);
+  });
+});
+
+describe('isTrackPath', () => {
+  it('is true for files under tracks/', () => {
+    expect(isTrackPath('tracks/2026-06-15-foo-01.json')).toBe(true);
+    expect(isTrackPath('/abs/path/tracks/x.json')).toBe(true);
+  });
+  it('is false for stems and other paths', () => {
+    expect(isTrackPath('stems/2026-06-15-foo-01.json')).toBe(false);
+    expect(isTrackPath('/abs/path/stems/x.json')).toBe(false);
+    expect(isTrackPath('foo.json')).toBe(false);
   });
 });

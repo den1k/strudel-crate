@@ -106,7 +106,7 @@ function declaredBpm(code) {
 }
 
 // Full track validation: required fields + meta schema + bpm↔setcpm, then the code itself.
-export async function validateTrack(track) {
+export async function validateTrack(track, opts = {}) {
   const missing = REQUIRED_FIELDS.filter((f) => track[f] == null || (typeof track[f] === 'string' && track[f].trim() === ''));
   if (missing.length) return { ok: false, error: `missing fields: ${missing.join(', ')}` };
   const m = track.meta;
@@ -129,7 +129,21 @@ export async function validateTrack(track) {
   if (m.bpm !== bpm) {
     return { ok: false, error: `meta.bpm (${m.bpm}) does not match the code's tempo (${bpm} BPM from setcpm)` };
   }
-  return validateCode(track.code);
+  const codeResult = await validateCode(track.code);
+  if (!codeResult.ok || !opts.character) return codeResult;
+  const c = characterCheck(track.code);
+  if (!c.ok) {
+    return {
+      ok: false,
+      error: `lacks character: present [${c.present.join(', ') || 'none'}]; need >=3 of {harmonic, rhythmic, timbral, transform} — add e.g. an off-grid groove (euclid/swing) or dirt (crush/shape/vowel)`,
+    };
+  }
+  return codeResult;
+}
+
+// True when the path points at a track file (gated for character), not a stem.
+export function isTrackPath(arg) {
+  return /(?:^|\/)tracks\/[^/]+\.json$/.test(arg);
 }
 
 async function validateTarget(arg) {
@@ -141,7 +155,7 @@ async function validateTarget(arg) {
     } catch (err) {
       return { ok: false, error: `unreadable JSON: ${err.message}` };
     }
-    return validateTrack(track);
+    return validateTrack(track, { character: isTrackPath(arg) });
   }
   return validateCode(await readFile(arg, 'utf8'));
 }
