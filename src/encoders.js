@@ -9,12 +9,13 @@ const toInt16 = (f32) => {
   return i16;
 };
 
-// 16-bit PCM RIFF/WAVE from an AudioBuffer-like. (@strudel/webaudio has the
-// same encoder but keeps it private — see webaudio.mjs:120.)
-export function encodeWav(buffer) {
+// PCM RIFF/WAVE from an AudioBuffer-like. bitDepth 16 (default) or 24.
+// (@strudel/webaudio has a 16-bit encoder but keeps it private — webaudio.mjs:120.)
+export function encodeWav(buffer, bitDepth = 16) {
   const { numberOfChannels, sampleRate, length } = buffer;
   const channels = Array.from({ length: numberOfChannels }, (_, c) => buffer.getChannelData(c));
-  const blockAlign = numberOfChannels * 2;
+  const bytesPerSample = bitDepth / 8;
+  const blockAlign = numberOfChannels * bytesPerSample;
   const dataSize = length * blockAlign;
   const out = new ArrayBuffer(44 + dataSize);
   const view = new DataView(out);
@@ -29,15 +30,25 @@ export function encodeWav(buffer) {
   view.setUint32(24, sampleRate, true);
   view.setUint32(28, sampleRate * blockAlign, true); // byte rate
   view.setUint16(32, blockAlign, true);
-  view.setUint16(34, 16, true); // bits per sample
+  view.setUint16(34, bitDepth, true);
   writeStr(36, 'data');
   view.setUint32(40, dataSize, true);
   let off = 44;
   for (let i = 0; i < length; i++) {
     for (let c = 0; c < numberOfChannels; c++) {
       const s = Math.max(-1, Math.min(1, channels[c][i]));
-      view.setInt16(off, s < 0 ? s * 0x8000 : s * 0x7fff, true);
-      off += 2;
+      if (bitDepth === 16) {
+        view.setInt16(off, s < 0 ? s * 0x8000 : s * 0x7fff, true);
+        off += 2;
+      } else {
+        // 24-bit: no DataView.setInt24, so write 3 bytes little-endian two's-complement
+        let v = Math.round(s < 0 ? s * 0x800000 : s * 0x7fffff);
+        if (v < 0) v += 0x1000000;
+        view.setUint8(off, v & 0xff);
+        view.setUint8(off + 1, (v >> 8) & 0xff);
+        view.setUint8(off + 2, (v >> 16) & 0xff);
+        off += 3;
+      }
     }
   }
   return out;
