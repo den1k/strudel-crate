@@ -51,6 +51,11 @@ the validator (`node scripts/validate.mjs tracks/<id>.json`) enforces most of it
 5. Keep per-layer `.gain()` between 0.3 and 1.2.
 6. **The first 8 cycles must produce sound** — the validator queries cycles 0-8; an
    arrangement that opens with silence fails.
+7. **Start from your seed, then arrange and EXTEND it.** You are given one track seed (a
+   groove + a harmonic engine) and extension constraints (dimensions to develop, motion
+   mechanism, tail, forbids). Grow it into a complete 3–6 min `arrange()` — do NOT paste
+   the seed unchanged, and do NOT collapse into a `sawtooth` + `sine.slow` sweep + reverb
+   default. The seed is your start; the constraints keep you different from your siblings.
 
 ## Sound palette
 
@@ -156,40 +161,29 @@ arrange(
 Either way: something must CHANGE every 8-16 cycles — a layer entering, a filter
 opening, a progression shifting. Repetition without development gets rated down.
 
-## Complete examples (these validate)
+## Shape skeleton (NOT a track to copy)
 
-Driving acid techno sketch (loop-based):
+Your track must fit one of these shapes. The comments mark the slots YOU fill — do not
+copy any specific instrument or groove; that is what makes every track sound the same.
+Start from your assigned SEED (a groove + a harmonic engine) and arrange it out.
 
-```
-setcpm(130/4)
-stack(
-  s("bd*4").bank("RolandTR909").gain(1.1),
-  s("[~ hh]*4").bank("RolandTR909").gain(0.7).pan(sine.range(0.3, 0.7)),
-  s("~ cp ~ cp").bank("RolandTR909").room(0.3),
-  note("<c2 c2 eb2 g1>*8").s("sawtooth").lpf(sine.slow(4).range(200, 1800)).resonance(12).decay(0.12).sustain(0).gain(0.8)
-)
-```
-
-Arranged techno track (full-track shape):
+Full track (the default):
 
 ```
-setcpm(132/4)
+setcpm(<bpm>/4)
 arrange(
-  [8, stack(
-    s("bd*4").bank("RolandTR909").gain(1.1),
-    s("[~ hh]*4").bank("RolandTR909").gain(0.6)
-  )],
-  [16, stack(
-    s("bd*4").bank("RolandTR909").gain(1.1),
-    s("[~ hh]*4").bank("RolandTR909").gain(0.6),
-    note("<c2 eb2 g1 bb1>*8").s("sawtooth").lpf(saw.slow(16).range(300, 2500)).decay(0.1).sustain(0).gain(0.8)
-  )],
-  [8, stack(
-    note("<c2 eb2>*4").s("sawtooth").lpf(600).room(0.4).gain(0.7),
-    s("~ cp ~ cp").bank("RolandTR909").room(0.5).gain(0.6)
-  )]
+  [16, stack( /* intro: your seed, stripped back + filtered */ )],
+  [32, stack( /* build: add layers from your assigned dimensions */ )],
+  [32, stack( /* main: full groove + your harmonic engine */ )],
+  [16, stack( /* breakdown: drop drums, your assigned tail/space */ )],
+  [24, stack( /* peak: everything + your motion mechanism for variation */ )],
+  [12, stack( /* outro: strip back to the intro elements */ )]
 )
 ```
+
+Honor your FORBIDS — do not fall back to a `sawtooth` acid bass under a `sine.slow`
+filter sweep into reverb just because it validates. The drum-bank menu and the arsenal
+above are yours to combine in unexpected ways.
 
 ## Common validator failures
 
