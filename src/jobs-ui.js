@@ -92,7 +92,9 @@ export function mountJobsUI({ collection, onBatchDone }) {
 
   // Re-render the status pill from the active job + the live clock. Called on
   // every poll AND once a second so the elapsed time advances between polls.
+  // Also refreshes the open log dropdown so its pinned active line ticks too.
   function renderActive() {
+    if (!logEl.hidden) renderLog(lastJobs);
     if (!activeJob) { setStatus('', ''); return; }
     setStatus(progressText(activeJob, Date.now()), 'busy');
   }
