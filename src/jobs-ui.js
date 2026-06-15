@@ -26,19 +26,25 @@ export function mountJobsUI({ collection, onBatchDone }) {
   let lastJobs = [];
   const startedAt = Date.now();
 
+  // text + a state class ('busy' | 'err' | '') so the stylesheet can color/animate it
+  function setStatus(text, state = '') {
+    statusEl.textContent = text;
+    statusEl.className = state ? `gen-status ${state}` : 'gen-status';
+  }
+
   async function post(body) {
-    statusEl.textContent = 'queued…';
+    setStatus('queued…', 'busy');
     try {
       const res = await fetch('/api/jobs', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
-      if (!res.ok) { statusEl.textContent = 'rejected'; return; }
-      statusEl.textContent = 'running…';
+      if (!res.ok) { setStatus('rejected', 'err'); return; }
+      setStatus('running…', 'busy');
       if (notifySupported() && Notification.permission === 'default') Notification.requestPermission();
     } catch {
-      statusEl.textContent = 'network error';
+      setStatus('network error', 'err');
     }
   }
 
@@ -102,7 +108,7 @@ export function mountJobsUI({ collection, onBatchDone }) {
       renderBadge(jobs);
       renderLog(jobs);
       const active = jobs.some((j) => j.status === 'queued' || j.status === 'running');
-      statusEl.textContent = active ? 'running…' : '';
+      setStatus(active ? 'running…' : '', active ? 'busy' : '');
     } catch {
       // network blip — retry next tick
     }

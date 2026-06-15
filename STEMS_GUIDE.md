@@ -58,6 +58,12 @@ most of it.
    until it's yours. Detune-thicken with `.off(0.01, x => x.add(note(0.1)))`,
    stereo-split with `.jux(rev)`, dirty up with `.shape()`/`.crush()` — make
    something a preset browser doesn't have.
+7. **Start from your seed, then transform and EXTEND it.** You are given one synthesis
+   seed (a source + a signature move) and a set of extension constraints (which
+   dimensions to modulate, the motion mechanism, the tail, and explicit forbids). Build a
+   complete, original stem around the seed — do NOT paste it unchanged, and do NOT
+   collapse into a generic `sine.slow` filter-sweep-into-reverb. The seed is where you
+   begin; the constraints are how you stay different from your siblings.
 
 ## Sound-design arsenal (all verified to work here)
 
@@ -81,50 +87,36 @@ most of it.
 
 ## Recipes by sound family
 
-- **FM morph bass:** `sine` + `.fm(sine.slow(16).range(2, 14))` + stepped `.fmh("<1 1.5 2 0.5>/4")` + `.penv` click + ladder filter env.
+*These are idea-prompts, not the only answer — your assigned seed is your real starting
+point. Treat a recipe as one possible direction, never as a template to reproduce.*
+
+- **FM morph bass:** `sine` + a modulated `.fm` index + stepped `.fmh("<1 1.5 2 0.5>/4")` + `.penv` click + ladder filter env.
 - **Formant alien:** `sawtooth` + `.vowel("<a e i o u>/3")` + `.vib`/`.vibmod` + slow `.bpf` sweep + `.sometimesBy(0.15, x => x.speed(-1))`.
-- **Noise riser/texture:** `s("white*2")` + `.lpf(saw.slow(8).range(200, 6000))` + high `.resonance` + `.pan(rand)`.
+- **Noise riser/texture:** `s("white*2")` + a swept `.lpf` + high `.resonance` + `.pan(rand)`.
 - **Sample mangle:** dirt sample + `.chop(16)` + `.speed("<1 -1 0.5>")` + `.striate(4)` — granular clouds from one hit.
 - **Designed percussion:** short-decay synth + `.penv(24).pdecay(0.05)` + `.lpenv` + `.shape` — ONE sculpted hit pattern, not a kit.
 
-## Complete examples (these validate)
+## Shape skeleton (NOT an instrument to copy)
 
-FM morph bass — "bass morph" energy; the fm index, harmonicity, pitch env and
-ladder filter all travel on different clocks so the loop never sits still:
+Your stem must fit this shape. The comments mark the slots YOU fill — do not copy any
+specific synthesis chain; that is exactly what makes every stem sound the same.
 
 ```
-setcpm(120/4)
+setcpm(<bpm>/4)
 stack(
-  note("<c1 c1 eb1 g0>*4").s("sine")
-    .fm(sine.slow(16).range(2, 14)).fmh("<1 1.5 2 0.5>/4")
-    .penv("<0 0 12 -5>/8").pattack(0.001).pdecay(0.08)
-    .lpf(sine.slow(32).range(250, 2800)).resonance(12).ftype("ladder")
-    .lpenv(3).lpattack(0.005).lpdecay(0.15)
-    .attack(0.004).decay(0.2).sustain(0.5).release(0.06)
-    .shape(0.35).postgain(0.9)
-    .off(1/8, x => x.add(note(12)).gain(0.25).pan(0.8))
-    .room(0.15).gain(0.85)
+  note("<…your pitch pattern…>").s("<…your source…>")
+    // start from your assigned SEED, then build it out:
+    // • modulate your assigned dimensions (≥3), each on its own slow clock
+    //   (prime-ish periods: 7, 11, 13, 16, 23, 29, 32 — so they don't realign)
+    // • use your assigned MOTION MECHANISM for the morph arc (8–32 cycles)
+    // • finish with your assigned TAIL; per-layer .gain() 0.3–1.2
+    // • honor your FORBIDS — do not fall back to a generic sine.slow filter
+    //   sweep into reverb
 )
 ```
 
-Alien formant lead — "alien sound" energy; vowels cycle against a prime-numbered
-vibrato LFO and a band-pass sweep, with occasional reversed notes:
-
-```
-setcpm(120/4)
-stack(
-  note("<c4 [c4 d4] f4 <eb4 g4>>/2").s("sawtooth")
-    .vowel("<a e i o u>/3").vib("<4 6 9>/8").vibmod(sine.slow(13).range(0.2, 1.5))
-    .coarse("<1 1 2 4>/4").crush("<16 8 6>/16")
-    .bpf(sine.slow(24).range(400, 3200)).resonance(18)
-    .pan(sine.slow(7).range(0.15, 0.85))
-    .sometimesBy(0.15, x => x.speed(-1))
-    .delay("0.5:0.375:0.7").room(0.85).gain(0.65)
-)
-```
-
-Pro move in both: LFO periods are mutually prime-ish (7, 13, 16, 24, 32 cycles),
-so parameter combinations don't realign for a long time — the loop feels alive.
+The arsenal table above is your menu. Combine its techniques in ways the menu doesn't
+spell out — surprising combinations are the whole point.
 
 ## Common validator failures
 
