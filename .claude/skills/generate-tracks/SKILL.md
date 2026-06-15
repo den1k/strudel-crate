@@ -19,9 +19,10 @@ outro (see the guide's arrange() default).
 1. **Read `STRUDEL_GUIDE.md`** in full (Read tool). Agents must read it themselves
    too — your prompt tells them to.
 
-2. **Collect feedback:** run `node scripts/feedback.mjs`. Capture the output — it is
-   injected into every agent prompt. If it says "No ratings yet", inject the literal
-   text "none yet".
+2. **Collect feedback:** run `node scripts/feedback.mjs`. This is the cross-track
+   lessons digest only — per-song ratings and notes stay with their own song and are
+   never included. Capture the output — it is injected into every agent prompt. If it
+   says "No lessons yet", inject the literal text "none yet".
 
 3. **Compute the batch id:** `YYYY-MM-DD-<slug>` where slug = the prompt lowercased,
    non-alphanumerics → `-`, trimmed to ≤ 40 chars (e.g. `2026-06-03-dark-hypnotic-techno`).
@@ -54,8 +55,8 @@ outro (see the guide's arrange() default).
       default: a complete 3–6 minute track with intro, elaborate middle, and outro,
       built with arrange().
    2. Style brief: "{prompt}". Your variation directive: {directive}.
-      Listener feedback to honor (emulate the top-rated; apply every lesson
-      under "Lessons for all future tracks"):
+      Cross-track lessons to apply (honor every lesson listed under
+      "Lessons for all future tracks"):
       {digest}
    3. Write tracks/{id}.json with all required fields:
       id "{id}", batch "{batch}", prompt (the style brief verbatim),

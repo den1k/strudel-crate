@@ -19,9 +19,10 @@ Quality bar: original, transformed sound; nothing that sounds like a stock prese
 1. **Read `STEMS_GUIDE.md`** in full (Read tool). Agents must read it themselves
    too — your prompt tells them to.
 
-2. **Collect feedback:** run `node scripts/feedback.mjs stems`. Capture the
-   output — it is injected into every agent prompt. If it says "No ratings yet",
-   inject the literal text "none yet".
+2. **Collect feedback:** run `node scripts/feedback.mjs stems`. This is the
+   cross-track lessons digest only — per-stem ratings and notes stay with their own
+   stem and are never included. Capture the output — it is injected into every agent
+   prompt. If it says "No lessons yet", inject the literal text "none yet".
 
 3. **Compute the batch id:** `YYYY-MM-DD-<slug>` where slug = the prompt lowercased,
    non-alphanumerics → `-`, trimmed to ≤ 40 chars (e.g. `2026-06-04-alien-sound`).
@@ -59,8 +60,8 @@ Quality bar: original, transformed sound; nothing that sounds like a stock prese
       sound, a built-in 8–32 cycle morph arc (~15–60 s), at least 3 modulated
       dimensions, original transformed sound.
    2. Sound brief: "{prompt}". Your variation directive: {directive}.
-      Listener feedback to honor (emulate the top-rated; apply every lesson
-      under "Lessons for all future tracks"):
+      Cross-track lessons to apply (honor every lesson listed under
+      "Lessons for all future tracks"):
       {digest}
    3. Write stems/{id}.json with all required fields:
       id "{id}", batch "{batch}", prompt (the sound brief verbatim),
