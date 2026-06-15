@@ -43,3 +43,25 @@ export function collectHaps(pattern, cycles, cps) {
   }
   return haps.sort((a, b) => a.whole.begin.valueOf() - b.whole.begin.valueOf());
 }
+
+// The stem key for a hap: its sound name (`s`), falling back to 'synth' for
+// note-only haps with no explicit sound. A track normally uses one drum bank,
+// so the bare sound name is a stable per-instrument key across the arrangement.
+export function stemName(hap) {
+  const v = hap.value;
+  return v && typeof v === 'object' && typeof v.s === 'string' ? v.s : 'synth';
+}
+
+// Group onset haps by sound into [{ name, haps }], sorted by name for
+// deterministic stem ordering/filenames. Used to render one WAV per sound.
+export function groupHapsBySound(haps) {
+  const groups = new Map();
+  for (const hap of haps) {
+    const key = stemName(hap);
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(hap);
+  }
+  return [...groups.entries()]
+    .sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0))
+    .map(([name, hs]) => ({ name, haps: hs }));
+}
