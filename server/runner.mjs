@@ -64,5 +64,75 @@ function parseSummary(stdout) {
   }
 }
 
-// createRunner is added in a later task.
 export { nodeSpawn, idsIn, parseSummary, ALLOWED_TOOLS };
+
+export function createRunner({
+  repoRoot, dirs, jobStore,
+  spawn = nodeSpawn,
+  now = () => new Date().toISOString(),
+}) {
+  const queue = [];
+  let running = false;
+
+  function runClaude(job) {
+    return new Promise((resolve) => {
+      let out = '';
+      const child = spawn('claude', buildArgv(job), { cwd: repoRoot });
+      child.stdout?.on('data', (d) => { out += d; });
+      child.on('error', () => resolve({ code: -1, out }));
+      child.on('close', (code) => resolve({ code: code ?? -1, out }));
+    });
+  }
+
+  async function runOne(id) {
+    const job = await jobStore.get(id);
+    if (!job) return;
+    const dir = join(repoRoot, dirs[job.collection]);
+    await jobStore.update(id, { status: 'running', startedAt: now() });
+    const before = await idsIn(dir);
+    const { code, out } = await runClaude(job);
+    const after = await idsIn(dir);
+    const newItems = diffNew(before, after);
+    const patch = { finishedAt: now(), newItems, batch: batchOf(newItems) };
+    if (code === 0) {
+      patch.status = 'done';
+      patch.summary = parseSummary(out);
+    } else {
+      patch.status = 'failed';
+      patch.error = `claude exited ${code}`;
+    }
+    await jobStore.update(id, patch);
+  }
+
+  async function pump() {
+    if (running) return;
+    const id = queue.shift();
+    if (!id) return;
+    running = true;
+    try {
+      await runOne(id);
+    } finally {
+      running = false;
+      if (queue.length) pump();
+    }
+  }
+
+  async function enqueue(job) {
+    queue.push(job.id);
+    pump();
+    return job;
+  }
+
+  async function recover() {
+    for (const job of await jobStore.list()) {
+      if (job.status === 'running') {
+        await jobStore.update(job.id, { status: 'interrupted', finishedAt: now() });
+      } else if (job.status === 'queued') {
+        queue.push(job.id);
+      }
+    }
+    pump();
+  }
+
+  return { enqueue, recover };
+}
