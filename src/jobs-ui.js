@@ -70,12 +70,12 @@ export function mountJobsUI({ collection, onBatchDone }) {
     const finished = jobs.filter((j) => ['done', 'failed', 'interrupted'].includes(j.status));
     logEl.innerHTML = finished.length
       ? finished.map((j) => {
-          const label = j.status === 'done'
-            ? `${j.newItems?.length ?? 0} ${j.collection} — ${j.prompt}`
-            : `${j.status}: ${j.prompt}`;
-          return j.status === 'done'
-            ? `<a href="${deepLink(j)}">${escapeHtml(label)}</a>`
-            : `<span>${escapeHtml(label)}</span>`;
+          if (j.status === 'done') {
+            const label = `${j.newItems?.length ?? 0} ${j.collection} — ${j.prompt}`;
+            return `<a href="${deepLink(j)}" title="${escapeHtml(j.summary || '')}">${escapeHtml(label)}</a>`;
+          }
+          const reason = j.error || j.prompt;
+          return `<span class="failed">${escapeHtml(`${j.status}: ${reason}`)}</span>`;
         }).join('')
       : '<span class="empty">no jobs yet</span>';
   }

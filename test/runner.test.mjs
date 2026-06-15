@@ -1,6 +1,6 @@
 // test/runner.test.mjs
 import { describe, it, expect } from 'vitest';
-import { buildArgv, collectionFor, diffNew, batchOf } from '../server/runner.mjs';
+import { buildArgv, collectionFor, diffNew } from '../server/runner.mjs';
 
 describe('collectionFor', () => {
   it('maps generate types to their dir', () => {
@@ -40,17 +40,6 @@ describe('diffNew', () => {
   });
 });
 
-describe('batchOf', () => {
-  it('strips the trailing -NN to find the shared batch', () => {
-    expect(batchOf(['2026-06-15-pads-01', '2026-06-15-pads-02'])).toBe('2026-06-15-pads');
-  });
-  it('returns null when ids do not share a batch', () => {
-    expect(batchOf(['2026-06-15-pads-01', '2026-06-15-bass-01'])).toBeNull();
-  });
-  it('returns null for an empty list', () => {
-    expect(batchOf([])).toBeNull();
-  });
-});
 
 import { describe as describe2, it as it2, expect as expect2, beforeEach } from 'vitest';
 import { EventEmitter } from 'node:events';
@@ -106,8 +95,8 @@ describe2('createRunner worker', () => {
     await runner.enqueue(baseJob('j1'));
     await until(() => children.length === 1);
     expect2((await jobStore.get('j1')).status).toBe('running');
-    await writeFile(join2(repoRoot, 'stems', '2026-06-15-pads-01.json'), '{}');
-    await writeFile(join2(repoRoot, 'stems', '2026-06-15-pads-02.json'), '{}');
+    await writeFile(join2(repoRoot, 'stems', '2026-06-15-pads-01.json'), JSON.stringify({ batch: '2026-06-15-pads' }));
+    await writeFile(join2(repoRoot, 'stems', '2026-06-15-pads-02.json'), JSON.stringify({ batch: '2026-06-15-pads' }));
     children[0].stdout.emit('data', JSON.stringify({ result: 'OK 2 stems' }));
     children[0].emit('close', 0);
     await until(async () => (await jobStore.get('j1')).status === 'done');
@@ -151,5 +140,33 @@ describe2('createRunner worker', () => {
     await until(() => children.length === 1);
     expect2((await jobStore.get('stale')).status).toBe('interrupted');
     expect2(children).toHaveLength(1);
+  });
+
+  it2('derives batch from the file field, not the id (revise version files)', async () => {
+    const { spawn, children } = fakeSpawnFactory();
+    const runner = createRunner({ repoRoot, dirs: { stems: 'stems', tracks: 'tracks' }, jobStore, spawn, now: ticks });
+    await jobStore.write(baseJob('rev', { type: 'revise-from-notes', prompt: 'stems', count: null }));
+    await runner.enqueue(baseJob('rev', { type: 'revise-from-notes', prompt: 'stems', count: null }));
+    await until(() => children.length === 1);
+    // a revised version file: id ends in -v2 but its batch field is the family's batch
+    await writeFile(join2(repoRoot, 'stems', '2026-06-08-alien-04-v2.json'), JSON.stringify({ batch: '2026-06-08-alien' }));
+    children[0].emit('close', 0);
+    await until(async () => (await jobStore.get('rev')).status === 'done');
+    const done = await jobStore.get('rev');
+    expect2(done.newItems).toEqual(['2026-06-08-alien-04-v2']);
+    expect2(done.batch).toBe('2026-06-08-alien');
+  });
+
+  it2('returns null batch when new files span multiple batches', async () => {
+    const { spawn, children } = fakeSpawnFactory();
+    const runner = createRunner({ repoRoot, dirs: { stems: 'stems', tracks: 'tracks' }, jobStore, spawn, now: ticks });
+    await jobStore.write(baseJob('j1'));
+    await runner.enqueue(baseJob('j1'));
+    await until(() => children.length === 1);
+    await writeFile(join2(repoRoot, 'stems', '2026-06-15-pads-01.json'), JSON.stringify({ batch: '2026-06-15-pads' }));
+    await writeFile(join2(repoRoot, 'stems', '2026-06-15-bass-01.json'), JSON.stringify({ batch: '2026-06-15-bass' }));
+    children[0].emit('close', 0);
+    await until(async () => (await jobStore.get('j1')).status === 'done');
+    expect2((await jobStore.get('j1')).batch).toBeNull();
   });
 });

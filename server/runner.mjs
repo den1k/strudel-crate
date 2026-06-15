@@ -1,8 +1,8 @@
 // Single-slot worker that runs the generation skills headless via `claude -p`.
-// Pure helpers (buildArgv/collectionFor/diffNew/batchOf) are exported for tests;
+// Pure helpers (buildArgv/collectionFor/diffNew) are exported for tests;
 // createRunner (later task) owns the queue and side effects.
 import { spawn as nodeSpawn } from 'node:child_process';
-import { readdir } from 'node:fs/promises';
+import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 const COLLECTION_BY_TYPE = {
@@ -38,11 +38,20 @@ export function diffNew(before, after) {
   return [...after].filter((id) => !before.has(id)).sort();
 }
 
-export function batchOf(ids) {
-  if (ids.length === 0) return null;
-  const batch = (id) => id.replace(/-\d+$/, ''); // strip trailing -NN
-  const first = batch(ids[0]);
-  return ids.every((id) => batch(id) === first) ? first : null;
+// The trustworthy batch comes from each item file's `batch` field (works for
+// generate ids like 2026-06-15-pads-01 AND revise version ids like ...-v2,
+// which an id-suffix strip can't handle). Null if the new files disagree.
+async function readBatch(dir, ids) {
+  const batches = new Set();
+  for (const id of ids) {
+    try {
+      const item = JSON.parse(await readFile(join(dir, `${id}.json`), 'utf8'));
+      if (item.batch) batches.add(item.batch);
+    } catch {
+      // ignore unreadable/missing files
+    }
+  }
+  return batches.size === 1 ? [...batches][0] : null;
 }
 
 async function idsIn(dir) {
@@ -95,7 +104,7 @@ export function createRunner({
     const { code, out } = await runClaude(job);
     const after = await idsIn(dir);
     const newItems = diffNew(before, after);
-    const patch = { finishedAt: now(), newItems, batch: batchOf(newItems) };
+    const patch = { finishedAt: now(), newItems, batch: await readBatch(dir, newItems) };
     if (code === 0) {
       patch.status = 'done';
       patch.summary = parseSummary(out);

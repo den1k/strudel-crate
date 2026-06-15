@@ -196,3 +196,4 @@ body {
 .job-log { position: absolute; right: 1rem; margin-top: .25rem; background: #111; border: 1px solid #333; border-radius: .5rem; padding: .5rem; display: flex; flex-direction: column; gap: .35rem; max-width: 22rem; z-index: 20; }
 .job-log a { color: #4ea1ff; text-decoration: none; }
 .job-log .empty { opacity: .6; }
+.job-log .failed { color: #e0245e; }
