@@ -48,6 +48,19 @@ describe('createJobStore', () => {
     expect(await store.update('ghost', { status: 'done' })).toBeNull();
   });
 
+  it('list caps at 50, returns newest first, drops the oldest', async () => {
+    // Write 51 jobs with strictly ordered createdAt timestamps (j00 = oldest, j50 = newest)
+    for (let i = 0; i <= 50; i++) {
+      const id = `j${String(i).padStart(2, '0')}`;
+      const createdAt = new Date(Date.UTC(2026, 5, 15, i, 0, 0)).toISOString();
+      await store.write(job(id, { createdAt }));
+    }
+    const result = await store.list();
+    expect(result).toHaveLength(50);
+    expect(result[0].id).toBe('j50');   // newest first
+    expect(result.find((j) => j.id === 'j00')).toBeUndefined(); // oldest dropped
+  });
+
   it('exposes the allowed type set', () => {
     expect([...store.TYPES].sort()).toEqual(
       ['generate-stems', 'generate-tracks', 'revise-from-notes'],

@@ -39,7 +39,7 @@ export function createJobStore({ jobsDir }) {
     }
     return jobs
       .sort((a, b) => (a.createdAt < b.createdAt ? 1 : a.createdAt > b.createdAt ? -1 : 0))
-      .slice(0, 50);
+      .slice(0, 50); // newest 50 only — the UI log never needs more
   }
 
   async function update(id, patch) {
