@@ -1,6 +1,6 @@
 // test/notifications.test.mjs
 import { describe, it, expect } from 'vitest';
-import { deepLink, unreadCount, newlyFinished, notificationText } from '../src/notifications.js';
+import { deepLink, unreadCount, newlyFinished, notificationText, formatElapsed, progressText } from '../src/notifications.js';
 
 const job = (id, extra = {}) => ({
   id, type: 'generate-stems', prompt: 'pads', collection: 'stems',
@@ -48,5 +48,43 @@ describe('notificationText', () => {
   });
   it('labels failures', () => {
     expect(notificationText(job('a', { status: 'failed' }))).toEqual({ title: 'Generation failed', body: 'pads' });
+  });
+});
+
+describe('formatElapsed', () => {
+  it('formats minutes and zero-padded seconds', () => {
+    expect(formatElapsed(0)).toBe('0:00');
+    expect(formatElapsed(9000)).toBe('0:09');
+    expect(formatElapsed(134000)).toBe('2:14');
+  });
+  it('clamps negative input to 0:00', () => {
+    expect(formatElapsed(-500)).toBe('0:00');
+  });
+});
+
+describe('progressText', () => {
+  const start = '2026-06-15T00:00:00Z';
+  const now = Date.parse('2026-06-15T00:02:14Z'); // 2:14 later
+
+  it('shows queued', () => {
+    expect(progressText({ status: 'queued' }, now)).toBe('queued');
+  });
+  it('shows running with X/N and elapsed', () => {
+    expect(progressText({ status: 'running', startedAt: start, produced: 12, count: 30 }, now))
+      .toBe('running · 12/30 · 2:14');
+  });
+  it('clamps produced to count', () => {
+    expect(progressText({ status: 'running', startedAt: start, produced: 33, count: 30 }, now))
+      .toBe('running · 30/30 · 2:14');
+  });
+  it('shows "N produced" when there is no count (revise jobs)', () => {
+    expect(progressText({ status: 'running', startedAt: start, produced: 5, count: null }, now))
+      .toBe('running · 5 produced · 2:14');
+  });
+  it('shows running + elapsed only when produced is absent', () => {
+    expect(progressText({ status: 'running', startedAt: start }, now)).toBe('running · 2:14');
+  });
+  it('is empty for finished jobs', () => {
+    expect(progressText({ status: 'done', startedAt: start }, now)).toBe('');
   });
 });
