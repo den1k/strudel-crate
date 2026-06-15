@@ -31,7 +31,7 @@ function collectionRoutes(app, name, store) {
   }));
 }
 
-function jobRoutes(app, jobStore, runner) {
+function jobRoutes(app, jobStore, runner, progressFor) {
   app.post('/api/jobs', wrap(async (req, res) => {
     const { type, prompt, count } = req.body ?? {};
     if (!jobStore.TYPES.has(type)) return res.status(400).json({ error: 'invalid type' });
@@ -64,7 +64,15 @@ function jobRoutes(app, jobStore, runner) {
     res.status(201).json(job);
   }));
 
-  app.get('/api/jobs', wrap(async (_req, res) => res.json(await jobStore.list())));
+  app.get('/api/jobs', wrap(async (_req, res) => {
+    const jobs = await jobStore.list();
+    if (!progressFor) return res.json(jobs);
+    const enriched = await Promise.all(jobs.map(async (job) => {
+      const produced = await progressFor(job);
+      return produced === undefined ? job : { ...job, produced };
+    }));
+    res.json(enriched);
+  }));
 
   app.get('/api/jobs/:id', wrap(async (req, res) => {
     if (!ID_RE.test(req.params.id)) return res.status(400).json({ error: 'invalid id' });
@@ -79,7 +87,7 @@ export function createApp(stores, opts = {}) {
   app.use(express.json());
   for (const [name, store] of Object.entries(stores)) collectionRoutes(app, name, store);
 
-  if (opts.jobStore && opts.runner) jobRoutes(app, opts.jobStore, opts.runner);
+  if (opts.jobStore && opts.runner) jobRoutes(app, opts.jobStore, opts.runner, opts.progressFor);
 
   // Production: serve the built SPA (dev uses Vite). Defined AFTER the API so
   // /api/* always wins; the /stems clean URL mirrors vite.config.js's rewrite.

@@ -153,6 +153,35 @@ describe('jobs API', () => {
     expect(one.body.id).toBe(created.id);
   });
 
+  it('GET /api/jobs attaches produced for running jobs via progressFor', async () => {
+    const base = await mkdtemp(join(tmpdir(), 'strudel-jobsprog-'));
+    const jobStore = createJobStore({ jobsDir: join(base, 'jobs') });
+    const runner = { enqueue: async () => {} };
+    const progressFor = async (j) => (j.status === 'running' ? 7 : undefined);
+    const app2 = createApp(
+      {
+        tracks: createStore({ tracksDir: join(base, 'tracks'), ratingsDir: join(base, 'r1') }),
+        stems: createStore({ tracksDir: join(base, 'stems'), ratingsDir: join(base, 'r2') }),
+      },
+      { jobStore, runner, progressFor },
+    );
+    await jobStore.write({
+      id: 'run1', type: 'generate-stems', prompt: 'p', count: 4, collection: 'stems',
+      status: 'running', createdAt: '2026-06-15T00:00:00Z', startedAt: '2026-06-15T00:00:01Z',
+      finishedAt: null, summary: null, error: null, batch: null, newItems: [], baselineCount: 2,
+    });
+    await jobStore.write({
+      id: 'q1', type: 'generate-stems', prompt: 'p', count: 4, collection: 'stems',
+      status: 'queued', createdAt: '2026-06-15T00:00:02Z', startedAt: null,
+      finishedAt: null, summary: null, error: null, batch: null, newItems: [],
+    });
+    const list = await request(app2).get('/api/jobs');
+    const running = list.body.find((j) => j.id === 'run1');
+    const queued = list.body.find((j) => j.id === 'q1');
+    expect(running.produced).toBe(7);
+    expect(queued.produced).toBeUndefined();
+  });
+
   it('GET /api/jobs/:id returns 404 for missing job', async () => {
     const res = await request(jobApp).get('/api/jobs/does-not-exist');
     expect(res.status).toBe(404);
