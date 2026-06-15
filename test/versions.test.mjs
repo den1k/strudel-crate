@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { groupVersions } from '../src/versions.js';
+import { groupVersions, pendingRevisions } from '../src/versions.js';
 
 const stem = (id, extra = {}) => ({
   id, batch: 'b', title: id, prompt: 'p',
@@ -45,5 +45,58 @@ describe('groupVersions', () => {
     expect(fams[0].family).toBe('x');
     expect(fams[0].versions[0].version).toBe(1);
     expect(fams[0].latest.id).toBe('x-v2');
+  });
+});
+
+describe('pendingRevisions', () => {
+  it('selects a single-version stem whose latest has a note → -v2', () => {
+    const work = pendingRevisions([
+      stem('a', { title: 'Aaa', notes: 'more harmonic', code: 's("bd")', batch: 'bt', prompt: 'pr' }),
+    ]);
+    expect(work).toHaveLength(1);
+    expect(work[0]).toMatchObject({
+      root: 'a', nextId: 'a-v2', version: 2,
+      note: 'more harmonic', code: 's("bd")', batch: 'bt', prompt: 'pr', title: 'Aaa',
+    });
+  });
+
+  it('numbers the next version off the latest and titles off the ROOT', () => {
+    const work = pendingRevisions([
+      stem('a', { title: 'Aaa', createdAt: '2026-06-08T00:00:00Z' }),
+      stem('a-v2', { versionOf: 'a', title: 'Aaa v2', createdAt: '2026-06-08T01:00:00Z', notes: 'darker' }),
+    ]);
+    expect(work).toHaveLength(1);
+    expect(work[0]).toMatchObject({ root: 'a', nextId: 'a-v3', version: 3, note: 'darker', title: 'Aaa' });
+  });
+
+  it('ignores a note on a non-latest version', () => {
+    const work = pendingRevisions([
+      stem('a', { createdAt: '2026-06-08T00:00:00Z', notes: 'old note on v1' }),
+      stem('a-v2', { versionOf: 'a', createdAt: '2026-06-08T01:00:00Z' }), // latest, no note
+    ]);
+    expect(work).toEqual([]);
+  });
+
+  it('skips whitespace-only and empty notes', () => {
+    const work = pendingRevisions([
+      stem('a', { notes: '   ' }),
+      stem('b', { notes: '' }),
+      stem('c', {}),
+    ]);
+    expect(work).toEqual([]);
+  });
+
+  it('trims the note in the work item', () => {
+    const work = pendingRevisions([stem('a', { notes: '  punchier  ' })]);
+    expect(work[0].note).toBe('punchier');
+  });
+
+  it('returns one work item per qualifying family', () => {
+    const work = pendingRevisions([
+      stem('a', { notes: 'x' }),
+      stem('b', {}),
+      stem('c', { notes: 'y' }),
+    ]);
+    expect(work.map((w) => w.root)).toEqual(['a', 'c']);
   });
 });
