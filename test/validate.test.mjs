@@ -174,6 +174,8 @@ describe('characterCheck', () => {
   it('does NOT count plain filter/space or .speed(1) as timbral', () => {
     const c = characterCheck('note("c3").lpf(800).hpf(200).room(0.4).delay(0.3).speed(1)');
     expect(c.present).not.toContain('timbral');
+    expect(characterCheck('s("arpy").speed( 1 )').present).not.toContain('timbral');
+    expect(characterCheck('s("arpy").speed(1.0)').present).not.toContain('timbral');
   });
 
   it('detects pattern transforms', () => {
@@ -185,11 +187,23 @@ describe('characterCheck', () => {
     const rich = 'note("[c3,eb3,g3,bb3]").s("sawtooth").crush(6)\ns("bd(3,8)").bank("RolandTR909").every(4, x => x.fast(2))';
     const richResult = characterCheck(rich);
     expect(richResult.ok).toBe(true);
-    expect(richResult.present.length).toBeGreaterThanOrEqual(3);
+    expect(richResult.present.length).toBe(4);
 
     const generic = 'note("<[c3,eb3,g3] [ab2,c3,eb3]>").s("piano").lpf(sine.slow(8).range(400,1200)).room(0.4)\ns("bd ~ ~ ~ sd ~ ~ ~").bank("CasioRZ1")\ns("hh*8").bank("CasioRZ1").degradeBy(0.2)';
     const genericResult = characterCheck(generic);
     expect(genericResult.ok).toBe(false);
     expect(genericResult.missing).toEqual(expect.arrayContaining(['harmonic', 'rhythmic', 'timbral']));
+    expect(genericResult.present).toEqual(['transform']);
+  });
+
+  it('treats >=3 categories as the pass threshold', () => {
+    // harmonic + rhythmic + transform, no timbral = 3/4 -> ok
+    const three = characterCheck('note("[c3,e3,g3,b3]")\ns("bd(3,8)").every(4, x => x.rev())');
+    expect(three.present.length).toBe(3);
+    expect(three.ok).toBe(true);
+    // harmonic + rhythmic only = 2/4 -> not ok
+    const two = characterCheck('note("[c3,e3,g3,b3]")\ns("bd(3,8)")');
+    expect(two.present.length).toBe(2);
+    expect(two.ok).toBe(false);
   });
 });

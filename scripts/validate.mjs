@@ -72,7 +72,7 @@ const CHARACTER_CATEGORIES = {
   timbral: [
     /\.(?:crush|shape|coarse|vowel|distort)\b/,
     /\.fmh?\b/,                                                      // .fm / .fmh
-    /\.speed\(\s*(?!1\s*\))(?!1\.0+\s*\))[^)]*\)/,                   // .speed(non-1)
+    /\.speed\((?!\s*1(?:\.0*)?\s*\))[^)]*\)/,                        // .speed(non-1)
   ],
   // Pattern transforms / conditional variation. .off and .ply live here only
   // (not rhythmic) so "3 of 4" means three genuinely different move types.
