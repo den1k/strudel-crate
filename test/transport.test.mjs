@@ -14,6 +14,7 @@ describe('mmss', () => {
     expect(mmss(5)).toBe('0:05');
     expect(mmss(605)).toBe('10:05');
     expect(mmss(0)).toBe('0:00');
+    expect(mmss(71.9)).toBe('1:11');
   });
   it('clamps non-finite and negative to 0:00', () => {
     expect(mmss(-3)).toBe('0:00');

@@ -4,7 +4,7 @@
 
 const clamp01 = (n) => Math.min(1, Math.max(0, n));
 
-// "m:ss" — e.g. mmss(72) === "1:12". Non-finite/negative collapses to "0:00".
+// "m:ss" — e.g. mmss(72) === "1:12". Seconds are truncated (floor), not rounded. Non-finite/negative collapses to "0:00".
 export function mmss(seconds) {
   if (!Number.isFinite(seconds) || seconds < 0) seconds = 0;
   const total = Math.floor(seconds);
@@ -41,7 +41,9 @@ export function readCycle(scheduler) {
 // Re-anchor a Cyclist to `cycle` in place: the next tick treats `cycle` as now
 // (cyclist.mjs sets num_cycles_at_cps_change = lastEnd on the first tick after
 // num_ticks_since_cps_change resets). Feature-detects the Cyclist fields and
-// no-ops (returns false) on any other scheduler.
+// no-ops (returns false) on any other scheduler. A real Cyclist always carries
+// both `lastEnd` and `num_ticks_since_cps_change` together (set in its
+// constructor), so the single `lastEnd` check is sufficient to cover both.
 export function applySeek(scheduler, cycle) {
   if (!scheduler || !('lastEnd' in scheduler)) return false;
   scheduler.lastEnd = Math.max(0, cycle);
