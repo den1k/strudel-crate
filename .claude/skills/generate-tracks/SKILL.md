@@ -40,6 +40,21 @@ outro (see the guide's arrange() default).
      valley · continuous evolution
    - mood modifier: e.g. darker, dreamier, rawer, funkier (fit to prompt)
 
+   Then assign each track its **seed and extension constraints** (read
+   `shared/track-seeds.json`):
+   - **seed:** one `source (groove) × signature (harmonic engine)` pair (compatible per
+     `appliesTo`). No two tracks in a wave share a pair; spread grooves and engines
+     evenly across the batch.
+   - **drum bank:** pick ONE bank from the guide's menu, varied across the batch (don't
+     let RolandTR909 dominate).
+   - **development dimensions:** which layers/parameters evolve across sections (≥3:
+     e.g. filter opening, layer add/drop, progression shift, space change).
+   - **motion mechanism:** one of {slow LFO, stepped `<…>/N`, envelope, euclid/ply,
+     perlin/rand} — not `sine.slow` for the majority.
+   - **tail:** one of {dry, room-only, delay-only, room+delay}.
+   - **forbids:** e.g. "not RolandTR909", "no `sawtooth` acid bass", "`sine.slow` may not
+     be your primary filter motion" — spread these so the batch doesn't converge.
+
 5. **Fan out agents:** dispatch ALL agents for a wave in a SINGLE message (parallel
    tool calls), waves of at most 8. **Substitute `<repo root>` below with the
    ABSOLUTE path of your current working directory (run `pwd` first).** In a git
@@ -55,6 +70,13 @@ outro (see the guide's arrange() default).
       default: a complete 3–6 minute track with intro, elaborate middle, and outro,
       built with arrange().
    2. Style brief: "{prompt}". Your variation directive: {directive}.
+      Your SEED (groove + harmonic engine — your starting point; arrange and EXTEND it,
+      do NOT paste it unchanged, do NOT collapse into sawtooth + sine.slow sweep + reverb):
+      {seed}
+      ({seed_note})
+      Extension constraints you MUST obey: drum bank: {drum_bank}; develop these
+      dimensions across sections: {development_dimensions}; motion mechanism:
+      {motion_mechanism}; tail: {tail}; forbids: {forbids}.
       Cross-track lessons to apply (honor every lesson listed under
       "Lessons for all future tracks"):
       {digest}
