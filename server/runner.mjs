@@ -38,6 +38,14 @@ export function diffNew(before, after) {
   return [...after].filter((id) => !before.has(id)).sort();
 }
 
+// Live count of items produced since the job started. Undefined unless the job
+// is running AND has a numeric baseline (so a stray pre-baseline job never shows
+// a bogus full-directory count).
+export function liveProduced(job, currentCount) {
+  if (job.status !== 'running' || typeof job.baselineCount !== 'number') return undefined;
+  return Math.max(0, currentCount - job.baselineCount);
+}
+
 // The trustworthy batch comes from each new file's `batch` field (works for
 // generate ids like 2026-06-15-pads-01 AND revise version ids like ...-v2).
 // The generate skills auto-run revise as Step 0, so a generate run's new files
@@ -105,8 +113,8 @@ export function createRunner({
     const job = await jobStore.get(id);
     if (!job) return;
     const dir = join(repoRoot, dirs[job.collection]);
-    await jobStore.update(id, { status: 'running', startedAt: now() });
     const before = await idsIn(dir);
+    await jobStore.update(id, { status: 'running', startedAt: now(), baselineCount: before.size });
     const { code, out } = await runClaude(job);
     const after = await idsIn(dir);
     const newItems = diffNew(before, after);

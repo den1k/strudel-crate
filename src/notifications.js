@@ -30,3 +30,23 @@ export function notificationText(job) {
   const n = job.newItems?.length ?? 0;
   return { title: `${n} ${job.collection} ready`, body: job.prompt };
 }
+
+// "m:ss" elapsed string. Negative input (clock skew) clamps to 0:00.
+export function formatElapsed(ms) {
+  const s = Math.max(0, Math.floor(ms / 1000));
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+}
+
+// One-line live status for an active job. nowMs is the current epoch ms.
+// queued -> "queued"; running -> "running · X/N · m:ss" (or "· N produced"
+// when the job has no count, or just elapsed when produced is absent);
+// finished/other -> "" (finished jobs are rendered elsewhere).
+export function progressText(job, nowMs) {
+  if (job.status === 'queued') return 'queued';
+  if (job.status !== 'running') return '';
+  let count = '';
+  if (job.produced != null && job.count) count = ` · ${Math.min(job.produced, job.count)}/${job.count}`;
+  else if (job.produced != null) count = ` · ${job.produced} produced`;
+  const elapsed = job.startedAt ? ` · ${formatElapsed(nowMs - Date.parse(job.startedAt))}` : '';
+  return `running${count}${elapsed}`;
+}

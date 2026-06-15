@@ -1,7 +1,7 @@
 // DOM wiring for UI-triggered generation: a generate panel that POSTs jobs, a
 // poller that drives browser notifications, and a nav log dropdown. Pure logic
 // is imported from notifications.js.
-import { deepLink, unreadCount, newlyFinished, notificationText } from './notifications.js';
+import { deepLink, unreadCount, newlyFinished, notificationText, progressText } from './notifications.js';
 
 const $ = (sel) => document.querySelector(sel);
 const SEEN_KEY = 'strudel-jobs-last-seen';
@@ -24,6 +24,7 @@ export function mountJobsUI({ collection, onBatchDone }) {
 
   let prevById = null;   // null until first poll (seed without notifying)
   let lastJobs = [];
+  let activeJob = null; // the running job, else the next queued one, else null
   const startedAt = Date.now();
 
   // text + a state class ('busy' | 'err' | '') so the stylesheet can color/animate it
@@ -73,17 +74,29 @@ export function mountJobsUI({ collection, onBatchDone }) {
   }
 
   function renderLog(jobs) {
+    const active = jobs.filter((j) => j.status === 'queued' || j.status === 'running');
     const finished = jobs.filter((j) => ['done', 'failed', 'interrupted'].includes(j.status));
-    logEl.innerHTML = finished.length
-      ? finished.map((j) => {
-          if (j.status === 'done') {
-            const label = `${j.newItems?.length ?? 0} ${j.collection} — ${j.prompt}`;
-            return `<a href="${deepLink(j)}" title="${escapeHtml(j.summary || '')}">${escapeHtml(label)}</a>`;
-          }
-          const reason = j.error || j.prompt;
-          return `<span class="failed">${escapeHtml(`${j.status}: ${reason}`)}</span>`;
-        }).join('')
-      : '<span class="empty">no jobs yet</span>';
+    const activeHtml = active.map((j) =>
+      `<span class="active">${escapeHtml(progressText(j, Date.now()))} — ${escapeHtml(j.prompt)}</span>`
+    ).join('');
+    const finishedHtml = finished.map((j) => {
+      if (j.status === 'done') {
+        const label = `${j.newItems?.length ?? 0} ${j.collection} — ${j.prompt}`;
+        return `<a href="${deepLink(j)}" title="${escapeHtml(j.summary || '')}">${escapeHtml(label)}</a>`;
+      }
+      const reason = j.error || j.prompt;
+      return `<span class="failed">${escapeHtml(`${j.status}: ${reason}`)}</span>`;
+    }).join('');
+    logEl.innerHTML = (activeHtml + finishedHtml) || '<span class="empty">no jobs yet</span>';
+  }
+
+  // Re-render the status pill from the active job + the live clock. Called on
+  // every poll AND once a second so the elapsed time advances between polls.
+  // Also refreshes the open log dropdown so its pinned active line ticks too.
+  function renderActive() {
+    if (!logEl.hidden) renderLog(lastJobs);
+    if (!activeJob) { setStatus('', ''); return; }
+    setStatus(progressText(activeJob, Date.now()), 'busy');
   }
 
   bell.addEventListener('click', () => {
@@ -105,14 +118,16 @@ export function mountJobsUI({ collection, onBatchDone }) {
         }
       }
       prevById = new Map(jobs.map((j) => [j.id, j.status]));
+      activeJob = jobs.find((j) => j.status === 'running')
+        || jobs.find((j) => j.status === 'queued') || null;
       renderBadge(jobs);
       renderLog(jobs);
-      const active = jobs.some((j) => j.status === 'queued' || j.status === 'running');
-      setStatus(active ? 'running…' : '', active ? 'busy' : '');
+      renderActive();
     } catch {
       // network blip — retry next tick
     }
     setTimeout(poll, 3000);
   }
   poll();
+  setInterval(renderActive, 1000);
 }

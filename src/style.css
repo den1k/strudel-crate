@@ -298,6 +298,7 @@ body {
 .job-log a::before { content: '▸ '; color: var(--acid); }
 .job-log a:hover { background: var(--acid); color: var(--bg); }
 .job-log a:hover::before { color: var(--bg); }
+.job-log .active { color: var(--acid); font-variant-numeric: tabular-nums; }
 .job-log .failed { color: var(--hot); }
 .job-log .failed::before { content: '✕ '; }
 .job-log .empty { color: var(--dim); }

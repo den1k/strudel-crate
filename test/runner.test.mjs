@@ -1,6 +1,6 @@
 // test/runner.test.mjs
 import { describe, it, expect } from 'vitest';
-import { buildArgv, collectionFor, diffNew } from '../server/runner.mjs';
+import { buildArgv, collectionFor, diffNew, liveProduced } from '../server/runner.mjs';
 
 describe('collectionFor', () => {
   it('maps generate types to their dir', () => {
@@ -37,6 +37,22 @@ describe('diffNew', () => {
     const before = new Set(['a', 'b']);
     const after = new Set(['b', 'c', 'a', 'd']);
     expect(diffNew(before, after)).toEqual(['c', 'd']);
+  });
+});
+
+describe('liveProduced', () => {
+  it('returns produced = current - baseline for a running job', () => {
+    expect(liveProduced({ status: 'running', baselineCount: 5 }, 8)).toBe(3);
+  });
+  it('clamps to 0 when files were removed', () => {
+    expect(liveProduced({ status: 'running', baselineCount: 5 }, 2)).toBe(0);
+  });
+  it('is undefined for non-running jobs', () => {
+    expect(liveProduced({ status: 'done', baselineCount: 5 }, 8)).toBeUndefined();
+    expect(liveProduced({ status: 'queued', baselineCount: 5 }, 8)).toBeUndefined();
+  });
+  it('is undefined when baselineCount is missing', () => {
+    expect(liveProduced({ status: 'running' }, 8)).toBeUndefined();
   });
 });
 
@@ -95,6 +111,7 @@ describe2('createRunner worker', () => {
     await runner.enqueue(baseJob('j1'));
     await until(() => children.length === 1);
     expect2((await jobStore.get('j1')).status).toBe('running');
+    expect2((await jobStore.get('j1')).baselineCount).toBe(0);
     await writeFile(join2(repoRoot, 'stems', '2026-06-15-pads-01.json'), JSON.stringify({ batch: '2026-06-15-pads' }));
     await writeFile(join2(repoRoot, 'stems', '2026-06-15-pads-02.json'), JSON.stringify({ batch: '2026-06-15-pads' }));
     children[0].stdout.emit('data', JSON.stringify({ result: 'OK 2 stems' }));
