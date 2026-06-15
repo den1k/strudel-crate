@@ -64,7 +64,10 @@ Job shape:
   status,       // "queued" | "running" | "done" | "failed" | "interrupted"
   createdAt, startedAt, finishedAt,  // ISO-8601 UTC
   summary,      // skill's final report text (from claude JSON result) on success
-  error         // one-line reason on failure
+  error,        // one-line reason on failure
+  collection,   // "stems" | "tracks" — which page/dir this job targets
+  batch,        // batch id of the produced items (for deep-linking), or null
+  newItems      // array of item ids created by the run (dir diff), may be []
 }
 ```
 API: `createJobStore({ jobsDir })` → `{ create, get, list, update }`. `list`
@@ -74,8 +77,14 @@ returns newest-first, capped (e.g. 50).
 - A single-slot queue. `enqueue(job)` persists it `queued`; if the worker is idle,
   it starts immediately, else it waits its turn.
 - On start: set `running` + `startedAt`, persist.
+- **Snapshot before:** read the set of item ids currently in the target dir
+  (`stems/` or `tracks/`).
 - Spawn the child (see §3). Stream nothing to the client live in v1; capture
   stdout/stderr.
+- **Diff after:** re-read the target dir; `newItems` = ids present now but not in
+  the before-snapshot. Derive `batch` from the new ids (their common
+  `YYYY-MM-DD-<slug>` prefix; null if none/ambiguous). This is parser-free and
+  works for both generate (new items) and revise (new version files).
 - On exit 0: parse the JSON result, store its text as `summary`, set `done`.
   On non-zero exit / spawn error: store a one-line `error`, set `failed`.
 - Always set `finishedAt`, then pick the next `queued` job.
@@ -118,6 +127,9 @@ Claude login on the box.
   - generate-*: `prompt` non-empty string (cap length, e.g. ≤500) required;
     `count` coerced to int and clamped 1..30 (default 30).
   - revise: `prompt` must be `stems` or `tracks`.
+  - Derive `collection` (`stems`|`tracks`) from `type` (generate-tracks → tracks,
+    generate-stems → stems, revise → the `prompt` value) so the runner knows which
+    dir to diff and the UI knows which page to deep-link.
   - Enqueue via the runner, return `201 { job }`.
 - `GET /api/jobs` → recent jobs (newest-first).
 - `GET /api/jobs/:id` → one job (404 if missing; reuse `ID_RE`).
@@ -133,6 +145,36 @@ Claude login on the box.
   listing so the new items appear. No new listing wiring needed.
 - A "Revise from notes" button per collection (no prompt; posts
   `type=revise-from-notes`, `prompt=<collection>`).
+- **Deep-link entry point:** on page load, `app.js` reads a `?batch=<id>` query
+  param; if present, it preselects that value in the existing `batch-filter`
+  dropdown and sets `state.batch` so the page opens scrolled/filtered to the new
+  items. This is the target the notifications and nav log link to.
+
+### 7. Notifications & nav log — `src/notifications.js` (shared by both pages)
+The job poller (§5) is the single source of completion events; both features hang
+off it. Read-state is per-browser, so it lives in `localStorage`
+(`lastSeenJobId` / seen-ids set) — not on the server.
+
+**Browser notifications (Web Notifications API):**
+- A toggle (bell) in the nav requests `Notification.permission` on first enable;
+  if denied, the feature silently degrades to the in-app log only.
+- When the poller sees a job flip to `done` **or** `failed` (and it wasn't already
+  seen), fire one `Notification` — title e.g. `12 stems ready` / `Job failed`,
+  body = prompt. Its click handler focuses the tab and navigates to the job's
+  deep-link (`/` or `/stems` + `?batch=<batch>`), falling back to the collection
+  page when `batch` is null.
+- Only fire for jobs newer than page load, to avoid a burst of stale notifications
+  on first visit.
+
+**Nav log:**
+- A bell/log control added to the `<nav>` of both `index.html` and `stems.html`,
+  with an unread-count badge (jobs completed since `lastSeenJobId`).
+- Clicking opens a dropdown listing recent finished jobs from `GET /api/jobs`
+  (newest-first): collection, prompt, item count (`newItems.length`), status, time.
+- Each entry is a link to its deep-link target (cross-page navigation between `/`
+  and `/stems` is a normal page load). Opening the dropdown clears the unread
+  badge and updates `lastSeenJobId`.
+- Failed jobs appear in the log with their `error`, no deep-link.
 
 ### 6. Production serving + deployment
 - `npm run build` → `dist/`. Extend `server/app.mjs` to serve static `dist/` (and
@@ -150,7 +192,11 @@ Claude login on the box.
   out-of-range count → 400), enqueue returns 201, status fetch.
 - **Runner:** inject a fake spawn so tests don't invoke real `claude` — assert the
   exact argv built per type, single-slot serialization (second job stays `queued`
-  until the first finishes), and exit-code → status mapping.
+  until the first finishes), exit-code → status mapping, and the dir-diff
+  (`newItems`/`batch` computed from files appearing between before/after snapshots).
+- **Notifications/log:** unit-test the deep-link builder (job → `/` or `/stems` +
+  `?batch=`), unread-count from `lastSeenJobId`, and the "only notify jobs newer
+  than page load" guard. The Web Notifications API itself is mocked.
 - **Manual end-to-end:** on the server, click Generate for a 2-stem batch, confirm
   the job runs, files land in `stems/`, and the UI lists them.
 
