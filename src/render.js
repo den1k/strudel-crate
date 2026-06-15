@@ -6,52 +6,72 @@ import {
   webaudioOutput,
 } from '@strudel/webaudio';
 import { evaluate } from '@strudel/transpiler';
-import { exportSpec, collectHaps } from './export-spec.js';
+import { exportSpec, collectHaps, groupHapsBySound } from './export-spec.js';
 import { encodeWav, encodeMp3 } from './encoders.js';
+import { zipStore } from './zip.js';
 
 const SAMPLE_RATE = 44100;
+const sanitize = (s) => String(s).replace(/[^a-zA-Z0-9_-]+/g, '-');
 
-// Render a track to a downloadable Blob using an OfflineAudioContext. Intended
-// to run inside the export iframe, which owns its global audio context — so,
-// unlike the old main-thread path, there is no live context to close and
-// restore. setcpm/setcps exist only inside repls; the bare transpiler can't see
-// them, and exports derive cps from meta.bpm, so no-ops satisfy the reference
-// (??= so a repl-registered real one survives if present).
-export async function renderTrack(track, format) {
+async function evalPattern(track) {
+  // setcpm/setcps exist only inside repls; the bare transpiler can't see them,
+  // and exports derive cps from meta.bpm, so no-ops satisfy the reference
+  // (??= so a repl-registered real one survives if present).
   globalThis.setcpm ??= () => {};
   globalThis.setcps ??= () => {};
   const { pattern } = await evaluate(track.code);
   if (typeof pattern?.queryArc !== 'function') {
     throw new Error('code did not evaluate to a pattern');
   }
-  const { cps, cycles, seconds } = exportSpec(track);
+  return pattern;
+}
+
+// Render a set of haps into a fresh, full-length OfflineAudioContext. Rebinds
+// superdough to that context (null the controller so it rebuilds on `ctx`;
+// everything imported from @strudel/webaudio keeps a SINGLE superdough instance
+// — importing from `superdough/...` would create a second copy whose effect
+// nodes live on a different context and fail to connect). Two renders of the
+// same `seconds` produce time-aligned buffers (both start at t=0).
+async function renderHapsToBuffer(haps, { cps, seconds }) {
   const ctx = new OfflineAudioContext(2, Math.ceil(seconds * SAMPLE_RATE), SAMPLE_RATE);
   setAudioContext(ctx);
-  // Rebind superdough to the offline context: clear any analyser/effect state
-  // and null the controller so superdough lazily recreates it on `ctx` (the
-  // iframe boot may have created one on a default AudioContext). Everything is
-  // imported from @strudel/webaudio so there is ONE superdough instance: pulling
-  // SuperdoughAudioController from the `superdough/...` subpath instead loads a
-  // SECOND superdough copy (its own vite dep chunk with its own audio-context
-  // global that we'd never set), leaving its reverb/effect nodes on the default
-  // context — they then fail to connect to offline-context nodes ("cannot
-  // connect to an AudioNode belonging to a different audio context") and silence
-  // every sound using room/delay/etc.
   resetGlobalEffects();
   setSuperdoughAudioController(null);
   await initAudio();
-  // collectHaps queries cycle-by-cycle (one throwing cycle can't zero the whole
-  // render); ascending onset order matters for graph-state controls like `cut`,
-  // and awaiting each call lets samples load into the offline context.
-  for (const hap of collectHaps(pattern, cycles, cps)) {
+  for (const hap of haps) {
     try {
       await webaudioOutput(hap, null, hap.duration / cps, cps, hap.whole.begin.valueOf() / cps);
     } catch (err) {
       console.warn('[export] hap skipped:', err.message);
     }
   }
-  const buffer = await ctx.startRendering();
+  return ctx.startRendering();
+}
+
+// Render a track to a single mixed Blob (wav 16-bit or mp3).
+export async function renderTrack(track, format) {
+  const pattern = await evalPattern(track);
+  const spec = exportSpec(track);
+  const buffer = await renderHapsToBuffer(collectHaps(pattern, spec.cycles, spec.cps), spec);
   return format === 'wav'
     ? new Blob([encodeWav(buffer)], { type: 'audio/wav' })
     : new Blob(encodeMp3(buffer), { type: 'audio/mpeg' });
+}
+
+// Render one full-length, time-aligned 24-bit WAV per distinct sound, bundled
+// into a single .zip. Each stem is the whole song length starting at bar 1, so
+// dropping the folder into a DAW lines the parts up automatically.
+export async function renderStemsZip(track) {
+  const pattern = await evalPattern(track);
+  const spec = exportSpec(track);
+  const groups = groupHapsBySound(collectHaps(pattern, spec.cycles, spec.cps));
+  const files = [];
+  for (const { name, haps } of groups) {
+    const buffer = await renderHapsToBuffer(haps, spec);
+    files.push({
+      name: `${sanitize(track.id)}-${sanitize(name)}.wav`,
+      data: new Uint8Array(encodeWav(buffer, 24)),
+    });
+  }
+  return new Blob([zipStore(files)], { type: 'application/zip' });
 }
