@@ -90,7 +90,13 @@ beforeEach(async () => {
   ticks = () => `2026-06-15T00:00:0${n++}Z`;
 });
 
-const flush = () => new Promise((r) => setTimeout(r, 10));
+const until = async (cond, timeout = 1500) => {
+  const start = Date.now();
+  while (!(await cond())) {
+    if (Date.now() - start > timeout) throw new Error('until: condition not met in time');
+    await new Promise((r) => setTimeout(r, 5));
+  }
+};
 
 describe2('createRunner worker', () => {
   it2('runs a job: running -> done, captures newItems/batch/summary', async () => {
@@ -98,15 +104,14 @@ describe2('createRunner worker', () => {
     const runner = createRunner({ repoRoot, dirs: { stems: 'stems', tracks: 'tracks' }, jobStore, spawn, now: ticks });
     await jobStore.write(baseJob('j1'));
     await runner.enqueue(baseJob('j1'));
-    await flush();
+    await until(() => children.length === 1);
     expect2((await jobStore.get('j1')).status).toBe('running');
     await writeFile(join2(repoRoot, 'stems', '2026-06-15-pads-01.json'), '{}');
     await writeFile(join2(repoRoot, 'stems', '2026-06-15-pads-02.json'), '{}');
     children[0].stdout.emit('data', JSON.stringify({ result: 'OK 2 stems' }));
     children[0].emit('close', 0);
-    await flush();
+    await until(async () => (await jobStore.get('j1')).status === 'done');
     const done = await jobStore.get('j1');
-    expect2(done.status).toBe('done');
     expect2(done.newItems).toEqual(['2026-06-15-pads-01', '2026-06-15-pads-02']);
     expect2(done.batch).toBe('2026-06-15-pads');
     expect2(done.summary).toBe('OK 2 stems');
@@ -117,9 +122,9 @@ describe2('createRunner worker', () => {
     const runner = createRunner({ repoRoot, dirs: { stems: 'stems', tracks: 'tracks' }, jobStore, spawn, now: ticks });
     await jobStore.write(baseJob('j1'));
     await runner.enqueue(baseJob('j1'));
-    await flush();
+    await until(() => children.length === 1);
     children[0].emit('close', 1);
-    await flush();
+    await until(async () => (await jobStore.get('j1')).status === 'failed');
     expect2((await jobStore.get('j1')).status).toBe('failed');
   });
 
@@ -130,11 +135,10 @@ describe2('createRunner worker', () => {
     await jobStore.write(baseJob('j2'));
     await runner.enqueue(baseJob('j1'));
     await runner.enqueue(baseJob('j2'));
-    await flush();
-    expect2(children).toHaveLength(1);
+    await until(() => children.length === 1);
     expect2((await jobStore.get('j2')).status).toBe('queued');
     children[0].emit('close', 0);
-    await flush();
+    await until(() => children.length === 2);
     expect2(children).toHaveLength(2);
   });
 
@@ -144,7 +148,7 @@ describe2('createRunner worker', () => {
     await jobStore.write(baseJob('waiting', { status: 'queued' }));
     const runner = createRunner({ repoRoot, dirs: { stems: 'stems', tracks: 'tracks' }, jobStore, spawn, now: ticks });
     await runner.recover();
-    await flush();
+    await until(() => children.length === 1);
     expect2((await jobStore.get('stale')).status).toBe('interrupted');
     expect2(children).toHaveLength(1);
   });
