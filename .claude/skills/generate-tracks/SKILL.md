@@ -68,7 +68,10 @@ outro (see the guide's arrange() default).
 
    1. Read STRUDEL_GUIDE.md COMPLETELY and follow every rule in it — including the
       default: a complete 3–6 minute track with intro, elaborate middle, and outro,
-      built with arrange().
+      built with arrange(); and the HARD character requirement — your track MUST use
+      moves from at least 3 of the 4 categories (harmonic, rhythmic, timbral,
+      transform). On-grid triads under a single filter sweep will be REJECTED by the
+      validator.
    2. Style brief: "{prompt}". Your variation directive: {directive}.
       Your SEED (groove + harmonic engine — your starting point; arrange and EXTEND it,
       do NOT paste it unchanged, do NOT collapse into sawtooth + sine.slow sweep + reverb):
@@ -88,8 +91,11 @@ outro (see the guide's arrange() default).
              instruments (sounds you used), energy (1-5) },
       code (your Strudel code — follow the guide's shape rules).
    4. Run: node scripts/validate.mjs tracks/{id}.json
-      If FAIL: read the error, fix the code (for unknown sounds, grep
-      scripts/sounds.json for valid names), re-run. Up to 3 attempts total.
+      If FAIL: read the error, fix the code, re-run. Up to 3 attempts total.
+      - unknown sounds → grep scripts/sounds.json for valid names.
+      - "lacks character" → you used too few of the 4 categories; add an off-grid
+        groove (euclid/swing), dirt (crush/shape/vowel), richer harmony (extended
+        chords/mode), or a pattern transform until ≥3 categories are present.
       If still failing after 3 attempts: delete the file (rm tracks/{id}.json).
    5. Reply with EXACTLY one line:
       OK {id} "<title>"   — or —   FAILED {id} <one-line reason>
