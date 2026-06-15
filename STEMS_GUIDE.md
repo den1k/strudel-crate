@@ -90,9 +90,9 @@ most of it.
 *These are idea-prompts, not the only answer — your assigned seed is your real starting
 point. Treat a recipe as one possible direction, never as a template to reproduce.*
 
-- **FM morph bass:** `sine` + `.fm(sine.slow(16).range(2, 14))` + stepped `.fmh("<1 1.5 2 0.5>/4")` + `.penv` click + ladder filter env.
+- **FM morph bass:** `sine` + a modulated `.fm` index + stepped `.fmh("<1 1.5 2 0.5>/4")` + `.penv` click + ladder filter env.
 - **Formant alien:** `sawtooth` + `.vowel("<a e i o u>/3")` + `.vib`/`.vibmod` + slow `.bpf` sweep + `.sometimesBy(0.15, x => x.speed(-1))`.
-- **Noise riser/texture:** `s("white*2")` + `.lpf(saw.slow(8).range(200, 6000))` + high `.resonance` + `.pan(rand)`.
+- **Noise riser/texture:** `s("white*2")` + a swept `.lpf` + high `.resonance` + `.pan(rand)`.
 - **Sample mangle:** dirt sample + `.chop(16)` + `.speed("<1 -1 0.5>")` + `.striate(4)` — granular clouds from one hit.
 - **Designed percussion:** short-decay synth + `.penv(24).pdecay(0.05)` + `.lpenv` + `.shape` — ONE sculpted hit pattern, not a kit.
 

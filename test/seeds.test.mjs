@@ -34,6 +34,14 @@ describe('stem seeds', () => {
     const signatureIds = pool.signatures.map((s) => s.id);
     expect(new Set(signatureIds).size, 'duplicate signature id').toBe(signatureIds.length);
   });
+
+  it('compatible() blocks sample-only signatures on synth sources', () => {
+    const synthSource = pool.sources.find((s) => s.appliesTo === 'synth');
+    const sampleOnlySig = pool.signatures.find((sig) => sig.appliesTo === 'sample');
+    const anySig = pool.signatures.find((sig) => sig.appliesTo === 'any');
+    expect(compatible(synthSource, sampleOnlySig)).toBe(false);
+    expect(compatible(synthSource, anySig)).toBe(true);
+  });
 });
 
 describe('track seeds', () => {
