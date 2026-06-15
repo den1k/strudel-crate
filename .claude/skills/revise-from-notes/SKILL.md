@@ -27,13 +27,17 @@ is a per-item request for change; the new version supersedes the noted one.
 4. **Get a timestamp** for the new versions: `date -u +%Y-%m-%dT%H:%M:%SZ`.
 
 5. **Fan out agents:** dispatch ALL agents for a wave in a SINGLE message
-   (parallel tool calls), waves of at most 8. Each agent gets this prompt with
-   placeholders filled from one work item (and `{dir}`/`{guide}`/`{singular}`
-   from step 1):
+   (parallel tool calls), waves of at most 8. **Substitute `<repo root>` below
+   with the ABSOLUTE path of your current working directory (run `pwd` first).**
+   In a git worktree that is the worktree path, NOT the main checkout — a relative
+   or wrong path makes agents write files and `git commit` in the wrong checkout.
+   Each agent gets this prompt with placeholders filled from one work item (and
+   `{dir}`/`{guide}`/`{singular}` from step 1):
 
    ```
    You are writing exactly one Strudel {singular} file: a new VERSION of an
-   existing one that honors a listener note. Work in <repo root>.
+   existing one that honors a listener note. Work in <repo root> (use this
+   absolute path for every file path and every git command; do not cd elsewhere).
 
    1. Read {guide} COMPLETELY and follow every rule in it.
    2. This is version {version} of "{title}". The listener note to honor is:

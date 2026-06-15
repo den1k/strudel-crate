@@ -45,10 +45,15 @@ Quality bar: original, transformed sound; nothing that sounds like a stock prese
      hollow · screaming · liquid · broken
 
 5. **Fan out agents:** dispatch ALL agents for a wave in a SINGLE message (parallel
-   tool calls), waves of at most 8. Each agent gets this prompt, placeholders filled:
+   tool calls), waves of at most 8. **Substitute `<repo root>` below with the
+   ABSOLUTE path of your current working directory (run `pwd` first).** In a git
+   worktree that is the worktree path, NOT the main checkout — a relative or wrong
+   path makes agents write files and `git commit` in the wrong checkout. Each
+   agent gets this prompt, placeholders filled:
 
    ```
-   You are writing exactly one Strudel STEM file. Work in <repo root>.
+   You are writing exactly one Strudel STEM file. Work in <repo root> (use this
+   absolute path for every file path and every git command; do not cd elsewhere).
 
    1. Read STEMS_GUIDE.md COMPLETELY and follow every rule in it — ONE star
       sound, a built-in 8–32 cycle morph arc (~15–60 s), at least 3 modulated
