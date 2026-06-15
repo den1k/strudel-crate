@@ -1,10 +1,10 @@
 import {
   setAudioContext,
   setSuperdoughAudioController,
+  resetGlobalEffects,
   initAudio,
   webaudioOutput,
 } from '@strudel/webaudio';
-import { SuperdoughAudioController } from 'superdough/superdoughoutput.mjs';
 import { evaluate } from '@strudel/transpiler';
 import { exportSpec, collectHaps } from './export-spec.js';
 import { encodeWav, encodeMp3 } from './encoders.js';
@@ -27,7 +27,18 @@ export async function renderTrack(track, format) {
   const { cps, cycles, seconds } = exportSpec(track);
   const ctx = new OfflineAudioContext(2, Math.ceil(seconds * SAMPLE_RATE), SAMPLE_RATE);
   setAudioContext(ctx);
-  setSuperdoughAudioController(new SuperdoughAudioController(ctx));
+  // Rebind superdough to the offline context: clear any analyser/effect state
+  // and null the controller so superdough lazily recreates it on `ctx` (the
+  // iframe boot may have created one on a default AudioContext). Everything is
+  // imported from @strudel/webaudio so there is ONE superdough instance: pulling
+  // SuperdoughAudioController from the `superdough/...` subpath instead loads a
+  // SECOND superdough copy (its own vite dep chunk with its own audio-context
+  // global that we'd never set), leaving its reverb/effect nodes on the default
+  // context — they then fail to connect to offline-context nodes ("cannot
+  // connect to an AudioNode belonging to a different audio context") and silence
+  // every sound using room/delay/etc.
+  resetGlobalEffects();
+  setSuperdoughAudioController(null);
   await initAudio();
   // collectHaps queries cycle-by-cycle (one throwing cycle can't zero the whole
   // render); ascending onset order matters for graph-state controls like `cut`,
