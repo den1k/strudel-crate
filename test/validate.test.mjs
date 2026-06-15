@@ -143,6 +143,33 @@ describe('characterCheck', () => {
     expect(characterCheck('note("<c2 eb2 f1 g1>")').present).toContain('harmonic');
   });
 
+  it('does NOT count non-note <...> automation as harmonic', () => {
+    expect(characterCheck('s("bd").gain("<0.9 0.6 0.8 0.6>")').present).not.toContain('harmonic');
+    expect(characterCheck('x.n("<0 1 2 3>")').present).not.toContain('harmonic');
+    expect(characterCheck('s("<bd sd hh oh>")').present).not.toContain('harmonic');
+  });
+
+  it('counts a >=4-chord triad progression as harmonic', () => {
+    expect(characterCheck('note("<[c3,e3,g3] [ab2,c3,eb3] [f2,a2,c3] [g2,b2,d3]>")').present).toContain('harmonic');
+  });
+
+  it('does NOT count a 2-chord triad progression as harmonic', () => {
+    expect(characterCheck('note("<[c3,eb3,g3] [ab2,c3,eb3]>")').present).not.toContain('harmonic');
+  });
+
+  it('does not hang on an unclosed < (no ReDoS)', () => {
+    const start = Date.now();
+    characterCheck('<' + ' x'.repeat(5000));
+    expect(Date.now() - start).toBeLessThan(1000);
+  });
+
+  it('fails an intuitively-generic track that games the gate via <...> automation', () => {
+    const evasion = 'stack(note("[c3,eb3,g3]").s("sawtooth").lpf(sine.slow(8).range(300,1800)).crush(8), s("bd ~ ~ ~ sd ~ ~ ~").gain("<0.9 0.6 0.8 0.6>"), s("hh*8").every(4, x => x.rev()))';
+    const r = characterCheck(evasion);
+    expect(r.ok).toBe(false);
+    expect(r.present).not.toContain('harmonic');
+  });
+
   it('does NOT count a bare triad in plain minor as harmonic', () => {
     const c = characterCheck('note("[c3,e3,g3]").s("piano")\nn("0 2 4").scale("C3:minor")');
     expect(c.present).not.toContain('harmonic');

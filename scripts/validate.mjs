@@ -51,6 +51,23 @@ export async function validateCode(code) {
 // floor (on-grid triads under a filter sweep). It rewards USING operators from
 // distinct families, not using them well — quality-of-use is out of scope.
 // Regexes run against the raw code string. See the design doc for rationale.
+
+// A note/chord progression of >=4 entries — harmonic interest. Counts top-level
+// entries in each <...> group that look like pitches (note name + octave), so
+// automation like <0.9 0.6 0.8 0.6> (gain), <0 1 2 3> (degrees) or <bd sd hh oh>
+// (sample variants) does NOT score. The bounded, non-backtracking <[^<>]*> scan
+// avoids catastrophic backtracking on a stray unclosed `<`.
+function hasNoteProgression(code) {
+  const groups = code.match(/<[^<>]*>/g);
+  if (!groups) return false;
+  const noteToken = /[a-gA-G][#sb]?\d/;
+  return groups.some((g) => {
+    const inner = g.slice(1, -1).trim();
+    if (!inner) return false;
+    return inner.split(/\s+/).filter((e) => noteToken.test(e)).length >= 4;
+  });
+}
+
 const CHARACTER_CATEGORIES = {
   // Harmonic richness beyond bare triads: a 4+ note chord, a transposition/
   // voicing move, a characterful mode, or a >=4-entry progression.
@@ -58,7 +75,7 @@ const CHARACTER_CATEGORIES = {
     /\[[^\]]*?(?:,[^\],]*?){3,}\]/,                                  // chord with >=4 members
     /\.add\(\s*note/,                                                // .add(note(...))
     /:(?:dorian|phrygian|lydian|mixolydian|locrian|harmonic|melodic)/,
-    /<[^>]*?\S+(?:\s+\S+){3,}[^>]*?>/,                               // <a b c d ...> (>=4 tokens)
+    hasNoteProgression,                                             // >=4-entry note/chord progression
   ],
   // Off-grid rhythm. Euclid is a mini-notation token `word(n,m)` NOT preceded
   // by a dot — so method calls like .range(200, 2000), .every(4, …), .pan(…)
@@ -85,7 +102,8 @@ export function characterCheck(code) {
   const present = [];
   const missing = [];
   for (const [category, patterns] of Object.entries(CHARACTER_CATEGORIES)) {
-    (patterns.some((re) => re.test(code)) ? present : missing).push(category);
+    const present_ = patterns.some((m) => (typeof m === 'function' ? m(code) : m.test(code)));
+    (present_ ? present : missing).push(category);
   }
   return { ok: present.length >= 3, present, missing };
 }
