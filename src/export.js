@@ -45,7 +45,7 @@ export async function exportTrack(track, format, { onStatus = () => {} } = {}) {
       document.body.appendChild(iframe); // load starts here; iframe posts 'ready'
     });
     onStatus('encoding…'); // cosmetic — encoding already happened in the iframe
-    download(blob, `${track.id}.${format}`);
+    download(blob, format === 'stems' ? `${track.id}-stems.zip` : `${track.id}.${format}`);
   } finally {
     iframe.remove(); // terminate the render context on completion or failure
     exporting = false;
