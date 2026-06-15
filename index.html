@@ -15,6 +15,7 @@
     <nav class="nav" aria-label="sections">
       <a href="/" class="on" aria-current="page">crate</a>
       <a href="/stems">stems</a>
+      <button id="job-bell" class="job-bell" aria-label="notifications" title="generation log">🔔<span id="job-unread" class="job-unread" hidden>0</span></button>
     </nav>
     <div class="filters">
       <select id="batch-filter" aria-label="filter by batch"><option value="all">all batches</option></select>
@@ -25,6 +26,14 @@
       </div>
     </div>
   </header>
+  <section class="generate" aria-label="generate">
+    <input id="gen-prompt" type="text" placeholder="e.g. dark techno" aria-label="prompt" />
+    <input id="gen-count" type="number" min="1" max="30" value="12" aria-label="count" />
+    <button id="gen-go">Generate</button>
+    <button id="gen-revise">Revise from notes</button>
+    <span id="gen-status" class="gen-status" role="status"></span>
+  </section>
+  <div id="job-log" class="job-log" hidden></div>
   <main id="tracks"><p class="empty">loading crate…</p></main>
   <footer id="transport">
     <span id="status" class="status">warming up samples…</span>
