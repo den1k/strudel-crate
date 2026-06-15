@@ -6,12 +6,11 @@ import {
   webaudioOutput,
 } from '@strudel/webaudio';
 import { evaluate } from '@strudel/transpiler';
-import { exportSpec, collectHaps, groupHapsBySound } from './export-spec.js';
+import { exportSpec, collectHaps, groupHapsBySound, stemFilenames } from './export-spec.js';
 import { encodeWav, encodeMp3 } from './encoders.js';
 import { zipStore } from './zip.js';
 
 const SAMPLE_RATE = 44100;
-const sanitize = (s) => String(s).replace(/[^a-zA-Z0-9_-]+/g, '-');
 
 async function evalPattern(track) {
   // setcpm/setcps exist only inside repls; the bare transpiler can't see them,
@@ -65,13 +64,11 @@ export async function renderStemsZip(track) {
   const pattern = await evalPattern(track);
   const spec = exportSpec(track);
   const groups = groupHapsBySound(collectHaps(pattern, spec.cycles, spec.cps));
+  const names = stemFilenames(track.id, groups.map((g) => g.name));
   const files = [];
-  for (const { name, haps } of groups) {
-    const buffer = await renderHapsToBuffer(haps, spec);
-    files.push({
-      name: `${sanitize(track.id)}-${sanitize(name)}.wav`,
-      data: new Uint8Array(encodeWav(buffer, 24)),
-    });
+  for (let i = 0; i < groups.length; i++) {
+    const buffer = await renderHapsToBuffer(groups[i].haps, spec);
+    files.push({ name: names[i], data: new Uint8Array(encodeWav(buffer, 24)) });
   }
   return new Blob([zipStore(files)], { type: 'application/zip' });
 }

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { evaluate } from '@strudel/transpiler';
 import { initStrudelEnv } from '../scripts/strudel-env.mjs';
-import { collectHaps, groupHapsBySound } from '../src/export-spec.js';
+import { collectHaps, groupHapsBySound, stemFilenames } from '../src/export-spec.js';
 
 // Build a real Pattern headlessly, the same way the validator does.
 const patternOf = async (code) => (await evaluate(code)).pattern;
@@ -62,5 +62,21 @@ describe('groupHapsBySound', () => {
     const pattern = await patternOf('stack(note("c2").s("sawtooth"), note("c4").s("sawtooth"))');
     const groups = groupHapsBySound(collectHaps(pattern, 2, 0.5));
     expect(groups.map((g) => g.name)).toEqual(['sawtooth']);
+  });
+});
+
+describe('stemFilenames', () => {
+  it('builds <id>-<sound>.wav names', () => {
+    expect(stemFilenames('batch-01', ['bd', 'hh'])).toEqual(['batch-01-bd.wav', 'batch-01-hh.wav']);
+  });
+
+  it('disambiguates distinct names that sanitize to the same string', () => {
+    // 'a.b' and 'a/b' both sanitize to 'a-b' → the second gets a numeric suffix
+    // so the zip never carries two identically-named entries (a lost stem).
+    expect(stemFilenames('t', ['a.b', 'a/b'])).toEqual(['t-a-b.wav', 't-a-b-2.wav']);
+  });
+
+  it('disambiguates exact duplicates too (defensive)', () => {
+    expect(stemFilenames('t', ['bd', 'bd', 'bd'])).toEqual(['t-bd.wav', 't-bd-2.wav', 't-bd-3.wav']);
   });
 });

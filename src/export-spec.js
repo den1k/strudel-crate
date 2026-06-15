@@ -65,3 +65,21 @@ export function groupHapsBySound(haps) {
     .sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0))
     .map(([name, hs]) => ({ name, haps: hs }));
 }
+
+const sanitizeName = (s) => String(s).replace(/[^a-zA-Z0-9_-]+/g, '-');
+
+// Build collision-free `<trackId>-<sound>.wav` names for a list of stem sounds.
+// groupHapsBySound already yields distinct sound names, but sanitizing could map
+// two distinct names onto the same string; a numeric suffix on any repeat
+// guarantees every entry in the zip is unique, so no stem is overwritten/lost on
+// extract.
+export function stemFilenames(trackId, names) {
+  const id = sanitizeName(trackId);
+  const seen = new Map();
+  return names.map((name) => {
+    const base = `${id}-${sanitizeName(name)}`;
+    const count = (seen.get(base) ?? 0) + 1;
+    seen.set(base, count);
+    return count === 1 ? `${base}.wav` : `${base}-${count}.wav`;
+  });
+}
