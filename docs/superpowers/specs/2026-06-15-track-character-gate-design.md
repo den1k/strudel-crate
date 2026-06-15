@@ -101,6 +101,17 @@ well* — an agent could game it. Accepted: the goal is only to make the laziest
 track (on-grid triads under one filter sweep) no longer pass, forcing reach into the
 arsenal. Quality-of-use is what a deferred critic loop would judge.
 
+**Post-implementation refinement (final review):** the harmonic `<…>` progression
+marker was initially a single regex matching any ≥4-token angle-bracket group. Review
+found two defects: (1) it backtracked catastrophically on an unclosed `<` (ReDoS), and
+(2) it granted harmonic credit to *any* 4-token group — including `.gain("<…>")`,
+`.n("<0 1 2 3>")`, and `s("<bd sd hh oh>")` automation — which let a static-triad,
+on-grid, filter-sweep track pass at 3/4 (the exact shape this spec says must fail). It
+was replaced with a bounded, note-anchored `hasNoteProgression(code)` helper: it scans
+`<[^<>]*>` groups (linear, no backtracking) and counts only top-level entries that look
+like pitches (note name + octave), requiring ≥4. `CHARACTER_CATEGORIES` matchers may
+now be a RegExp or a predicate function.
+
 ### 2. Guide: menu → hard requirement
 
 Rewrite `STRUDEL_GUIDE.md`'s "Movement & variation (what makes it interesting)" section
