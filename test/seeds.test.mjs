@@ -27,6 +27,13 @@ describe('stem seeds', () => {
   it('yields at least 30 distinct composable seeds', () => {
     expect(composePairs(pool).length).toBeGreaterThanOrEqual(30);
   });
+
+  it('has unique source and signature ids', () => {
+    const sourceIds = pool.sources.map((s) => s.id);
+    expect(new Set(sourceIds).size, 'duplicate source id').toBe(sourceIds.length);
+    const signatureIds = pool.signatures.map((s) => s.id);
+    expect(new Set(signatureIds).size, 'duplicate signature id').toBe(signatureIds.length);
+  });
 });
 
 describe('track seeds', () => {
@@ -41,5 +48,12 @@ describe('track seeds', () => {
 
   it('yields at least 20 distinct composable seeds', () => {
     expect(composePairs(pool).length).toBeGreaterThanOrEqual(20);
+  });
+
+  it('has unique source and signature ids', () => {
+    const sourceIds = pool.sources.map((s) => s.id);
+    expect(new Set(sourceIds).size, 'duplicate source id').toBe(sourceIds.length);
+    const signatureIds = pool.signatures.map((s) => s.id);
+    expect(new Set(signatureIds).size, 'duplicate signature id').toBe(signatureIds.length);
   });
 });

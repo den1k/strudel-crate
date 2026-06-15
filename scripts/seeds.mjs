@@ -27,6 +27,13 @@ export function composePairs(pool) {
   return pairs;
 }
 
+// wrapStem and wrapTrack differ in arity because a stem and a track have
+// different shapes. A stem is one voice plus a modifier chain, so the source
+// and signature frags are pre-concatenated by the caller into a single chained
+// expression (one arg). A track is two stacked voices — a groove plus a
+// harmonic engine — which must remain separate layers, so its source and
+// signature frags stay as distinct args.
+
 /** Wrap a single stem expression into a minimal valid stem program. */
 export function wrapStem(code) {
   return `stack(\n  ${code}.gain(0.8)\n)`;
