@@ -45,6 +45,20 @@ Quality bar: original, transformed sound; nothing that sounds like a stock prese
    - character (fit to prompt): e.g. wet/cavernous · dry/clicky · metallic ·
      hollow · screaming · liquid · broken
 
+   Then assign each stem its **seed and extension constraints** (read
+   `shared/stem-seeds.json`):
+   - **seed:** one `source × signature` pair (compatible per `appliesTo`) whose
+     `source.family` fits the stem's synthesis-core axis. No two stems in a wave share a
+     pair; spread sources and signatures as evenly as the pool allows across the batch.
+   - **modulation set:** a distinct subset of ≥3 dimensions from {pitch, timbre, filter,
+     space, motion, degradation}. The lazy trio (filter + pan + shape) may go to at most
+     ~2 stems in a 30-batch; everyone else gets a different subset.
+   - **motion mechanism:** one of {slow LFO (sine/saw/tri/square), stepped `<…>/N`,
+     envelope-driven, euclid/ply, perlin/rand} — and NOT `sine.slow` for the majority.
+   - **tail:** one of {dry, room-only, delay-only, room+delay, granular/no-reverb}.
+   - **forbids:** derive bans from the above, e.g. "no `.room()`" for dry/no-reverb
+     tails, "`sine.slow` may not be your primary motion" for stepped/envelope mechanisms.
+
 5. **Fan out agents:** dispatch ALL agents for a wave in a SINGLE message (parallel
    tool calls), waves of at most 8. **Substitute `<repo root>` below with the
    ABSOLUTE path of your current working directory (run `pwd` first).** In a git
@@ -60,6 +74,12 @@ Quality bar: original, transformed sound; nothing that sounds like a stock prese
       sound, a built-in 8–32 cycle morph arc (~15–60 s), at least 3 modulated
       dimensions, original transformed sound.
    2. Sound brief: "{prompt}". Your variation directive: {directive}.
+      Your SEED (your starting point — transform and EXTEND it; do NOT paste it
+      unchanged, do NOT collapse into a generic sine.slow filter-sweep into reverb):
+      {seed}
+      ({seed_note})
+      Extension constraints you MUST obey: modulate these dimensions: {modulation_set};
+      motion mechanism: {motion_mechanism}; tail: {tail}; forbids: {forbids}.
       Cross-track lessons to apply (honor every lesson listed under
       "Lessons for all future tracks"):
       {digest}
