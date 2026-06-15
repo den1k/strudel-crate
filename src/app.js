@@ -3,16 +3,27 @@ import * as mini from '@strudel/mini';
 import * as tonal from '@strudel/tonal';
 import * as webaudio from '@strudel/webaudio';
 import { initAudioOnFirstClick, registerSynthSounds, samples, getAudioContext } from '@strudel/webaudio';
-import { mountEditor, getEditor, isStarted } from './editor.js';
+import { mountEditor, getEditor, isStarted, cyclePosition, seekEditor } from './editor.js';
 import { nextPlayingId } from './playing-state.js';
 import { exportTrack, isExporting } from './export.js';
 import { groupVersions } from './versions.js';
 import banks from '../shared/sample-banks.json';
+import { exportSpec } from './export-spec.js';
+import { mmss, hasTimeline, fractionToCycle, progressFraction } from './transport.js';
 
 const $ = (sel, el = document) => el.querySelector(sel);
 
 export async function initApp({ apiBase, emptyHint, splitStems = false }) {
-  const state = { tracks: [], playingId: null, samplesReady: false, batch: 'all', filter: 'all' };
+  const state = { tracks: [], playingId: null, playingSpec: null, samplesReady: false, batch: 'all', filter: 'all' };
+
+  // scrubber DOM + loop state (elements exist in the footer of both pages)
+  const seekbar = $('#seekbar');
+  const rail = $('#seek-rail');
+  const fill = $('#seek-fill');
+  const elapsedEl = $('#elapsed');
+  const totalEl = $('#total');
+  let rafId = null;
+  let scrubbing = false;
 
   const collection = apiBase.endsWith('/stems') ? 'stems' : 'tracks';
   const urlBatch = new URLSearchParams(location.search).get('batch');
@@ -81,6 +92,10 @@ export async function initApp({ apiBase, emptyHint, splitStems = false }) {
     const next = nextPlayingId(state.playingId, trackId, started);
     if (next === state.playingId) return;
     state.playingId = next;
+    if (!next) {
+      state.playingSpec = null;
+      stopSeekLoop();
+    }
     updatePlayingUi();
     renderTransport();
   }
@@ -96,6 +111,8 @@ export async function initApp({ apiBase, emptyHint, splitStems = false }) {
     // "now playing" state (a failed *re*-eval keeps the old pattern running)
     if (err && state.playingId === trackId && !isStarted(trackId)) {
       state.playingId = null;
+      state.playingSpec = null;
+      stopSeekLoop();
       updatePlayingUi();
       renderTransport();
     }
@@ -113,9 +130,54 @@ export async function initApp({ apiBase, emptyHint, splitStems = false }) {
     }
   }
 
+  // --- scrubber: rAF position loop + pointer seeking ------------------------
+  function paintSeek(fraction, elapsedSeconds) {
+    fill.style.width = `${(fraction * 100).toFixed(2)}%`;
+    elapsedEl.textContent = mmss(elapsedSeconds);
+    rail.setAttribute('aria-valuenow', Math.round(fraction * 100));
+  }
+
+  function startSeekLoop() {
+    if (rafId != null) return;
+    const tick = () => {
+      rafId = requestAnimationFrame(tick);
+      if (scrubbing || !hasTimeline(state.playingSpec)) return;
+      const cycle = cyclePosition(state.playingId);
+      if (cycle == null) return;
+      const spec = state.playingSpec;
+      paintSeek(progressFraction(cycle, spec.cycles), cycle / spec.cps);
+    };
+    rafId = requestAnimationFrame(tick);
+  }
+
+  function stopSeekLoop() {
+    if (rafId != null) cancelAnimationFrame(rafId);
+    rafId = null;
+    scrubbing = false;
+    paintSeek(0, 0);
+  }
+
+  function seekToPointer(e) {
+    const spec = state.playingSpec;
+    if (!hasTimeline(spec) || !state.playingId) return;
+    const rect = rail.getBoundingClientRect();
+    const fraction = rect.width ? (e.clientX - rect.left) / rect.width : 0;
+    const clamped = Math.min(1, Math.max(0, fraction));
+    seekEditor(state.playingId, fractionToCycle(clamped, spec.cycles));
+    paintSeek(clamped, clamped * spec.seconds); // immediate feedback; loop is paused while scrubbing
+  }
+
   // --- playback (one StrudelMirror per track; solo mode keeps it exclusive) --
   async function play(track) {
     state.playingId = track.id;
+    // exportSpec assumes track.meta.bpm; a stem without it throws → no timeline
+    state.playingSpec = (() => {
+      try {
+        return exportSpec(track);
+      } catch {
+        return null;
+      }
+    })();
     updatePlayingUi();
     renderTransport();
     await ready; // audio context unlocks via this click
@@ -125,11 +187,14 @@ export async function initApp({ apiBase, emptyHint, splitStems = false }) {
     // explicitly when they want to watch the code (keeps cards compact)
     const editor = ensureEditor(track);
     editor.evaluate();
+    startSeekLoop();
   }
 
   function stop() {
     getEditor(state.playingId)?.stop(); // onToggle clears state; next line covers the not-yet-evaluated case
     state.playingId = null;
+    state.playingSpec = null;
+    stopSeekLoop();
     updatePlayingUi();
     renderTransport();
   }
@@ -371,6 +436,9 @@ export async function initApp({ apiBase, emptyHint, splitStems = false }) {
     const playing = state.tracks.find((t) => t.id === state.playingId);
     $('#now-playing').textContent = playing ? `NOW PLAYING — ${playing.title}` : '';
     $('#stop').disabled = !playing;
+    const showSeek = !!playing && hasTimeline(state.playingSpec);
+    seekbar.hidden = !showSeek;
+    if (showSeek) totalEl.textContent = mmss(state.playingSpec.seconds);
   }
 
   function renderBatchFilter() {
@@ -387,6 +455,24 @@ export async function initApp({ apiBase, emptyHint, splitStems = false }) {
 
   // --- boot --------------------------------------------------------------
   $('#stop').addEventListener('click', stop);
+  rail.addEventListener('pointerdown', (e) => {
+    if (!hasTimeline(state.playingSpec)) return;
+    scrubbing = true;
+    rail.setPointerCapture(e.pointerId);
+    seekToPointer(e);
+  });
+  rail.addEventListener('pointermove', (e) => {
+    if (scrubbing) seekToPointer(e);
+  });
+  rail.addEventListener('pointerup', (e) => {
+    if (!scrubbing) return;
+    scrubbing = false;
+    try {
+      rail.releasePointerCapture(e.pointerId);
+    } catch {
+      /* pointer already released */
+    }
+  });
   $('#batch-filter').addEventListener('change', (e) => {
     state.batch = e.target.value;
     renderTracks();
