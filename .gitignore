@@ -7,3 +7,4 @@ dist/
 # keep them untracked so branch switches never drop them
 data/ratings/
 data/stem-ratings/
+data/jobs/
