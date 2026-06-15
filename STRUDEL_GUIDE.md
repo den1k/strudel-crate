@@ -110,17 +110,41 @@ or pick the register in the scale root (`"C2:minor"`).
 - Sample tweaks: `.speed(2)` pitch/rate, `.n(3)` sample variant, `.cut(1)` choke group (hats!)
 - Vowel filter: `.vowel("<a e o>")`
 
-## Movement & variation (what makes it interesting)
+## Character requirement (HARD — the validator enforces it)
 
-- `<...>` progressions: `note("<c2 c2 f1 g1>")` = 4-bar bassline
-- `.every(4, x => x.rev())` — vary every 4th cycle
-- `.sometimesBy(0.25, x => x.speed(2))` — sprinkle variation
-- `.off(0.125, x => x.add(note(12)).gain(0.6))` — echo a transposed copy
-- `.mask("<1 1 1 0>")` — drop a layer out every 4th cycle (builds tension)
-- `.degradeBy(0.2)` — humanize hats
-- `.jux(rev)` — stereo-split a reversed copy
-- `.ply("<1 1 2 4>")` — ratchet builds
-- LFOs everywhere: `sine`, `saw`, `tri`, `square`, `rand`, `perlin` + `.range(a,b).slow(n)`
+A track that is on-grid triads under a single filter sweep is a **FAILURE** even
+though it would otherwise validate. `node scripts/validate.mjs tracks/<id>.json`
+runs a character check and **rejects any track that does not use moves from at
+least 3 of these 4 categories.** Reach into the arsenal; do not stop at the first
+cheap move.
+
+**1. Harmonic** — go beyond bare triads:
+- Extended chords (4+ notes): `note("<[c3,eb3,g3,bb3] [ab2,c3,eb3,g3]>")`
+- Voicing/transposition: `.add(note("<0 0 5 7>"))`
+- Characterful modes: `.scale("C3:dorian")`, `:phrygian`, `:lydian`, `:mixolydian`
+- A real progression (≥4 chords): `note("<c2 eb2 f1 g1>")`
+  *(Plain `:minor`/`:major` triads alone do NOT satisfy this.)*
+
+**2. Rhythmic** — get off the grid:
+- Euclidean rhythms: `s("bd(3,8)")`, `s("hh(5,8,2)")`
+- Swing / micro-timing: `.swingBy(0.1, 8)`, `.nudge(0.02)`, `.late(0.01)`
+- Odd ratchets: `s("hh*3")`, `s("sd*5")`
+  *(Even multiples like `*4`/`*8` and `bd ~ ~ ~` do NOT satisfy this.)*
+
+**3. Timbral** — add dirt/character, not just a filter:
+- `.crush(6)` bitcrush · `.shape(0.4)` distortion · `.coarse(4)` downsample
+- `.vowel("<a e o>")` formant · `.fm(4).fmh(2)` FM · `.speed(2)` for samples
+  *(A `.lpf(...).range(...)` filter sweep does NOT satisfy this — it is the
+  generic move we are trying to get past.)*
+
+**4. Transform** — vary the pattern over time:
+- `.every(4, x => x.rev())` · `.off(0.125, x => x.add(note(12)).gain(0.6))`
+- `.sometimesBy(0.25, x => x.speed(2))` · `.mask("<1 1 1 0>")` · `.jux(rev)`
+- `.ply("<1 1 2 4>")` ratchet builds · `.degradeBy(0.2)` humanize
+
+LFOs (`sine`, `saw`, `tri`, `perlin` + `.range(a,b).slow(n)`) are great for motion,
+but a filter LFO on its own counts toward NONE of the four categories — it is the
+default everyone reaches for. Pick at least three different KINDS of move.
 
 ## Making it a COMPLETE track (3–6 minutes) — THE DEFAULT
 
@@ -182,8 +206,10 @@ arrange(
 ```
 
 Honor your FORBIDS — do not fall back to a `sawtooth` acid bass under a `sine.slow`
-filter sweep into reverb just because it validates. The drum-bank menu and the arsenal
-above are yours to combine in unexpected ways.
+filter sweep into reverb just because it validates. That shape now FAILS the character
+check (see "Character requirement" above): a track must use moves from ≥3 of the
+4 categories — harmonic, rhythmic, timbral, transform. The drum-bank menu and the
+arsenal above are yours to combine in unexpected ways.
 
 ## Common validator failures
 
