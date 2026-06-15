@@ -14,6 +14,10 @@ const $ = (sel, el = document) => el.querySelector(sel);
 export async function initApp({ apiBase, emptyHint }) {
   const state = { tracks: [], playingId: null, samplesReady: false, batch: 'all', filter: 'all' };
 
+  const collection = apiBase.endsWith('/stems') ? 'stems' : 'tracks';
+  const urlBatch = new URLSearchParams(location.search).get('batch');
+  if (urlBatch) state.batch = urlBatch;
+
   // --- strudel init: load the same banks the validator allowlists ---------
   // NOT @strudel/web: its dist inlines private copies of core/webaudio, so
   // sounds registered through it are invisible to editor.js's webaudioOutput
@@ -366,12 +370,14 @@ export async function initApp({ apiBase, emptyHint }) {
 
   function renderBatchFilter() {
     const select = $('#batch-filter');
+    select.length = 1; // keep the "all batches" option, drop any previously-added ones
     const batches = [...new Set(state.tracks.map((t) => t.batch))].sort().reverse();
     for (const b of batches) {
       const opt = document.createElement('option');
       opt.value = opt.textContent = b;
       select.appendChild(opt);
     }
+    if (state.batch !== 'all') select.value = state.batch;
   }
 
   // --- boot --------------------------------------------------------------
@@ -389,13 +395,19 @@ export async function initApp({ apiBase, emptyHint }) {
     }),
   );
 
-  try {
-    const res = await fetch(apiBase);
-    state.tracks = await res.json();
-    renderBatchFilter();
-    renderTracks();
-    renderTransport();
-  } catch (err) {
-    $('#tracks').innerHTML = `<p class="empty">API unreachable — is <code>npm run dev</code> running? (${err.message})</p>`;
+  async function loadTracks() {
+    try {
+      const res = await fetch(apiBase);
+      state.tracks = await res.json();
+      renderBatchFilter();
+      renderTracks();
+      renderTransport();
+    } catch (err) {
+      $('#tracks').innerHTML = `<p class="empty">API unreachable — is <code>npm run dev</code> running? (${err.message})</p>`;
+    }
   }
+  await loadTracks();
+
+  const { mountJobsUI } = await import('./jobs-ui.js');
+  mountJobsUI({ collection, onBatchDone: () => loadTracks() });
 }

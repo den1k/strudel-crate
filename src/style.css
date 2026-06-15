@@ -186,3 +186,13 @@ body {
 }
 .version:hover { color: var(--acid); border-color: var(--acid); }
 .version.on { background: var(--acid); color: var(--bg); border-color: var(--acid); }
+
+.generate { display: flex; gap: .5rem; align-items: center; padding: .5rem 1rem; flex-wrap: wrap; }
+.generate input[type="text"] { flex: 1; min-width: 12rem; }
+.generate input[type="number"] { width: 4rem; }
+.gen-status { font-size: .85rem; opacity: .7; }
+.job-bell { position: relative; background: none; border: 0; cursor: pointer; font-size: 1.1rem; }
+.job-unread { position: absolute; top: -.3rem; right: -.4rem; background: #e0245e; color: #fff; border-radius: 1rem; font-size: .65rem; padding: 0 .35rem; }
+.job-log { position: absolute; right: 1rem; margin-top: .25rem; background: #111; border: 1px solid #333; border-radius: .5rem; padding: .5rem; display: flex; flex-direction: column; gap: .35rem; max-width: 22rem; z-index: 20; }
+.job-log a { color: #4ea1ff; text-decoration: none; }
+.job-log .empty { opacity: .6; }
