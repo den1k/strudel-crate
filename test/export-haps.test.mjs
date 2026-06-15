@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { evaluate } from '@strudel/transpiler';
 import { initStrudelEnv } from '../scripts/strudel-env.mjs';
-import { collectHaps } from '../src/export-spec.js';
+import { collectHaps, groupHapsBySound } from '../src/export-spec.js';
 
 // Build a real Pattern headlessly, the same way the validator does.
 const patternOf = async (code) => (await evaluate(code)).pattern;
@@ -41,5 +41,26 @@ describe('collectHaps', () => {
       .queryArc(0, 8, { _cps: 0.5 })
       .filter((h) => h.hasOnset()).length;
     expect(collectHaps(pattern, 8, 0.5).length).toBe(naive);
+  });
+});
+
+describe('groupHapsBySound', () => {
+  it('splits a multi-sound stack into one group per sound, sorted by name', async () => {
+    const pattern = await patternOf('stack(s("bd*4"), s("hh*8"), note("c2 g1").s("sawtooth"))');
+    const haps = collectHaps(pattern, 4, 0.5);
+    const groups = groupHapsBySound(haps);
+    expect(groups.map((g) => g.name)).toEqual(['bd', 'hh', 'sawtooth']);
+    // every hap is accounted for, none duplicated
+    expect(groups.reduce((n, g) => n + g.haps.length, 0)).toBe(haps.length);
+    // each group only contains its own sound
+    for (const g of groups) {
+      expect(g.haps.every((h) => (h.value?.s ?? 'synth') === g.name)).toBe(true);
+    }
+  });
+
+  it('merges layers that share a sound into one group', async () => {
+    const pattern = await patternOf('stack(note("c2").s("sawtooth"), note("c4").s("sawtooth"))');
+    const groups = groupHapsBySound(collectHaps(pattern, 2, 0.5));
+    expect(groups.map((g) => g.name)).toEqual(['sawtooth']);
   });
 });

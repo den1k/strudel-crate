@@ -4,7 +4,7 @@ import * as tonal from '@strudel/tonal';
 import * as webaudio from '@strudel/webaudio';
 import { registerSynthSounds, samples } from '@strudel/webaudio';
 import banks from '../shared/sample-banks.json';
-import { renderTrack } from './render.js';
+import { renderTrack, renderStemsZip } from './render.js';
 
 // Register the same sound map the app loads on boot. This only registers (URLs
 // + synth defs); individual samples are fetched/decoded lazily during a render,
@@ -27,7 +27,7 @@ window.addEventListener('message', async (e) => {
   const { id, track, format } = data;
   try {
     await ready;
-    const blob = await renderTrack(track, format);
+    const blob = format === 'stems' ? await renderStemsZip(track) : await renderTrack(track, format);
     parent.postMessage({ type: 'done', id, blob }, '*');
   } catch (err) {
     parent.postMessage({ type: 'error', id, message: err.message }, '*');

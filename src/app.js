@@ -11,7 +11,7 @@ import banks from '../shared/sample-banks.json';
 
 const $ = (sel, el = document) => el.querySelector(sel);
 
-export async function initApp({ apiBase, emptyHint }) {
+export async function initApp({ apiBase, emptyHint, splitStems = false }) {
   const state = { tracks: [], playingId: null, samplesReady: false, batch: 'all', filter: 'all' };
 
   // --- strudel init: load the same banks the validator allowlists ---------
@@ -250,11 +250,16 @@ export async function initApp({ apiBase, emptyHint }) {
 
       const exportRow = document.createElement('div');
       exportRow.className = 'exports';
-      for (const fmt of ['wav', 'mp3']) {
+      for (const fmt of splitStems ? ['wav', 'mp3', 'stems'] : ['wav', 'mp3']) {
         const btn = document.createElement('button');
         btn.className = 'export';
         btn.textContent = `↓ ${fmt}`;
-        btn.title = fmt === 'wav' ? 'download lossless wav' : 'download mp3 192kbps';
+        btn.title =
+          fmt === 'wav'
+            ? 'download lossless wav'
+            : fmt === 'mp3'
+              ? 'download mp3 192kbps'
+              : 'download per-sound 24-bit stems (zip)';
         btn.addEventListener('click', async () => {
           if (isExporting()) return;
           document.querySelectorAll('button.export').forEach((el) => (el.disabled = true));
