@@ -464,7 +464,9 @@ export async function initApp({ apiBase, emptyHint, splitStems = false }) {
   rail.addEventListener('pointermove', (e) => {
     if (scrubbing) seekToPointer(e);
   });
-  rail.addEventListener('pointerup', (e) => {
+  // pointercancel too: an OS-interrupted drag must clear `scrubbing`, else the
+  // rAF position loop stays frozen (it yields whenever scrubbing) until replay.
+  const endScrub = (e) => {
     if (!scrubbing) return;
     scrubbing = false;
     try {
@@ -472,7 +474,9 @@ export async function initApp({ apiBase, emptyHint, splitStems = false }) {
     } catch {
       /* pointer already released */
     }
-  });
+  };
+  rail.addEventListener('pointerup', endScrub);
+  rail.addEventListener('pointercancel', endScrub);
   $('#batch-filter').addEventListener('change', (e) => {
     state.batch = e.target.value;
     renderTracks();
