@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { validateCode, validateTrack } from '../scripts/validate.mjs';
+import { validateCode, validateTrack, characterCheck } from '../scripts/validate.mjs';
 
 describe('validateCode', () => {
   it('accepts valid strudel code and counts events', async () => {
@@ -127,5 +127,69 @@ describe('validateTrack', () => {
     const t = goodTrack();
     delete t.meta.genre;
     expect((await validateTrack(t)).error).toMatch(/genre/);
+  });
+});
+
+describe('characterCheck', () => {
+  it('detects a 4+ note chord as harmonic', () => {
+    expect(characterCheck('note("[c3,e3,g3,b3]")').present).toContain('harmonic');
+  });
+
+  it('detects a characterful mode as harmonic', () => {
+    expect(characterCheck('n("0 2 4").scale("C3:dorian")').present).toContain('harmonic');
+  });
+
+  it('detects a 4-entry progression as harmonic', () => {
+    expect(characterCheck('note("<c2 eb2 f1 g1>")').present).toContain('harmonic');
+  });
+
+  it('does NOT count a bare triad in plain minor as harmonic', () => {
+    const c = characterCheck('note("[c3,e3,g3]").s("piano")\nn("0 2 4").scale("C3:minor")');
+    expect(c.present).not.toContain('harmonic');
+  });
+
+  it('detects euclid as rhythmic', () => {
+    expect(characterCheck('s("bd(3,8)").bank("RolandTR909")').present).toContain('rhythmic');
+  });
+
+  it('detects swing as rhythmic', () => {
+    expect(characterCheck('s("hh*8").swingBy(0.1, 8)').present).toContain('rhythmic');
+  });
+
+  it('detects an odd repeat multiple as rhythmic', () => {
+    expect(characterCheck('s("hh*3")').present).toContain('rhythmic');
+  });
+
+  it('does NOT count even multiples or .range as rhythmic', () => {
+    const c = characterCheck('s("hh*8").lpf(sine.slow(8).range(200, 2000))');
+    expect(c.present).not.toContain('rhythmic');
+  });
+
+  it('detects dirt effects as timbral', () => {
+    expect(characterCheck('s("bd*4").crush(6)').present).toContain('timbral');
+    expect(characterCheck('note("c3").s("sawtooth").vowel("a")').present).toContain('timbral');
+    expect(characterCheck('s("arpy").speed(2)').present).toContain('timbral');
+  });
+
+  it('does NOT count plain filter/space or .speed(1) as timbral', () => {
+    const c = characterCheck('note("c3").lpf(800).hpf(200).room(0.4).delay(0.3).speed(1)');
+    expect(c.present).not.toContain('timbral');
+  });
+
+  it('detects pattern transforms', () => {
+    expect(characterCheck('s("bd*4").every(4, x => x.rev())').present).toContain('transform');
+    expect(characterCheck('s("bd*4").off(0.125, x => x.gain(0.5))').present).toContain('transform');
+  });
+
+  it('passes a rich track (4 of 4) and fails a generic one (1 of 4)', () => {
+    const rich = 'note("[c3,eb3,g3,bb3]").s("sawtooth").crush(6)\ns("bd(3,8)").bank("RolandTR909").every(4, x => x.fast(2))';
+    const richResult = characterCheck(rich);
+    expect(richResult.ok).toBe(true);
+    expect(richResult.present.length).toBeGreaterThanOrEqual(3);
+
+    const generic = 'note("<[c3,eb3,g3] [ab2,c3,eb3]>").s("piano").lpf(sine.slow(8).range(400,1200)).room(0.4)\ns("bd ~ ~ ~ sd ~ ~ ~").bank("CasioRZ1")\ns("hh*8").bank("CasioRZ1").degradeBy(0.2)';
+    const genericResult = characterCheck(generic);
+    expect(genericResult.ok).toBe(false);
+    expect(genericResult.missing).toEqual(expect.arrayContaining(['harmonic', 'rhythmic', 'timbral']));
   });
 });

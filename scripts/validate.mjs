@@ -46,6 +46,50 @@ export async function validateCode(code) {
   return { ok: true, events: haps.length };
 }
 
+// ---- Character gate (track files only) -------------------------------------
+// A static, deliberately-crude check that a track reaches beyond the generic
+// floor (on-grid triads under a filter sweep). It rewards USING operators from
+// distinct families, not using them well — quality-of-use is out of scope.
+// Regexes run against the raw code string. See the design doc for rationale.
+const CHARACTER_CATEGORIES = {
+  // Harmonic richness beyond bare triads: a 4+ note chord, a transposition/
+  // voicing move, a characterful mode, or a >=4-entry progression.
+  harmonic: [
+    /\[[^\]]*?(?:,[^\],]*?){3,}\]/,                                  // chord with >=4 members
+    /\.add\(\s*note/,                                                // .add(note(...))
+    /:(?:dorian|phrygian|lydian|mixolydian|locrian|harmonic|melodic)/,
+    /<[^>]*?\S+(?:\s+\S+){3,}[^>]*?>/,                               // <a b c d ...> (>=4 tokens)
+  ],
+  // Off-grid rhythm. Euclid is a mini-notation token `word(n,m)` NOT preceded
+  // by a dot — so method calls like .range(200, 2000), .every(4, …), .pan(…)
+  // and .off(…) are never mistaken for euclid.
+  rhythmic: [
+    /(?<!\.)\b\w+\(\s*\d+\s*,\s*\d+\s*(?:,\s*\d+\s*)?\)/,            // word(n,m[,r]) euclid
+    /\.(?:swingBy|swing|nudge|early|late)\b/,
+    /\*\s*(?:3|5|7|9|11|13)\b/,                                      // odd repeat multiple
+  ],
+  // Timbral dirt/character — NOT plain filter/space (lpf/hpf/room/delay).
+  timbral: [
+    /\.(?:crush|shape|coarse|vowel|distort)\b/,
+    /\.fmh?\b/,                                                      // .fm / .fmh
+    /\.speed\(\s*(?!1\s*\))(?!1\.0+\s*\))[^)]*\)/,                   // .speed(non-1)
+  ],
+  // Pattern transforms / conditional variation. .off and .ply live here only
+  // (not rhythmic) so "3 of 4" means three genuinely different move types.
+  transform: [
+    /\.(?:every|off|jux|sometimesBy|sometimes|often|rarely|someCycles|ply|mask|degradeBy|degrade|iter|chunk|palindrome)\b/,
+  ],
+};
+
+export function characterCheck(code) {
+  const present = [];
+  const missing = [];
+  for (const [category, patterns] of Object.entries(CHARACTER_CATEGORIES)) {
+    (patterns.some((re) => re.test(code)) ? present : missing).push(category);
+  }
+  return { ok: present.length >= 3, present, missing };
+}
+
 // ---- CLI: node scripts/validate.mjs <track.json|file.strudel>... | --code "<code>" ----
 const REQUIRED_FIELDS = ['id', 'title', 'prompt', 'batch', 'description', 'code', 'createdAt'];
 
