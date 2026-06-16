@@ -2,8 +2,7 @@
 // Pure helpers (buildArgv/collectionFor/diffNew) are exported for tests;
 // createRunner (later task) owns the queue and side effects.
 import { spawn as nodeSpawn } from 'node:child_process';
-import { readdir, readFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { itemSlugs, itemsBySlug, ensureProfile } from './instant.mjs';
 
 const COLLECTION_BY_TYPE = {
   'generate-stems': 'stems',
@@ -46,36 +45,16 @@ export function liveProduced(job, currentCount) {
   return Math.max(0, currentCount - job.baselineCount);
 }
 
-// The trustworthy batch comes from each new file's `batch` field (works for
-// generate ids like 2026-06-15-pads-01 AND revise version ids like ...-v2).
-// The generate skills auto-run revise as Step 0, so a generate run's new files
-// can include revise version files from OTHER batches; pick the majority batch
-// (the generation batch has `count` files vs scattered single revisions).
-// Null only on a genuine tie for the top batch, or when no new file has a batch.
-async function readBatch(dir, ids) {
+// The trustworthy batch is the majority `batch` among the newly-created rows
+// (a generate run also emits stray revise versions from other batches). Null on
+// a genuine tie or when no new row carries a batch.
+export function majorityBatch(rows) {
   const counts = new Map();
-  for (const id of ids) {
-    try {
-      const item = JSON.parse(await readFile(join(dir, `${id}.json`), 'utf8'));
-      if (item.batch) counts.set(item.batch, (counts.get(item.batch) ?? 0) + 1);
-    } catch {
-      // ignore unreadable/missing files
-    }
-  }
+  for (const r of rows) if (r.batch) counts.set(r.batch, (counts.get(r.batch) ?? 0) + 1);
   if (counts.size === 0) return null;
   const sorted = [...counts.entries()].sort((a, b) => b[1] - a[1]);
-  if (sorted.length > 1 && sorted[0][1] === sorted[1][1]) return null; // ambiguous tie
+  if (sorted.length > 1 && sorted[0][1] === sorted[1][1]) return null;
   return sorted[0][0];
-}
-
-async function idsIn(dir) {
-  try {
-    return new Set(
-      (await readdir(dir)).filter((f) => f.endsWith('.json')).map((f) => f.slice(0, -5)),
-    );
-  } catch {
-    return new Set();
-  }
 }
 
 function parseSummary(stdout) {
@@ -87,22 +66,24 @@ function parseSummary(stdout) {
   }
 }
 
-export { nodeSpawn, idsIn, parseSummary, ALLOWED_TOOLS };
+export { nodeSpawn, parseSummary, ALLOWED_TOOLS };
 
 export function createRunner({
-  repoRoot, dirs, jobStore,
+  repoRoot, jobStore, adminDb,
   spawn = nodeSpawn,
   now = () => new Date().toISOString(),
 }) {
   const queue = [];
   let running = false;
 
-  function runClaude(job) {
+  function runClaude(job, authorProfileId) {
     return new Promise((resolve) => {
       let out = '';
       let resolved = false;
       const settle = (result) => { if (!resolved) { resolved = true; resolve(result); } };
-      const child = spawn('claude', buildArgv(job), { cwd: repoRoot });
+      const env = { ...process.env };
+      if (authorProfileId) env.CRATE_AUTHOR_PROFILE_ID = authorProfileId;
+      const child = spawn('claude', buildArgv(job), { cwd: repoRoot, env });
       child.stdout?.on('data', (d) => { out += d; });
       child.on('error', () => settle({ code: -1, out }));
       child.on('close', (code) => settle({ code: code ?? -1, out }));
@@ -112,20 +93,19 @@ export function createRunner({
   async function runOne(id) {
     const job = await jobStore.get(id);
     if (!job) return;
-    const dir = join(repoRoot, dirs[job.collection]);
-    const before = await idsIn(dir);
+    const ns = job.collection; // 'tracks' | 'stems'
+    const authorProfileId = job.userId
+      ? await ensureProfile(adminDb, { id: job.userId, email: job.userEmail })
+      : null;
+    const before = await itemSlugs(adminDb, ns);
     await jobStore.update(id, { status: 'running', startedAt: now(), baselineCount: before.size });
-    const { code, out } = await runClaude(job);
-    const after = await idsIn(dir);
+    const { code, out } = await runClaude(job, authorProfileId);
+    const after = await itemSlugs(adminDb, ns);
     const newItems = diffNew(before, after);
-    const patch = { finishedAt: now(), newItems, batch: await readBatch(dir, newItems) };
-    if (code === 0) {
-      patch.status = 'done';
-      patch.summary = parseSummary(out);
-    } else {
-      patch.status = 'failed';
-      patch.error = `claude exited ${code}`;
-    }
+    const newRows = await itemsBySlug(adminDb, ns, newItems);
+    const patch = { finishedAt: now(), newItems, batch: majorityBatch(newRows) };
+    if (code === 0) { patch.status = 'done'; patch.summary = parseSummary(out); }
+    else { patch.status = 'failed'; patch.error = `claude exited ${code}`; }
     await jobStore.update(id, patch);
   }
 

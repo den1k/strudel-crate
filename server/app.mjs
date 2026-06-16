@@ -50,6 +50,8 @@ function jobRoutes(app, jobStore, runner, progressFor, requireAuth) {
     const base = {
       id: randomUUID(),
       type,
+      userId: req.user?.id ?? null,
+      userEmail: req.user?.email ?? null,
       createdAt: new Date().toISOString(),
       status: 'queued',
       startedAt: null, finishedAt: null, summary: null, error: null,
