@@ -1,4 +1,7 @@
 import { initApp } from './app.js';
+import { setupAuth } from './auth.js';
+
+setupAuth();
 
 initApp({
   apiBase: '/api/stems',

@@ -215,6 +215,7 @@ body {
   padding: 14px 28px;
   border-bottom: 1px solid var(--line);
 }
+.generate[hidden] { display: none; } /* gen panel is auth-gated; beat the display:flex above */
 .gen-label {
   font-family: var(--display); font-weight: 700; font-size: 12px;
   text-transform: uppercase; letter-spacing: 0.16em; color: var(--acid);
@@ -327,3 +328,54 @@ body {
 .job-log::-webkit-scrollbar { width: 9px; }
 .job-log::-webkit-scrollbar-thumb { background: var(--line); }
 .job-log::-webkit-scrollbar-track { background: transparent; }
+
+/* --- auth (sign in / magic-code modal) ----------------------------------- */
+.auth-btn {
+  margin-left: 8px;
+  background: transparent; color: var(--dim);
+  border: 1px solid var(--line); font-family: var(--mono); font-size: 12px;
+  padding: 6px 14px; cursor: pointer;
+}
+.auth-btn:hover { color: var(--acid); border-color: var(--acid); }
+
+.auth-modal {
+  position: fixed; inset: 0; z-index: 50;
+  display: grid; place-items: center;
+  background: color-mix(in srgb, var(--bg) 78%, transparent);
+  backdrop-filter: blur(3px);
+  padding: 20px;
+}
+.auth-modal[hidden] { display: none; }
+.auth-card {
+  position: relative;
+  width: min(380px, 100%);
+  background: var(--panel); border: 2px solid var(--acid);
+  padding: 26px 24px 24px; box-shadow: 0 0 40px rgb(200 245 60 / 0.12);
+}
+.auth-card h2 {
+  font-family: var(--display); font-weight: 700; font-size: 22px;
+  color: var(--acid); text-transform: uppercase; letter-spacing: 0.06em;
+}
+.auth-sub { color: var(--dim); font-size: 12px; margin: 8px 0 18px; line-height: 1.5; }
+.auth-card form { display: flex; gap: 8px; }
+.auth-card form[hidden] { display: none; } /* beat the rule above so step 2 (code) stays hidden until step 1 submits */
+.auth-card input {
+  flex: 1; min-width: 0;
+  background: var(--bg); color: var(--ink);
+  border: 1px solid var(--line); font-family: var(--mono); font-size: 13px;
+  padding: 9px 11px;
+}
+.auth-card input:focus { outline: none; border-color: var(--acid); }
+.auth-card form button {
+  background: var(--acid); color: var(--bg);
+  border: 1px solid var(--acid); font-family: var(--mono); font-size: 12px; font-weight: 600;
+  padding: 9px 14px; cursor: pointer; white-space: nowrap;
+}
+.auth-card form button:hover { background: color-mix(in srgb, var(--acid) 82%, var(--ink)); }
+.auth-x {
+  position: absolute; top: 8px; right: 10px;
+  background: none; border: 0; color: var(--dim);
+  font-size: 22px; line-height: 1; cursor: pointer;
+}
+.auth-x:hover { color: var(--hot); }
+.auth-err { color: var(--hot); font-size: 12px; margin-top: 12px; }
