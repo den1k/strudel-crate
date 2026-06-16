@@ -12,7 +12,10 @@ const requireAuth = (req, _res, next) => { req.user = { id: 'u1', email: 'kalavo
 let app, adminDb;
 beforeEach(() => {
   adminDb = fakeAdmin({
-    tracks: [{ id: 't1', slug: 'demo-01', rating: null, notes: '', lesson: '' }],
+    tracks: [
+      { id: 't1', slug: 'demo-01', rating: null, notes: '', lesson: '' },
+      { id: 't2', slug: 'rated-01', rating: 5, notes: '', lesson: '' },
+    ],
     stems: [{ id: 's1', slug: 'stem-01', rating: null, notes: '', lesson: '' }],
     profiles: [],
   });
@@ -58,6 +61,12 @@ describe('rating API', () => {
     expect(res.status).toBe(200);
     expect(res.body.rating).toBe(4);
   });
+
+  it('PUT /api/tracks/:id/rating clears the rating when sent null', async () => {
+    const res = await request(app).put('/api/tracks/rated-01/rating').send({ rating: null });
+    expect(res.status).toBe(200);
+    expect(res.body.rating).toBeNull();
+  });
 });
 
 describe('profile API', () => {
@@ -75,6 +84,11 @@ describe('profile API', () => {
 
   it('PUT /api/profile rejects empty artistName', async () => {
     const res = await request(app).put('/api/profile').send({ artistName: '' });
+    expect(res.status).toBe(400);
+  });
+
+  it('PUT /api/profile rejects a missing artistName', async () => {
+    const res = await request(app).put('/api/profile').send({});
     expect(res.status).toBe(400);
   });
 });

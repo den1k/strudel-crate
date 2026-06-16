@@ -33,10 +33,11 @@ function profileRoutes(app, adminDb, requireAuth) {
   }));
   app.put('/api/profile', requireAuth, wrap(async (req, res) => {
     const { artistName } = req.body ?? {};
-    if (typeof artistName !== 'string' || !artistName.trim() || artistName.length > 60) {
+    const name = typeof artistName === 'string' ? artistName.trim() : '';
+    if (!name || name.length > 60) {
       return res.status(400).json({ error: 'artistName required (1-60 chars)' });
     }
-    res.json(await setArtistName(adminDb, req.user, artistName.trim()));
+    res.json(await setArtistName(adminDb, req.user, name));
   }));
 }
 
