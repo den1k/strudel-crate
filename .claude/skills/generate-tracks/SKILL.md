@@ -117,8 +117,9 @@ outro (see the guide's arrange() default).
       OK {id} "<title>"   — or —   FAILED {id} <one-line reason>
    ```
 
-6. **Report:** after all waves, output a table (id · title · status), the count of
-   valid tracks written, any failures with reasons. Remind the user:
+6. **Report:** after all waves, echo the **batch style brief** you used (so the user
+   sees the shared DNA), then output a table (id · title · status), the count of valid
+   tracks written, any failures with reasons. Remind the user:
    `npm run dev` → http://localhost:5173 to listen and rate.
 
 ## Notes

@@ -71,7 +71,8 @@ the validator (`node scripts/validate.mjs tracks/<id>.json`) enforces most of it
   bank: `casio`, `jvbass`, `arpy`, `space`, `numbers`, `insect`, `wind`, `crow`, `metal`,
   `jazz`, `east` — check `scripts/sounds.json` when in doubt; many have multiple variants
   selectable with `.n(2)`.
-- **Vocal & pad samples** (for vocal-led / intimate styles): lush pad `swpad`; choppable
+- **Vocal & pad samples** (for vocal-led / intimate styles): lush pad `swpad` (variants
+  via `.n(0..4)`); choppable
   vocal/break phrases `think`, `useme`, `sesame`, `apache`; spoken vocals `numbers`,
   `alphabet`, `breath`. Treat a vocal as an instrument: `.chop(8)` slices it into a
   rhythm, `.slice(8, "0 2 4 6")` rearranges slices, `.speed("<1 1.5 0.5>")` pitches it,
