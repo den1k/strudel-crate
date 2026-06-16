@@ -18,7 +18,6 @@ const $ = (sel, el = document) => el.querySelector(sel);
 export async function initApp({ namespace, emptyHint, splitStems = false }) {
   const state = { tracks: [], playingId: null, playingSpec: null, samplesReady: false, batch: 'all', filter: 'all' };
   let myProfileId = null;
-  let myUserId = null;
 
   // scrubber DOM + loop state (elements exist in the footer of both pages)
   const seekbar = $('#seekbar');
@@ -538,7 +537,6 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
   const mineBtn = document.querySelector('.seg button[data-filter="mine"]');
   let profileUnsub = null;
   onUser((user) => {
-    myUserId = user?.id ?? null;
     if (mineBtn) mineBtn.hidden = !user;
     if (profileUnsub) { profileUnsub(); profileUnsub = null; }
     myProfileId = null;
