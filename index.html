@@ -40,6 +40,14 @@
   <footer id="transport">
     <span id="status" class="status">warming up samples…</span>
     <span id="now-playing"></span>
+    <div id="seekbar" class="seekbar" hidden>
+      <span id="elapsed" class="time">0:00</span>
+      <div id="seek-rail" class="seek-rail" role="slider" aria-label="seek"
+           aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <div id="seek-fill" class="seek-fill"></div>
+      </div>
+      <span id="total" class="time">0:00</span>
+    </div>
     <button id="stop" disabled>■ STOP</button>
   </footer>
   <script type="module" src="/src/main.js"></script>

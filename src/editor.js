@@ -1,6 +1,7 @@
 import { StrudelMirror } from '@strudel/codemirror';
 import { transpiler } from '@strudel/transpiler';
 import { getAudioContext, webaudioOutput } from '@strudel/webaudio';
+import { readCycle, applySeek } from './transport.js';
 
 const editors = new Map(); // trackId -> StrudelMirror
 
@@ -8,6 +9,14 @@ export const getEditor = (trackId) => editors.get(trackId) ?? null;
 
 export const isStarted = (trackId) =>
   editors.get(trackId)?.repl.scheduler.started ?? false;
+
+// Current cycle of a track's running scheduler, or null if unavailable.
+export const cyclePosition = (trackId) =>
+  readCycle(editors.get(trackId)?.repl.scheduler ?? null);
+
+// Re-anchor a track's playback to `cycle` (forward or backward), in place.
+export const seekEditor = (trackId, cycle) =>
+  applySeek(editors.get(trackId)?.repl.scheduler ?? null, cycle);
 
 // Mount a StrudelMirror into `root` for a track. Idempotent per track id.
 // solo mode (the default) makes editors mutually exclusive: starting one
