@@ -1,5 +1,5 @@
 // File-backed job store: one JSON file per job at <jobsDir>/<id>.json.
-// Mirrors server/store.mjs conventions (file-per-record, defensive reads).
+// File-per-record conventions with defensive reads.
 import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
