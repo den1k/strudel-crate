@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-16-dub-bass-line-06",
+  "title": "Reversed Concrete Dub",
+  "prompt": "dub bass line",
+  "batch": "2026-06-16-dub-bass-line",
+  "description": "A sample-mangled dub bass grown from a single chopped 'east' hit: granular grains stutter, flip direction and re-pitch in low register while the chop density thickens and the lpf breathes, all thrown through a long dub delay. The morph engine is stepped negative-and-low .speed plus evolving .chop over a 16-cycle pass.",
+  "meta": {
+    "bpm": 70,
+    "genre": "sample-mangled dub bass",
+    "mood": "subterranean, granular, dubwise",
+    "key": "atonal",
+    "instruments": ["chopped reversed dirt-sample bass"],
+    "energy": 3
+  },
+  "createdAt": "2026-06-16T21:10:38Z",
+  "code": "setcpm(70/4)\nstack(\n  s(\"east*2\")\n    .chop(\"<8 16 12 24 16 8 32 16>/2\")\n    .speed(\"<0.5 -0.5 0.35 -0.35 0.6 -0.25 0.45 -0.5>\")\n    .striate(\"<2 4 3 4>/4\")\n    .lpf(sine.slow(23).range(140, 520))\n    .resonance(sine.slow(13).range(6, 14))\n    .lpenv(2).lpattack(0.02).lpdecay(0.18)\n    .shape(sine.slow(29).range(0.12, 0.34))\n    .crush(perlin.slow(16).range(6, 12))\n    .pan(sine.slow(11).range(0.32, 0.68))\n    .sometimesBy(0.18, x => x.speed(-1))\n    .delay(\"0.5:0.375:0.7\").delaytime(sine.slow(17).range(0.28, 0.42))\n    .gain(0.9)\n)"
+}

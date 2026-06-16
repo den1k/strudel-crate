@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-16-dub-bass-line-04",
+  "title": "Woodknock Skank",
+  "prompt": "dub bass line",
+  "batch": "2026-06-16-dub-bass-line",
+  "description": "A plucked woody dub skank bass: a short triangle pluck in the low/mid register, knocked at the attack by a pitch envelope and wobbled by a slow seasick vibrato so the pitch never quite settles. The motion is driven entirely by euclidean and ply rhythmic figures that re-group the off-beat skank over the loop (a swinging (3,8)/(5,8) pull plus every-4 ply doublings), while a ladder lowpass envelope shapes each pluck and a spring-style room plus a dub delay throw ring the notes out into liquid echoes. Across 16 cycles the rhythm regroups, the filter env breathes and the delay throws drift out of phase.",
+  "meta": {
+    "bpm": 140,
+    "genre": "dub skank bass",
+    "mood": "liquid",
+    "key": "C minor",
+    "instruments": ["woody triangle pluck bass"],
+    "energy": 3
+  },
+  "createdAt": "2026-06-16T21:10:38Z",
+  "code": "setcpm(140/4)\nstack(\n  note(\"<c2 eb2 g2 bb1>\".euclid(\"<3 5 3 5>/8\", 8))\n    .s(\"triangle\")\n    .attack(0.001).decay(\"<0.16 0.22 0.18 0.13>/11\").sustain(0)\n    .vib(\"<3 5 7 4>/8\").vibmod(\"<0.7 1.1 0.9>/13\")\n    .penv(\"<9 13 7 11>/7\").pattack(0.002).pdecay(0.035)\n    .lpf(\"<520 720 600>/13\").lpenv(\"<1.8 2.8 1.4 3.2>/11\").lpattack(0.004).lpdecay(\"<0.1 0.2 0.16>/13\").resonance(8).ftype(\"ladder\")\n    .ply(\"<1 1 2 1>/4\")\n    .every(7, x => x.ply(2).gain(0.85))\n    .shape(0.2)\n    .delay(\"<0.4 0.6 0.5>/13:0.375:0.7\").delayfeedback(\"<0.5 0.68 0.6>/11\")\n    .room(\"<0.22 0.4 0.3>/7\").roomsize(\"<2 4 3>/13\")\n    .pan(\"<0.4 0.6 0.5>/11\")\n    .gain(1.0)\n)"
+}

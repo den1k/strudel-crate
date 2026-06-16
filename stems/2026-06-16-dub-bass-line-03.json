@@ -1,0 +1,18 @@
+{
+  "id": "2026-06-16-dub-bass-line-03",
+  "title": "Soundsystem Rot",
+  "prompt": "dub bass line",
+  "batch": "2026-06-16-dub-bass-line",
+  "description": "A dark square sub-bass for the dub soundsystem: dry, tight, and broken, with a pitch-knock on every attack. A degradation arc is the engine - bit-crush falls from clean to brutal and downsampling climbs over a full 32-cycle pass, so the same riff slowly rots into a crunchy lo-fi grind while a tremolo gate keeps it pulsing.",
+  "meta": {
+    "bpm": 75,
+    "genre": "dub sub bass",
+    "mood": "dark",
+    "key": "C minor",
+    "instruments": ["square sub bass"],
+    "energy": 3
+  },
+  "code": "setcpm(75/4)\nstack(\n  note(\"<c1 c1 g0 c1 c1 eb1 g0 c1>*2\").s(\"square\")\n    .penv(\"<-7 -5 -9 -7>/4\").pattack(0.004).pdecay(0.05)\n    .lpf(saw.slow(23).range(220, 720)).resonance(saw.slow(16).range(3, 11)).ftype(\"ladder\")\n    .lpenv(saw.slow(13).range(1, 4)).lpattack(0.006).lpdecay(0.18)\n    .crush(saw.slow(32).range(16, 4))\n    .coarse(saw.slow(29).range(1, 6).round())\n    .shape(saw.slow(19).range(0.08, 0.35))\n    .tremolosync(\"<2 4 4 8>/4\").tremolodepth(saw.slow(11).range(0.15, 0.6))\n    .ply(\"<1 1 2 1>/2\")\n    .attack(0.004).decay(0.18).sustain(0.6).release(0.05)\n    .pan(sine.slow(7).range(0.42, 0.58))\n    .gain(0.9)\n)"
+,
+  "createdAt": "2026-06-16T21:10:38Z"
+}

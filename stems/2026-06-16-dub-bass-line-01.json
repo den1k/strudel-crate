@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-16-dub-bass-line-01",
+  "title": "Soundsystem Sub",
+  "prompt": "dub bass line",
+  "batch": "2026-06-16-dub-bass-line",
+  "description": "A heavyweight FM sub dub bass: a deep sine carrier whose metallic FM overtones are driven by stepped index and harmonicity patterns on prime-ish clocks (7, 11, 13), so the tone reshapes through the loop without any LFO sweep. A short penv click snaps the attack, a ladder lowpass envelope keeps it round and warm, and classic dub delay echoes plus a touch of room smear each note into the void. Over 16 cycles the FM character, filter env and echo wetness drift out of phase and never quite resettle.",
+  "meta": {
+    "bpm": 140,
+    "genre": "fm sub bass",
+    "mood": "heavyweight",
+    "key": "C minor",
+    "instruments": ["fm sine sub bass"],
+    "energy": 3
+  },
+  "createdAt": "2026-06-16T21:10:38Z",
+  "code": "setcpm(140/4)\nstack(\n  note(\"<c1 c1 eb1 g0>*4\").s(\"sine\")\n    .fm(\"<2 6 11 4 8 3 9 5>/7\")\n    .fmh(\"<1 1.5 0.5 2>/11\")\n    .fmattack(0.005).fmdecay(\"<0.08 0.15 0.25>/13\")\n    .penv(\"<10 14 8 12>/8\").pattack(0.002).pdecay(0.03)\n    .lpf(620).lpenv(\"<1.6 2.4 1.2 3>/11\").lpattack(0.004).lpdecay(\"<0.12 0.22 0.18>/13\").resonance(7).ftype(\"ladder\")\n    .shape(0.22)\n    .delay(\"0.5:0.5:0.7\").delayfeedback(\"<0.55 0.7 0.62>/13\")\n    .room(\"<0.18 0.32 0.24>/7\")\n    .pan(\"<0.42 0.58>/11\")\n    .gain(1.0)\n)"
+}

@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-16-uk-garage-dubstep-02",
+  "title": "Croydon Pressure",
+  "prompt": "uk garage, dubstep",
+  "batch": "2026-06-16-uk-garage-dubstep",
+  "description": "A dark half-time dubstep roller at 140 that breathes at 70 — a cavernous OberheimDMX kick and snare hold the centre while a crushed sub-bass wobble grinds underneath. An early peak of grinding bass and a chopped vocal cut gives way to a deconstructed outro of pure sub and space.",
+  "meta": {
+    "bpm": 140,
+    "genre": "dubstep / uk garage",
+    "mood": "dark, nocturnal, heavy, hypnotic",
+    "key": "C minor",
+    "instruments": ["OberheimDMX kit", "wobble sub bass (triangle)", "chopped vocal (think)", "swpad stabs"],
+    "energy": 5
+  },
+  "createdAt": "2026-06-16T21:19:20Z",
+  "code": "setcpm(140/4)\narrange(\n  [16, stack(\n    s(\"bd ~ ~ ~ ~ ~ ~ ~\").bank(\"OberheimDMX\").gain(0.95).room(0.3),\n    note(\"<c1 c1 eb1 g0>*2\").s(\"triangle\")\n      .lpf(sine.slow(8).range(120, 420)).gain(0.85)\n      .shape(0.3)\n  )],\n  [24, stack(\n    s(\"bd ~ ~ ~ sd ~ ~ ~\").bank(\"OberheimDMX\").gain(0.95).room(0.25),\n    s(\"hh(5,8,2)\").bank(\"OberheimDMX\").gain(0.5).swingBy(0.18, 8).cut(1),\n    note(\"<c1 c1 eb1 g0>*4\").s(\"triangle\")\n      .lpf(sine.range(150, 900).fast(2).mul(perlin.range(0.6, 1)))\n      .gain(saw.fast(2).range(0.4, 1))\n      .crush(7).shape(0.35).gain(0.85)\n  )],\n  [32, stack(\n    s(\"bd ~ ~ ~ sd ~ ~ ~\").bank(\"OberheimDMX\").gain(1).room(0.25)\n      .every(8, x => x.ply(\"<1 1 2>\")),\n    s(\"hh(7,8,3)\").bank(\"OberheimDMX\").gain(0.55).swingBy(0.2, 8).cut(1)\n      .sometimesBy(0.2, x => x.speed(2)),\n    s(\"~ ~ rim ~ ~ rim ~ ~\").bank(\"OberheimDMX\").gain(0.5).room(0.4),\n    note(\"<c1 c1 eb1 g0>*4\").s(\"triangle\")\n      .lpf(sine.range(180, 1400).fast(4).mul(perlin.range(0.5, 1)))\n      .gain(saw.fast(4).range(0.35, 1))\n      .crush(6).shape(0.45).gain(0.9),\n    s(\"think\").chop(8).slice(8, \"0 2 1 3 4 6 5 7\").speed(\"<1 1.5 0.5>\")\n      .gain(0.55).lpf(2000).room(0.4).delay(\".4:.125:.6\")\n      .off(0.125, x => x.add(note(12)).gain(0.4))\n  )],\n  [16, stack(\n    note(\"<[c2,eb2,g2] [ab1,c2,eb2] [bb1,d2,f2] [g1,bb1,d2]>\").s(\"swpad\")\n      .gain(saw.slow(2).range(0.3, 0.7)).lpf(1100).room(0.6).shape(0.2),\n    note(\"<c1 eb1 g0 ab0>*2\").s(\"triangle\")\n      .lpf(sine.slow(8).range(120, 500)).gain(0.8).shape(0.3),\n    s(\"~ ~ ~ ~ sd ~ ~ ~\").bank(\"OberheimDMX\").gain(0.7).room(0.5)\n  )],\n  [24, stack(\n    s(\"bd ~ ~ ~ sd ~ ~ ~\").bank(\"OberheimDMX\").gain(1).room(0.25)\n      .every(4, x => x.ply(\"<1 2 1 4>\")),\n    s(\"hh(7,8,1)\").bank(\"OberheimDMX\").gain(0.55).swingBy(0.2, 8).cut(1)\n      .sometimesBy(0.25, x => x.speed(2)),\n    s(\"~ cp ~ ~ ~ ~ cp ~\").bank(\"OberheimDMX\").gain(0.5).room(0.4),\n    note(\"<c1 c1 eb1 g0>*8\").s(\"triangle\")\n      .lpf(sine.range(200, 1800).fast(8).mul(perlin.range(0.4, 1)))\n      .gain(saw.fast(8).range(0.3, 1))\n      .crush(5).shape(0.5).gain(0.9),\n    s(\"think\").chop(8).slice(8, \"0 4 2 6 1 5 3 7\").speed(\"<1.5 1 0.5>\")\n      .gain(0.5).lpf(2500).room(0.4).delay(\".4:.125:.6\")\n      .every(4, x => x.rev())\n  )],\n  [12, stack(\n    note(\"<c1 c1 eb1 g0>*2\").s(\"triangle\")\n      .lpf(sine.slow(8).range(110, 380)).gain(0.85).shape(0.3),\n    s(\"bd ~ ~ ~ ~ ~ ~ ~\").bank(\"OberheimDMX\").gain(0.85).room(0.4)\n  )]\n)\n"
+}

@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-16-dub-bass-line-05",
+  "title": "Mouthful of Dub",
+  "prompt": "dub bass line",
+  "batch": "2026-06-16-dub-bass-line",
+  "description": "A talking formant dub bass: a sawtooth core dropped two octaves into c2/c3 register, mouthed through stepped vowels on prime-ish periods so it seems to speak, with a perlin-driven band-pass journey and a subtle vibrato. Drenched in a cavernous dub room and a dotted delay throw so each phrase trails off into the cave.",
+  "meta": {
+    "bpm": 70,
+    "genre": "formant dub bass",
+    "mood": "hollow, talking, cavernous",
+    "key": "C minor",
+    "instruments": ["sawtooth formant dub bass"],
+    "energy": 2
+  },
+  "code": "setcpm(70/4)\nstack(\n  note(\"<c2 [c2 d2] f2 eb2>/2\").s(\"sawtooth\")\n    .vowel(\"<a e i o>/3 <u a o e>/7 <i o a u>/11\")\n    .vib(perlin.range(0.15, 0.6).slow(13)).vibmod(0.4)\n    .bpf(perlin.range(180, 1300).slow(23))\n    .bpq(tri.range(6, 13).slow(11))\n    .lpf(2200)\n    .shape(0.28)\n    .room(perlin.range(0.5, 0.85).slow(29)).roomsize(7)\n    .delay(\"0.45:0.5:0.72\").delayfb(0.7)\n    .orbit(2)\n    .gain(0.85),\n  note(\"c1\").s(\"sine\")\n    .gain(saw.range(0.2, 0.38).slow(16))\n    .lpf(140)\n)\n",
+  "createdAt": "2026-06-16T21:10:38Z"
+}

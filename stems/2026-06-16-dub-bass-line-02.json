@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-16-dub-bass-line-02",
+  "title": "Concrete Sublow",
+  "prompt": "dub bass line",
+  "batch": "2026-06-16-dub-bass-line",
+  "description": "A thick detuned REESE that prowls the sub register, gated by a stepped tremolo that syncopates the groove while a saw-LFO filter wobble chews the low end. Drive and detune drift thicken the timbre as tape-style dub delays throw fragments out into the dark, the whole arc breathing over 16 cycles.",
+  "meta": {
+    "bpm": 70,
+    "genre": "reese dub bass",
+    "mood": "menacing",
+    "key": "F minor",
+    "instruments": ["detuned reese dub-wobble bass"],
+    "energy": 4
+  },
+  "code": "setcpm(70/4)\nstack(\n  note(\"<f1 f1 ab1 c2 f1 ab1 c2 db2>*4\").s(\"supersaw\")\n    .unison(5)\n    .detune(saw.slow(23).range(0.18, 0.42))\n    .tremolosync(\"<4 8 8 16 4 16>/8\")\n    .tremolodepth(saw.slow(13).range(0.55, 0.9))\n    .tremoloshape(\"square\")\n    .lpf(saw.slow(11).range(180, 1400))\n    .resonance(perlin.slow(29).range(8, 18))\n    .ftype(\"ladder\")\n    .shape(square.slow(16).range(0.35, 0.72))\n    .distort(perlin.slow(17).range(0.2, 0.65))\n    .hpf(45)\n    .delay(\"0.55:0.375:0.78\")\n    .delaytime(\"<0.375 0.5 0.375 0.25>/8\")\n    .delayfeedback(0.72)\n    .orbit(2)\n    .gain(0.95)\n)",
+  "createdAt": "2026-06-16T21:10:38Z"
+}

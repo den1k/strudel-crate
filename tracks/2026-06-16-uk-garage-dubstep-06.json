@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-16-uk-garage-dubstep-06",
+  "title": "Croydon Fog",
+  "prompt": "uk garage, dubstep",
+  "batch": "2026-06-16-uk-garage-dubstep",
+  "description": "A slow-burn dub workout that opens beatless and cavernous — felt-piano pads and reverberant off-beat chord stabs drifting in fog — before a sparse half-time CasioRZ1 kit and a wobbling sub bass drop in. Chopped soulful vocal phrases drift over a moody dorian progression, garage swing carrying dubstep weight through to a stripped, echoing outro.",
+  "meta": {
+    "bpm": 138,
+    "genre": "dubstep / uk garage",
+    "mood": "cavernous, dubby, nocturnal, hypnotic",
+    "key": "C minor (dorian-tinged)",
+    "instruments": ["felt piano pads", "swpad chord stabs", "sub bass (triangle wobble)", "chopped vocal (useme)", "CasioRZ1 kit"],
+    "energy": 3
+  },
+  "code": "setcpm(138/4)\narrange(\n  [16, stack(\n    note(\"<c2 ab1>/2\").s(\"triangle\").lpf(420).room(0.7).gain(0.7),\n    note(\"~ <[c3,eb3,g3,bb3]> ~ <[ab2,c3,eb3,g3]>\").s(\"swpad\").lpf(900).room(0.8).delay(\".4:.166:.5\").gain(0.55)\n  )],\n  [24, stack(\n    note(\"<c2 ab1>/2\").s(\"triangle\").lpf(sine.slow(16).range(380, 760)).room(0.6).gain(0.7),\n    note(\"~ <[c3,eb3,g3,bb3]> ~ <[ab2,c3,eb3,g3]>\").s(\"swpad\").lpf(950).room(0.7).delay(\".4:.166:.5\").gain(0.55),\n    note(\"<c1 ~ ~ c1 ~ ~ c1 ~>\").s(\"triangle\").lpf(sine.slow(4).range(180, 620)).gain(0.85).shape(0.25),\n    s(\"useme\").chop(8).slice(8, \"0 ~ 2 ~ 4 ~ 6 ~\").speed(\"<1 1.5>\").vowel(\"<a o>\").room(0.6).gain(0.6)\n  )],\n  [32, stack(\n    s(\"bd ~ ~ ~ sd ~ ~ ~\").bank(\"CasioRZ1\").shape(0.3).gain(0.95),\n    s(\"hh(5,8,2)\").bank(\"CasioRZ1\").gain(0.5).swingBy(0.16, 8).pan(sine.range(0.35,0.65)),\n    note(\"<c1 ~ eb1 c1 ~ ~ g0 ~>\").s(\"triangle\").lpf(sine.slow(2).range(160, 720)).gain(0.9).shape(0.3),\n    note(\"~ <[c3,eb3,g3,bb3]> ~ <[ab2,c3,eb3,g3]>\").s(\"swpad\").lpf(1100).room(0.5).gain(0.5).gain(saw.slow(2).range(0.3, 0.6)),\n    s(\"useme\").chop(8).slice(8, \"0 ~ 2 4 ~ 6 ~ 7\").speed(\"<1 1.5 0.5>\").vowel(\"<a e o>\").room(0.5).gain(0.6).off(0.125, x => x.add(note(12)).gain(0.4))\n  )],\n  [16, stack(\n    note(\"<c2 ab1 f1 g1>/2\").s(\"triangle\").lpf(520).room(0.8).gain(0.7),\n    note(\"~ <[c3,eb3,g3,bb3]> ~ <[f2,ab2,c3,eb3]>\").s(\"swpad\").lpf(1000).room(0.85).delay(\".5:.25:.6\").gain(0.55),\n    s(\"rim\").bank(\"CasioRZ1\").struct(\"~ x ~ ~ ~ x ~ x\").room(0.5).gain(0.4).crush(7)\n  )],\n  [32, stack(\n    s(\"bd ~ ~ bd ~ sd ~ ~\").bank(\"CasioRZ1\").shape(0.35).gain(0.95),\n    s(\"hh(7,8,1)\").bank(\"CasioRZ1\").gain(0.5).swingBy(0.18, 8).cut(1).pan(sine.range(0.3,0.7)),\n    s(\"cp\").bank(\"CasioRZ1\").struct(\"~ ~ ~ ~ x ~ ~ ~\").room(0.4).gain(0.6),\n    note(\"<c1 eb1 c1 g0 ab0 c1 eb1 g0>\").s(\"triangle\").lpf(sine.slow(3).range(150, 820)).gain(0.95).shape(0.35),\n    note(\"~ <[c3,eb3,g3,bb3]> ~ <[ab2,c3,eb3,g3]>\").s(\"swpad\").lpf(1300).room(0.45).gain(0.5).gain(saw.slow(2).range(0.3, 0.65)),\n    s(\"useme\").chop(8).slice(8, \"0 2 ~ 4 6 ~ 7 ~\").speed(\"<1 1.5 0.5 2>\").vowel(\"<a e o>\").room(0.5).gain(0.6).sometimesBy(0.25, x => x.speed(2)).every(4, x => x.rev())\n  )],\n  [12, stack(\n    note(\"<c2 ab1>/2\").s(\"triangle\").lpf(440).room(0.85).delay(\".5:.33:.6\").gain(0.7),\n    note(\"~ <[c3,eb3,g3,bb3]> ~ <[ab2,c3,eb3,g3]>\").s(\"swpad\").lpf(820).room(0.9).delay(\".5:.33:.6\").gain(0.5),\n    s(\"useme\").chop(8).slice(8, \"0 ~ ~ 4 ~ ~ ~ ~\").speed(0.5).vowel(\"o\").room(0.7).delay(\".5:.25:.5\").gain(0.5)\n  )]\n)",
+  "createdAt": "2026-06-16T21:19:20Z"
+}
