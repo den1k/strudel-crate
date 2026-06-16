@@ -184,12 +184,11 @@ body {
 }
 .seek-fill { height: 100%; width: 0; background: var(--hot); pointer-events: none; }
 
-/* brand signature, sits in the nav right after the masthead title */
+/* brand lockup: title + byline sit together on the left of the masthead */
+.brand { display: flex; align-items: baseline; gap: 12px; }
 .sig {
-  align-self: center;
   font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
   color: var(--hot); white-space: nowrap; user-select: none;
-  margin-right: 12px;
 }
 
 .empty { padding: 48px 28px; color: var(--dim); }
