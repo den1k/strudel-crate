@@ -2,7 +2,6 @@
 // A song's star rating and per-song notes apply ONLY to that song and are never
 // injected here — only lessons apply across the board.
 import { fileURLToPath } from 'node:url';
-import { createStore } from '../server/store.mjs';
 
 export function buildDigest(tracks) {
   const lessons = tracks.filter((t) => t.lesson?.trim());
@@ -17,8 +16,7 @@ export function buildDigest(tracks) {
 }
 
 if (process.argv[1] && process.argv[1] === fileURLToPath(import.meta.url)) {
-  const store = process.argv[2] === 'stems'
-    ? createStore({ tracksDir: 'stems', ratingsDir: 'data/stem-ratings' })
-    : createStore({ tracksDir: 'tracks', ratingsDir: 'data/ratings' });
-  console.log(buildDigest(await store.listTracks()));
+  const { adminDb, queryItems } = await import('./lib/instant.mjs');
+  const ns = process.argv[2] === 'stems' ? 'stems' : 'tracks';
+  console.log(buildDigest(await queryItems(adminDb, ns)));
 }
