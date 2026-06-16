@@ -26,7 +26,7 @@ Quality bar: original, transformed sound; nothing that sounds like a stock prese
 
 3. **Compute the batch id:** `YYYY-MM-DD-<slug>` where slug = the prompt lowercased,
    non-alphanumerics → `-`, trimmed to ≤ 40 chars (e.g. `2026-06-04-alien-sound`).
-   If `ls stems/ | grep <batch>` shows the batch already exists, append `-b2`, `-b3`, ….
+   If `node scripts/list-slugs.mjs stems | grep <batch>` shows the batch already exists, append `-b2`, `-b3`, ….
    Stem ids are `<batch>-01` … `<batch>-NN`. Get the timestamp with
    `date -u +%Y-%m-%dT%H:%M:%SZ`.
 
@@ -83,7 +83,8 @@ Quality bar: original, transformed sound; nothing that sounds like a stock prese
       Cross-track lessons to apply (honor every lesson listed under
       "Lessons for all future tracks"):
       {digest}
-   3. Write stems/{id}.json with all required fields:
+   3. Run `mkdir -p staging` (in case the dir does not exist), then write
+      staging/{id}.json with all required fields:
       id "{id}", batch "{batch}", prompt (the sound brief verbatim),
       title (short, evocative, unique), createdAt "{timestamp}",
       description (1-3 sentences: the sound and how it morphs),
@@ -91,10 +92,12 @@ Quality bar: original, transformed sound; nothing that sounds like a stock prese
              key ("atonal" if unpitched), instruments (the star sound),
              energy (1-5) },
       code (your Strudel code — single stack(), no arrange()).
-   4. Run: node scripts/validate.mjs stems/{id}.json
-      If FAIL: read the error, fix the code (for unknown sounds, grep
-      scripts/sounds.json for valid names), re-run. Up to 3 attempts total.
-      If still failing after 3 attempts: delete the file (rm stems/{id}.json).
+   4. Run: node scripts/save-stem.mjs staging/{id}.json
+      This validates AND saves the stem to the database (with you as author).
+      If it prints FAIL: read the reason, fix staging/{id}.json (for unknown
+      sounds, grep scripts/sounds.json for valid names), re-run. Up to 3 attempts.
+      If still failing after 3 attempts: delete the file (rm staging/{id}.json).
+      On PASS the stem is live; do NOT also run validate.mjs.
    5. Reply with EXACTLY one line:
       OK {id} "<title>"   — or —   FAILED {id} <one-line reason>
    ```
@@ -105,6 +108,7 @@ Quality bar: original, transformed sound; nothing that sounds like a stock prese
 
 ## Notes
 
-- Validation is the contract: a stem only exists if `validate.mjs` passes it.
+- `save-stem.mjs` is the contract: it validates AND persists, so a stem only
+  exists if `save-stem.mjs` passes & saves it.
 - Never edit `scripts/sounds.json` to make a stem pass — change the stem.
 - If the user gives a count > 30, cap at 30 and say so.

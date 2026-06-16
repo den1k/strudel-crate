@@ -26,7 +26,7 @@ outro (see the guide's arrange() default).
 
 3. **Compute the batch id:** `YYYY-MM-DD-<slug>` where slug = the prompt lowercased,
    non-alphanumerics → `-`, trimmed to ≤ 40 chars (e.g. `2026-06-03-dark-hypnotic-techno`).
-   If `ls tracks/ | grep <batch>` shows the batch already exists, append `-b2`, `-b3`, ….
+   If `node scripts/list-slugs.mjs tracks | grep <batch>` shows the batch already exists, append `-b2`, `-b3`, ….
    Track ids are `<batch>-01` … `<batch>-NN`. Get the timestamp with
    `date -u +%Y-%m-%dT%H:%M:%SZ`.
 
@@ -99,20 +99,22 @@ outro (see the guide's arrange() default).
       Cross-track lessons to apply (honor every lesson listed under
       "Lessons for all future tracks"):
       {digest}
-   3. Write tracks/{id}.json with all required fields:
+   3. Run `mkdir -p staging` (in case the dir does not exist), then write
+      staging/{id}.json with all required fields:
       id "{id}", batch "{batch}", prompt (the original style prompt verbatim: "{prompt}"),
       title (short, evocative, unique), createdAt "{timestamp}",
       description (1-3 listener-facing sentences),
       meta { bpm (must match your setcpm), genre, mood, key,
              instruments (sounds you used), energy (1-5) },
       code (your Strudel code — follow the guide's shape rules).
-   4. Run: node scripts/validate.mjs tracks/{id}.json
-      If FAIL: read the error, fix the code, re-run. Up to 3 attempts total.
+   4. Run: node scripts/save-track.mjs staging/{id}.json
+      This validates AND saves the track to the database (with you as author).
+      If it prints FAIL: read the reason, fix staging/{id}.json, re-run. Up to 3 attempts.
       - unknown sounds → grep scripts/sounds.json for valid names.
-      - "lacks character" → you used too few of the 4 categories; add an off-grid
-        groove (euclid/swing), dirt (crush/shape/vowel), richer harmony (extended
-        chords/mode), or a pattern transform until ≥3 categories are present.
-      If still failing after 3 attempts: delete the file (rm tracks/{id}.json).
+      - "lacks character" → add an off-grid groove (euclid/swing), dirt
+        (crush/shape/vowel), richer harmony, or a transform until >=3 categories.
+      If still failing after 3 attempts: delete the file (rm staging/{id}.json).
+      On PASS the track is live; do NOT also run validate.mjs.
    5. Reply with EXACTLY one line:
       OK {id} "<title>"   — or —   FAILED {id} <one-line reason>
    ```
@@ -124,6 +126,7 @@ outro (see the guide's arrange() default).
 
 ## Notes
 
-- Validation is the contract: a track only exists if `validate.mjs` passes it.
+- `save-track.mjs` is the contract: it validates AND persists, so a track only
+  exists if `save-track.mjs` passes & saves it.
 - Never edit `scripts/sounds.json` to make a track pass — change the track.
 - If the user gives a count > 30, cap at 30 and say so.

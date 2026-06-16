@@ -13,8 +13,8 @@ is a per-item request for change; the new version supersedes the noted one.
 
 1. **Resolve the collection** from the argument: `stems` or `tracks` (default to
    `tracks` if absent). Set:
-   - stems → dir `stems/`, guide `STEMS_GUIDE.md`, singular `STEM`
-   - tracks → dir `tracks/`, guide `STRUDEL_GUIDE.md`, singular `TRACK`
+   - stems → guide `STEMS_GUIDE.md`, singular `STEM`, save script `save-stem.mjs`
+   - tracks → guide `STRUDEL_GUIDE.md`, singular `TRACK`, save script `save-track.mjs`
 
 2. **Read the guide** (`STEMS_GUIDE.md` or `STRUDEL_GUIDE.md`) in full (Read
    tool). Agents must read it themselves too — your prompt tells them to.
@@ -32,7 +32,7 @@ is a per-item request for change; the new version supersedes the noted one.
    In a git worktree that is the worktree path, NOT the main checkout — a relative
    or wrong path makes agents write files and `git commit` in the wrong checkout.
    Each agent gets this prompt with placeholders filled from one work item (and
-   `{dir}`/`{guide}`/`{singular}` from step 1):
+   `{guide}`/`{singular}`/`{save_script}` from step 1):
 
    ```
    You are writing exactly one Strudel {singular} file: a new VERSION of an
@@ -47,16 +47,19 @@ is a per-item request for change; the new version supersedes the noted one.
 
       Revise it to honor the note while keeping the same core identity. Change
       enough to genuinely address the note; do not just copy the code.
-   3. Write {dir}{nextId}.json with ALL required fields PLUS the version link:
+   3. Run `mkdir -p staging` (in case the dir does not exist), then write
+      staging/{nextId}.json with ALL required fields PLUS the version link:
       id "{nextId}", versionOf "{root}", batch "{batch}", prompt "{prompt}",
       title "{title} v{version}", createdAt "{timestamp}",
       description (1-3 sentences: the sound/track and how this version answers
       the note), meta (the full required meta object per the guide),
       code (your revised Strudel code).
-   4. Run: node scripts/validate.mjs {dir}{nextId}.json
-      If FAIL: read the error, fix (for unknown sounds grep scripts/sounds.json),
-      re-run. Up to 3 attempts. If still failing, delete the file
-      (rm {dir}{nextId}.json).
+   4. Run: node scripts/{save_script} staging/{nextId}.json
+      This validates AND saves the new version to the database (with you as
+      author). If it prints FAIL: read the reason, fix staging/{nextId}.json
+      (for unknown sounds grep scripts/sounds.json), re-run. Up to 3 attempts.
+      If still failing, delete the file (rm staging/{nextId}.json).
+      On PASS the version is live; do NOT also run validate.mjs.
    5. Reply with EXACTLY one line:
       OK {nextId} "{title} v{version}"  — or —  FAILED {nextId} <one-line reason>
    ```
@@ -66,9 +69,10 @@ is a per-item request for change; the new version supersedes the noted one.
 
 ## Notes
 
-- Validation is the contract: a version only exists if `validate.mjs` passes it.
+- The save script is the contract: it validates AND persists, so a version only
+  exists if `save-track.mjs` / `save-stem.mjs` passes & saves it.
 - Never edit `scripts/sounds.json` to make a file pass — change the file.
 - The new version starts with no rating/notes, so the next run will not
   re-trigger it. The original note stays on its (now superseded) version.
-- `{dir}` already ends with a slash (`stems/` or `tracks/`), so `{dir}{nextId}.json`
-  is the correct path.
+- Revisions are new rows (a new `nextId` with `versionOf` set); they never
+  overwrite the original — there is nothing to delete from the collection.

@@ -19,11 +19,14 @@ export function collectionFor(type, prompt) {
 // Bash entry to a bare 'Bash' (still private + fixed prompt) and note it here.
 const ALLOWED_TOOLS = [
   'Write', 'Read', 'Edit', 'Task',
-  'Bash(node scripts/validate.mjs:*)',
+  'Bash(node scripts/save-track.mjs:*)',
+  'Bash(node scripts/save-stem.mjs:*)',
+  'Bash(node scripts/list-slugs.mjs:*)',
   'Bash(node scripts/feedback.mjs:*)',
   'Bash(node scripts/pending-revisions.mjs:*)',
+  'Bash(node scripts/validate.mjs:*)',
   'Bash(date:*)', 'Bash(pwd)', 'Bash(ls:*)', 'Bash(grep:*)',
-  'Bash(rm stems/:*)', 'Bash(rm tracks/:*)',
+  'Bash(mkdir -p staging)', 'Bash(rm staging/:*)',
 ].join(',');
 
 export function buildArgv(job) {
