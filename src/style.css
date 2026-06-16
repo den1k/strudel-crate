@@ -215,6 +215,7 @@ body {
   padding: 14px 28px;
   border-bottom: 1px solid var(--line);
 }
+.generate[hidden] { display: none; } /* gen panel is auth-gated; beat the display:flex above */
 .gen-label {
   font-family: var(--display); font-weight: 700; font-size: 12px;
   text-transform: uppercase; letter-spacing: 0.16em; color: var(--acid);

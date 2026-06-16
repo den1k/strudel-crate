@@ -28,9 +28,16 @@ export function setupAuth() {
   const btn = mountButton();
   const modal = mountModal(db);
 
+  // The generate panel triggers the auth-gated /api/jobs route, so it stays
+  // hidden until a user is signed in. Hide it up front (Instant is configured
+  // here) so logged-out visitors never see it, even before auth resolves.
+  const gen = document.querySelector('.generate');
+  if (gen) gen.hidden = true;
+
   db.subscribeAuth((auth) => {
     const user = auth?.user ?? null;
     token = user?.refresh_token ?? null;
+    if (gen) gen.hidden = !user;
     if (user) {
       btn.textContent = 'sign out';
       btn.title = user.email;
