@@ -10,11 +10,15 @@ import { groupVersions } from './versions.js';
 import banks from '../shared/sample-banks.json';
 import { exportSpec } from './export-spec.js';
 import { mmss, hasTimeline, fractionToCycle, progressFraction } from './transport.js';
+import { db } from './db.js';
+import { onUser } from './auth.js';
 
 const $ = (sel, el = document) => el.querySelector(sel);
 
-export async function initApp({ apiBase, emptyHint, splitStems = false }) {
+export async function initApp({ namespace, emptyHint, splitStems = false }) {
   const state = { tracks: [], playingId: null, playingSpec: null, samplesReady: false, batch: 'all', filter: 'all' };
+  let myProfileId = null;
+  let myUserId = null;
 
   // scrubber DOM + loop state (elements exist in the footer of both pages)
   const seekbar = $('#seekbar');
@@ -25,7 +29,7 @@ export async function initApp({ apiBase, emptyHint, splitStems = false }) {
   let rafId = null;
   let scrubbing = false;
 
-  const collection = apiBase.endsWith('/stems') ? 'stems' : 'tracks';
+  const collection = namespace; // 'tracks' | 'stems'
   const urlBatch = new URLSearchParams(location.search).get('batch');
   if (urlBatch) state.batch = urlBatch;
 
@@ -206,7 +210,7 @@ export async function initApp({ apiBase, emptyHint, splitStems = false }) {
       notes: 'notes' in patch ? patch.notes : track.notes,
       lesson: 'lesson' in patch ? patch.lesson : track.lesson,
     };
-    const res = await fetch(`${apiBase}/${track.id}/rating`, {
+    const res = await fetch(`/api/${namespace}/${track.id}/rating`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
@@ -240,6 +244,16 @@ export async function initApp({ apiBase, emptyHint, splitStems = false }) {
   };
 
   // --- rendering --------------------------------------------------------------
+  // Present each Instant entity to the render code as { ...fields, id: slug }.
+  function mapRow(row) {
+    return {
+      ...row,
+      id: row.slug,
+      artistName: row.author?.artistName ?? null,
+      authorProfileId: row.author?.id ?? null,
+    };
+  }
+
   // Group into version families, then filter by the LATEST version's props so a
   // whole family shows/hides as a unit (all versions share a batch).
   function visibleFamilies() {
@@ -248,6 +262,7 @@ export async function initApp({ apiBase, emptyHint, splitStems = false }) {
       if (state.batch !== 'all' && t.batch !== state.batch) return false;
       if (state.filter === 'unrated') return t.rating == null;
       if (state.filter === 'top') return (t.rating ?? 0) >= 4;
+      if (state.filter === 'mine') return myProfileId != null && t.authorProfileId === myProfileId;
       return true;
     });
   }
@@ -282,6 +297,12 @@ export async function initApp({ apiBase, emptyHint, splitStems = false }) {
       $('h3', meta).textContent = track.title;
       $('.id', meta).textContent = track.id;
       $('.desc', meta).textContent = track.description ?? '';
+      if (track.artistName) {
+        const by = document.createElement('span');
+        by.className = 'by';
+        by.textContent = `by ${track.artistName}`;
+        meta.querySelector('h3').after(by);
+      }
       const m = track.meta ?? {};
       const chips = $('.chips', meta);
       const chipValues = [
@@ -490,19 +511,46 @@ export async function initApp({ apiBase, emptyHint, splitStems = false }) {
     }),
   );
 
-  async function loadTracks() {
-    try {
-      const res = await fetch(apiBase);
-      state.tracks = await res.json();
-      renderBatchFilter();
-      renderTracks();
-      renderTransport();
-    } catch (err) {
-      $('#tracks').innerHTML = `<p class="empty">API unreachable — is <code>npm run dev</code> running? (${err.message})</p>`;
-    }
+  // --- live data from Instant ------------------------------------------------
+  function applyRows(rows) {
+    state.tracks = rows.map(mapRow);
+    renderBatchFilter();
+    renderTracks();
+    renderTransport();
   }
-  await loadTracks();
+
+  if (!db) {
+    $('#tracks').innerHTML = `<p class="empty">Instant not configured — set VITE_INSTANT_APP_ID</p>`;
+  } else {
+    db.subscribeQuery(
+      { [namespace]: { author: {}, $: { order: { createdAt: 'desc' } } } },
+      (res) => {
+        if (res.error) {
+          $('#tracks').innerHTML = `<p class="empty">could not load: ${res.error.message}</p>`;
+          return;
+        }
+        if (res.data) applyRows(res.data[namespace] ?? []);
+      },
+    );
+  }
+
+  // Track the signed-in user → reveal "mine" and resolve their profile id.
+  const mineBtn = document.querySelector('.seg button[data-filter="mine"]');
+  let profileUnsub = null;
+  onUser((user) => {
+    myUserId = user?.id ?? null;
+    if (mineBtn) mineBtn.hidden = !user;
+    if (profileUnsub) { profileUnsub(); profileUnsub = null; }
+    myProfileId = null;
+    if (user && db) {
+      profileUnsub = db.subscribeQuery(
+        { profiles: { $: { where: { 'user.id': user.id } } } },
+        (res) => { myProfileId = res.data?.profiles?.[0]?.id ?? null; if (state.filter === 'mine') renderTracks(); },
+      );
+    }
+    if (state.filter === 'mine') renderTracks();
+  });
 
   const { mountJobsUI } = await import('./jobs-ui.js');
-  mountJobsUI({ collection, onBatchDone: () => loadTracks() });
+  mountJobsUI({ collection, onBatchDone: () => { /* subscription updates live */ } });
 }
