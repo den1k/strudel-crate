@@ -43,8 +43,9 @@ the validator (`node scripts/validate.mjs tracks/<id>.json`) enforces most of it
 
 1. **Shape:** optional `setcpm(<bpm>/4)` on the first line, then ONE final expression:
    `stack(...)` for a loop-based sketch, or `arrange(...)` of stack sections for a
-   full track. Nothing else. No `$:` labels, no variable assignments, no `samples()`,
-   no `await`, no visual functions (`.pianoroll()`, `.scope()`, `.punchcard()`, …).
+   full track. Nothing else. No `$:` labels, no variable assignments, no `samples()`
+   (the sample banks are already preloaded — reference their sounds by name, see the
+   palette below), no `await`, no visual functions (`.pianoroll()`, `.scope()`, `.punchcard()`, …).
 2. **Double quotes** for all pattern strings (they become mini-notation). Never single quotes.
 3. **Sounds:** only names listed in `scripts/sounds.json`. The validator rejects anything else. The check covers the entire arrangement, including late sections.
 4. **Tempo:** `setcpm(130/4)` = 130 BPM with 4 beats per cycle. Without it, tempo is ~120bpm.
@@ -70,6 +71,12 @@ the validator (`node scripts/validate.mjs tracks/<id>.json`) enforces most of it
   bank: `casio`, `jvbass`, `arpy`, `space`, `numbers`, `insect`, `wind`, `crow`, `metal`,
   `jazz`, `east` — check `scripts/sounds.json` when in doubt; many have multiple variants
   selectable with `.n(2)`.
+- **Vocal & pad samples** (for vocal-led / intimate styles): lush pad `swpad`; choppable
+  vocal/break phrases `think`, `useme`, `sesame`, `apache`; spoken vocals `numbers`,
+  `alphabet`, `breath`. Treat a vocal as an instrument: `.chop(8)` slices it into a
+  rhythm, `.slice(8, "0 2 4 6")` rearranges slices, `.speed("<1 1.5 0.5>")` pitches it,
+  `.begin(0.25).end(0.5)` grabs a phrase. **Sidechain/pump** a pad under the kick with a
+  gain LFO: `.gain(saw.slow(2).range(0.25, 1))`.
 - **Do NOT use** `gm_*` soundfonts (not loaded by the webapp).
 
 ## Mini-notation cheatsheet
