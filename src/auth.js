@@ -5,9 +5,7 @@
 // /api/* request via a fetch wrapper, so the existing fetch call sites need no
 // changes. The server verifies the token AND an email allowlist — client-side
 // gating alone is bypassable, so the server is the real gate.
-import { init } from '@instantdb/core';
-
-const appId = import.meta.env.VITE_INSTANT_APP_ID;
+import { db } from './db.js';
 
 let token = null; // signed-in user's refresh token, or null when signed out
 
@@ -22,21 +20,27 @@ window.fetch = (input, opts = {}) => {
   return origFetch(input, opts);
 };
 
+let currentUser = null;
+const userListeners = new Set();
+// Subscribe to auth state. Fires immediately with the current user (may be null),
+// then on every change. Returns an unsubscribe fn.
+export function onUser(cb) { cb(currentUser); userListeners.add(cb); return () => userListeners.delete(cb); }
+function setUser(u) { currentUser = u; for (const cb of userListeners) cb(u); }
+
 export function setupAuth() {
-  if (!appId) return; // Instant not configured (local dev) — leave the app open
-  const db = init({ appId });
+  if (!db) return; // Instant not configured — leave the app open
   const btn = mountButton();
   const modal = mountModal(db);
 
   // The generate panel triggers the auth-gated /api/jobs route, so it stays
-  // hidden until a user is signed in. Hide it up front (Instant is configured
-  // here) so logged-out visitors never see it, even before auth resolves.
+  // hidden until a user is signed in.
   const gen = document.querySelector('.generate');
   if (gen) gen.hidden = true;
 
   db.subscribeAuth((auth) => {
     const user = auth?.user ?? null;
     token = user?.refresh_token ?? null;
+    setUser(user);
     if (gen) gen.hidden = !user;
     if (user) {
       btn.textContent = 'sign out';
