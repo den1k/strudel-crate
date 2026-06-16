@@ -3,5 +3,7 @@
   { "json": "https://strudel.b-cdn.net/vcsl.json", "base": "https://strudel.b-cdn.net/VCSL/", "prebake": true },
   { "json": "https://strudel.b-cdn.net/tidal-drum-machines.json", "base": "https://strudel.b-cdn.net/tidal-drum-machines/machines/", "prebake": true, "tag": "drum-machines" },
   { "json": "https://strudel.b-cdn.net/mridangam.json", "base": "https://strudel.b-cdn.net/mrid/", "prebake": true, "tag": "drum-machines" },
-  { "shorthand": "github:tidalcycles/dirt-samples" }
+  { "shorthand": "github:tidalcycles/dirt-samples" },
+  { "shorthand": "github:switchangel/pad" },
+  { "shorthand": "github:yaxu/clean-breaks" }
 ]
