@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { fakeAdmin } from './fake-admin.mjs';
 import {
-  ensureProfile, setArtistName, saveRating, itemSlugs, itemsBySlug, insertItem,
+  ensureProfile, getProfile, setArtistName, saveRating, itemSlugs, itemsBySlug, insertItem,
 } from '../server/instant.mjs';
 
 describe('ensureProfile', () => {
@@ -37,6 +37,7 @@ describe('saveRating', () => {
     const res = await saveRating(db, 'tracks', 's-01', { rating: 4, notes: 'nice' });
     expect(res).toEqual({ rating: 4, notes: 'nice', lesson: '' });
     expect(db._txs[0]).toMatchObject({ ns: 'tracks', id: 't1', update: { rating: 4, notes: 'nice' } });
+    expect(db._txs[0].update).not.toHaveProperty('lesson');
   });
 
   it('returns null for an unknown slug', async () => {
@@ -92,5 +93,19 @@ describe('insertItem', () => {
     const db = fakeAdmin({ tracks: [] });
     await insertItem(db, 'tracks', { ...track, id: '2026-06-16-x-01-v2', versionOf: '2026-06-16-x-01' }, 'p1');
     expect(db._txs[0].update.versionOf).toBe('2026-06-16-x-01');
+  });
+});
+
+describe('getProfile', () => {
+  it('returns the stored profile for an existing user', async () => {
+    const db = fakeAdmin({ profiles: [{ id: 'p1', artistName: 'Neo', user: { id: 'u1' } }] });
+    expect(await getProfile(db, { id: 'u1', email: 'neo@x.com' })).toEqual({ id: 'p1', artistName: 'Neo' });
+  });
+
+  it('falls back to email local part for a brand-new user', async () => {
+    const db = fakeAdmin({ profiles: [] });
+    const res = await getProfile(db, { id: 'u9', email: 'freshuser@gmail.com' });
+    expect(res.artistName).toBe('freshuser');
+    expect(res.id).toBeTruthy();
   });
 });

@@ -4,7 +4,13 @@
 // nested 'user.id' where, and { slug: { $in: [...] } }.
 function matchWhere(row, where) {
   return Object.entries(where).every(([key, cond]) => {
-    const val = key === 'user.id' ? row.user?.id : row[key];
+    let val;
+    if (key.includes('.')) {
+      if (key === 'user.id') val = row.user?.id;
+      else throw new Error(`fake-admin: unsupported nested where key '${key}' — extend matchWhere`);
+    } else {
+      val = row[key];
+    }
     if (cond && typeof cond === 'object' && Array.isArray(cond.$in)) return cond.$in.includes(val);
     return val === cond;
   });
@@ -40,6 +46,6 @@ export function fakeAdmin(initial = {}) {
       }
       return out;
     },
-    async transact() { /* ops already recorded via the chain */ },
+    async transact() { /* ops already recorded via the chain; store is NOT mutated — tests seed expected post-transaction state */ },
   };
 }
