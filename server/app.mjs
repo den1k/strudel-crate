@@ -9,12 +9,13 @@ const ID_RE = /^[A-Za-z0-9_-]+$/; // rating files are written as <id>.json — n
 const wrap = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
 
 // One set of list + rating routes per collection (tracks, stems) at /api/<name>.
-function collectionRoutes(app, name, store) {
+// `requireAuth` gates the mutating route only; listing stays public.
+function collectionRoutes(app, name, store, requireAuth) {
   app.get(`/api/${name}`, wrap(async (_req, res) => {
     res.json(await store.listTracks());
   }));
 
-  app.put(`/api/${name}/:id/rating`, wrap(async (req, res) => {
+  app.put(`/api/${name}/:id/rating`, requireAuth, wrap(async (req, res) => {
     const { id } = req.params;
     if (!ID_RE.test(id)) return res.status(400).json({ error: 'invalid id' });
     const { rating, notes, lesson } = req.body ?? {};
@@ -31,8 +32,9 @@ function collectionRoutes(app, name, store) {
   }));
 }
 
-function jobRoutes(app, jobStore, runner, progressFor) {
-  app.post('/api/jobs', wrap(async (req, res) => {
+// `requireAuth` gates job creation (it triggers Claude Code); reads stay public.
+function jobRoutes(app, jobStore, runner, progressFor, requireAuth) {
+  app.post('/api/jobs', requireAuth, wrap(async (req, res) => {
     const { type, prompt, count } = req.body ?? {};
     if (!jobStore.TYPES.has(type)) return res.status(400).json({ error: 'invalid type' });
 
@@ -85,9 +87,14 @@ function jobRoutes(app, jobStore, runner, progressFor) {
 export function createApp(stores, opts = {}) {
   const app = express();
   app.use(express.json());
-  for (const [name, store] of Object.entries(stores)) collectionRoutes(app, name, store);
 
-  if (opts.jobStore && opts.runner) jobRoutes(app, opts.jobStore, opts.runner, opts.progressFor);
+  // Optional auth gate for mutations. Default no-op keeps tests + local dev open;
+  // production passes a middleware that verifies an Instant token + allowlist.
+  const requireAuth = opts.requireAuth ?? ((_req, _res, next) => next());
+
+  for (const [name, store] of Object.entries(stores)) collectionRoutes(app, name, store, requireAuth);
+
+  if (opts.jobStore && opts.runner) jobRoutes(app, opts.jobStore, opts.runner, opts.progressFor, requireAuth);
 
   // Production: serve the built SPA (dev uses Vite). Defined AFTER the API so
   // /api/* always wins; the /stems clean URL mirrors vite.config.js's rewrite.
