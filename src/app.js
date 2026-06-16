@@ -10,6 +10,7 @@ import { groupVersions } from './versions.js';
 import banks from '../shared/sample-banks.json';
 import { exportSpec } from './export-spec.js';
 import { mmss, hasTimeline, fractionToCycle, progressFraction } from './transport.js';
+import { enableSilentSwitchPlayback } from './ios-audio.js';
 
 const $ = (sel, el = document) => el.querySelector(sel);
 
@@ -36,6 +37,7 @@ export async function initApp({ apiBase, emptyHint, splitStems = false }) {
   // scripts/strudel-env.mjs but with real audio instead of stubs, keeping the
   // webapp on the exact module instances the editors play through.
   initAudioOnFirstClick(); // resume the AudioContext on the first user gesture
+  enableSilentSwitchPlayback(); // iOS: play through the hardware silent switch
   const ready = (async () => {
     await core.evalScope(core, mini, tonal, webaudio);
     await Promise.all([
