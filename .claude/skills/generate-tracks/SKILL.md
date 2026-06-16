@@ -30,7 +30,19 @@ outro (see the guide's arrange() default).
    Track ids are `<batch>-01` … `<batch>-NN`. Get the timestamp with
    `date -u +%Y-%m-%dT%H:%M:%SZ`.
 
-4. **Assign each track a variation directive** so the batch is diverse, by combining
+4. **Write the batch style brief, then assign each track a variation directive.**
+
+   First, write ONE **style brief** for the whole batch from the prompt — the shared DNA
+   every track must honor (≈4–8 lines), using what you know about the named artist /
+   genre / vibe. Cover: tempo & feel; groove (e.g. 2-step swing, four-on-floor, broken,
+   breakbeat); signature sounds, naming concrete available sounds — including the sampled
+   vocal/pad sounds (`swpad`, `numbers`, `alphabet`, `breath`, `think`, …) and `piano`;
+   signature techniques (e.g. "center the track on a chopped/pitched vocal", "sidechain
+   the pads with a gain LFO", "lo-fi felt piano", a specific reverb/space); mood; and what
+   to AVOID. This single brief is injected into every agent (`{style_brief}`) and is the
+   dominant anchor — the per-track directives below only vary tracks WITHIN it.
+
+   Then assign each track a variation directive so the batch is diverse, by combining
    axes (vary at least two axes between any two tracks):
    - energy: sparse/minimal · mid groove · dense/driving
    - register focus: bass-led · chord-led · melody-led · percussion-led
@@ -44,7 +56,9 @@ outro (see the guide's arrange() default).
    `shared/track-seeds.json`):
    - **seed:** one `source (groove) × signature (harmonic engine)` pair (compatible per
      `appliesTo`). No two tracks in a wave share a pair; spread grooves and engines
-     evenly across the batch.
+     evenly across the batch. **Bias selection toward seeds compatible with the style
+     brief** (a 2-step/garage brief → broken/breakbeat sources, not four-on-floor) — the
+     seed is a starting groove the agent adapts to the brief, not an override of it.
    - **drum bank:** pick ONE bank from the guide's menu, varied across the batch (don't
      let RolandTR909 dominate).
    - **development dimensions:** which layers/parameters evolve across sections (≥3:
@@ -72,11 +86,13 @@ outro (see the guide's arrange() default).
       moves from at least 3 of the 4 categories (harmonic, rhythmic, timbral,
       transform). On-grid triads under a single filter sweep will be REJECTED by the
       validator.
-   2. Style brief: "{prompt}". Your variation directive: {directive}.
-      Your SEED (groove + harmonic engine — your starting point; arrange and EXTEND it,
-      do NOT paste it unchanged, do NOT collapse into sawtooth + sine.slow sweep + reverb):
-      {seed}
-      ({seed_note})
+   2. STYLE BRIEF — the dominant creative anchor; make the track sound like THIS:
+      {style_brief}
+      Your per-track variation directive (vary WITHIN the brief, never abandon it): {directive}.
+      Your SEED is one starting groove (groove + harmonic engine): {seed} ({seed_note}).
+      ADAPT the seed to the brief — override or replace it wherever it conflicts with the
+      brief's signature. Do NOT paste the seed unchanged; do NOT collapse into a
+      sawtooth + sine.slow sweep + reverb default.
       Extension constraints you MUST obey: drum bank: {drum_bank}; develop these
       dimensions across sections: {development_dimensions}; motion mechanism:
       {motion_mechanism}; tail: {tail}; forbids: {forbids}.
@@ -84,7 +100,7 @@ outro (see the guide's arrange() default).
       "Lessons for all future tracks"):
       {digest}
    3. Write tracks/{id}.json with all required fields:
-      id "{id}", batch "{batch}", prompt (the style brief verbatim),
+      id "{id}", batch "{batch}", prompt (the original style prompt verbatim: "{prompt}"),
       title (short, evocative, unique), createdAt "{timestamp}",
       description (1-3 listener-facing sentences),
       meta { bpm (must match your setcpm), genre, mood, key,
