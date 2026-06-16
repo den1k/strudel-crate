@@ -187,7 +187,7 @@ body {
 /* corner signature, far right of the transport footer */
 .sig {
   font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase;
-  color: var(--dim); white-space: nowrap; user-select: none;
+  color: var(--hot); white-space: nowrap; user-select: none;
 }
 
 .empty { padding: 48px 28px; color: var(--dim); }
