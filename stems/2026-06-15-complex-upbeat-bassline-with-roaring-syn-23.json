@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-15-complex-upbeat-bassline-with-roaring-syn-23",
+  "title": "Ascension Siren",
+  "prompt": "complex upbeat bassline with roaring synths",
+  "batch": "2026-06-15-complex-upbeat-bassline-with-roaring-syn",
+  "description": "A subtractive saw riser that screams upward: a rising pitch envelope and ramping accelerate push the voice into the high register while a resonant ladder filter opens and tension builds, then resets every 16 cycles. Roaring detuned saws and a slow band-pass climb give it a relentless, anxious lift.",
+  "meta": {
+    "bpm": 140,
+    "genre": "noise riser",
+    "mood": "tense",
+    "key": "C minor",
+    "instruments": ["resonant saw riser"],
+    "energy": 5
+  },
+  "code": "setcpm(140/4)\nstack(\n  note(\"<c3 c3 eb3 g3>*4\").s(\"sawtooth\")\n    .penv(saw.slow(16).range(2, 36)).pattack(0.01).pdecay(0.4)\n    .accelerate(saw.slow(16).range(0, 1.5))\n    .lpf(saw.slow(16).range(400, 7000)).resonance(sine.slow(13).range(8, 19)).ftype(\"ladder\")\n    .lpenv(saw.slow(32).range(1, 5)).lpattack(0.01).lpdecay(0.3)\n    .shape(sine.slow(24).range(0.2, 0.55))\n    .vib(\"<3 5 7>/8\").vibmod(sine.slow(11).range(0.1, 1.2))\n    .attack(0.005).decay(0.18).sustain(0.6).release(0.08)\n    .off(0.01, x => x.add(note(0.15)).gain(0.4))\n    .pan(sine.slow(7).range(0.2, 0.8))\n    .delay(\"0.4:0.1875:0.5\").room(sine.slow(32).range(0.1, 0.5))\n    .gain(0.9)\n)",
+  "createdAt": "2026-06-15T18:24:54Z"
+}

@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-15-uk-dance-pop-140-bpm-rap-04",
+  "title": "Concrete Cadence",
+  "prompt": "uk dance pop, 140+ bpm, rap",
+  "batch": "2026-06-15-uk-dance-pop-140-bpm-rap",
+  "description": "A raw, bass-led trap-rap cut at 140 BPM: a broken 808 kick carves wide pockets for an imagined rap cadence while a gliding sub bass rolls underneath. Perlin-driven hat rolls thicken and thin across the arrangement as the low end darkens and reopens, building from a stripped intro to a dense, snarling peak before stripping back out.",
+  "meta": {
+    "bpm": 140,
+    "genre": "uk dance pop / trap-rap",
+    "mood": "raw, dark, hard-hitting",
+    "key": "C minor",
+    "instruments": ["RolandTR808 kit", "sine sub bass"],
+    "energy": 5
+  },
+  "code": "setcpm(140/4)\narrange(\n  [16, stack(\n    s(\"bd ~ [~ bd] ~\").bank(\"RolandTR808\").gain(1.1),\n    note(\"<c1 c1 eb1 g0>*4\").s(\"sine\").lpf(220).gain(0.55),\n    s(\"hh*4\").bank(\"RolandTR808\").gain(perlin.range(0.2,0.45)).hpf(6000).cut(1)\n  )],\n  [24, stack(\n    s(\"bd ~ [~ bd] ~\").bank(\"RolandTR808\").gain(1.1),\n    s(\"~ cp ~ cp\").bank(\"RolandTR808\").gain(0.55),\n    note(\"<c1 c1 eb1 g0>*4\").s(\"sine\").lpf(sine.slow(16).range(240,520)).gain(0.6),\n    s(\"hh*8\").bank(\"RolandTR808\").gain(perlin.range(0.18,0.5)).hpf(5500).cut(1).degradeBy(0.15)\n  )],\n  [32, stack(\n    s(\"bd ~ [~ bd] ~\").bank(\"RolandTR808\").gain(1.15),\n    s(\"~ sd ~ sd\").bank(\"RolandTR808\").gain(0.7),\n    s(\"~ cp ~ ~\").bank(\"RolandTR808\").gain(0.5),\n    note(\"<c1 c1 eb1 g0>*4\").add(note(perlin.range(-0.4,0.4))).s(\"sine\").lpf(420).gain(0.62),\n    s(\"hh*16\").bank(\"RolandTR808\").gain(perlin.range(0.15,0.55)).hpf(5000).cut(1).ply(\"<1 1 2 1>\"),\n    s(\"~ ~ ~ oh\").bank(\"RolandTR808\").gain(0.4).cut(1)\n  )],\n  [16, stack(\n    note(\"<c1 c1 eb1 g0>*4\").s(\"sine\").lpf(sine.slow(8).range(180,420)).gain(0.6),\n    s(\"hh*8\").bank(\"RolandTR808\").gain(perlin.range(0.1,0.35)).hpf(7000).cut(1).degradeBy(0.3),\n    s(\"rim ~ ~ rim\").bank(\"RolandTR808\").gain(0.45)\n  )],\n  [32, stack(\n    s(\"bd ~ [~ bd] ~\").bank(\"RolandTR808\").gain(1.2),\n    s(\"~ sd ~ sd\").bank(\"RolandTR808\").gain(0.72),\n    s(\"~ cp ~ cp\").bank(\"RolandTR808\").gain(0.55),\n    note(\"<c1 c1 eb1 g0>*4\").add(note(perlin.range(-0.5,0.5))).s(\"sine\").lpf(perlin.range(300,650)).gain(0.65),\n    s(\"hh*16\").bank(\"RolandTR808\").gain(perlin.range(0.18,0.6)).hpf(4500).cut(1).ply(\"<1 2 2 4>\").degradeBy(0.1),\n    s(\"~ ~ oh ~\").bank(\"RolandTR808\").gain(0.42).cut(1),\n    s(\"lt ~ ~ mt\").bank(\"RolandTR808\").gain(0.4).every(4, x => x.ply(2))\n  )],\n  [12, stack(\n    s(\"bd ~ [~ bd] ~\").bank(\"RolandTR808\").gain(1.05),\n    note(\"<c1 c1 eb1 g0>*4\").s(\"sine\").lpf(sine.slow(12).range(200,300)).gain(0.55),\n    s(\"hh*4\").bank(\"RolandTR808\").gain(perlin.range(0.15,0.35)).hpf(6500).cut(1)\n  )]\n)",
+  "createdAt": "2026-06-15T20:32:40Z"
+}

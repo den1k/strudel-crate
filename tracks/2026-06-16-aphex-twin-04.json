@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-16-aphex-twin-04",
+  "title": "Glass Hours",
+  "prompt": "aphex twin. Energy: downtempo, sparse. Register focus: chord/melody-led. Palette: CasioRZ1 kit + felt piano (Druqks prepared-piano melancholy). Tempo: 90 BPM. Arc shape: continuous evolution. Mood modifier: melancholic, intimate, music-box-fragile.",
+  "batch": "2026-06-16-aphex-twin",
+  "description": "A fragile, music-box-slow felt-piano meditation: sparse half-time CasioRZ1 taps drift under a four-chord progression that keeps re-voicing and climbing octaves. A brittle, FM-glassed melody answers in the gaps while the room slowly opens and closes, ending where it began.",
+  "meta": {
+    "bpm": 90,
+    "genre": "downtempo / ambient idm",
+    "mood": "melancholic, intimate, music-box-fragile",
+    "key": "C minor (dorian-tinged)",
+    "instruments": ["CasioRZ1 kit", "felt piano", "FM glass melody", "sine pad"],
+    "energy": 2
+  },
+  "code": "setcpm(90/4)\narrange(\n  [16, stack(\n    note(\"<[c3,eb3,g3,bb3] [ab2,c3,eb3,g3]>\").s(\"piano\").attack(0.01).release(0.6).room(0.5).gain(0.62).lpf(1400),\n    s(\"rim ~ ~ ~\").bank(\"CasioRZ1\").gain(0.55).room(0.3)\n  )],\n  [24, stack(\n    note(\"<[c3,eb3,g3,bb3] [ab2,c3,eb3,g3] [f2,ab2,c3,eb3] [g2,bb2,d3,f3]>\").s(\"piano\").attack(0.01).release(0.7).room(0.5).gain(0.6),\n    s(\"bd ~ ~ ~ sd ~ ~ ~\").bank(\"CasioRZ1\").gain(0.85),\n    s(\"hh(3,8,1)\").bank(\"CasioRZ1\").gain(0.42).room(0.25).pan(0.6)\n  )],\n  [32, stack(\n    note(\"<[c3,eb3,g3,bb3] [ab2,c3,eb3,g3] [f2,ab2,c3,eb3] [g2,bb2,d3,f3]>\").s(\"piano\").attack(0.01).release(0.7).room(0.45).gain(0.6).add(note(\"<0 0 12 7>\")),\n    s(\"bd ~ ~ ~ sd ~ ~ ~\").bank(\"CasioRZ1\").gain(0.9),\n    s(\"rim(5,8,2)\").bank(\"CasioRZ1\").gain(0.4).swingBy(0.12, 8).pan(0.35),\n    s(\"hh(3,8,1)\").bank(\"CasioRZ1\").gain(0.4).room(0.25).pan(0.65),\n    n(\"0 ~ 3 ~ <5 7> ~ 2 ~\").scale(\"C4:dorian\").s(\"sine\").fm(3).fmh(2).crush(7).attack(0.01).decay(0.18).sustain(0).release(0.12).gain(0.5).room(0.4).off(0.125, x => x.add(note(12)).gain(0.32))\n  )],\n  [16, stack(\n    note(\"<[f2,ab2,c3,eb3] [g2,bb2,d3,f3]>\").s(\"piano\").attack(0.02).release(1.2).room(0.7).gain(0.58),\n    n(\"0 ~ ~ 2 ~ ~ <3 5> ~\").scale(\"C4:dorian\").s(\"sine\").fm(2).crush(6).attack(0.01).decay(0.25).sustain(0).release(0.2).gain(0.46).room(0.6)\n  )],\n  [24, stack(\n    note(\"<[c3,eb3,g3,bb3] [ab2,c3,eb3,g3] [f2,ab2,c3,eb3] [g2,bb2,d3,f3]>\").s(\"piano\").attack(0.01).release(0.7).room(0.45).gain(0.6).add(note(\"<12 12 7 5>\")),\n    s(\"bd ~ ~ ~ sd ~ ~ ~\").bank(\"CasioRZ1\").gain(0.92),\n    s(\"rim(5,8,2)\").bank(\"CasioRZ1\").gain(0.42).swingBy(0.12, 8).pan(0.35).every(4, x => x.ply(2)),\n    s(\"hh(5,8,3)\").bank(\"CasioRZ1\").gain(0.4).room(0.25).pan(0.65).sometimesBy(0.25, x => x.speed(1.5)),\n    n(\"0 ~ 3 ~ <5 7> ~ 2 ~\").scale(\"C4:dorian\").s(\"sine\").fm(4).fmh(2).crush(7).attack(0.01).decay(0.18).sustain(0).release(0.12).gain(0.5).room(0.4).off(0.125, x => x.add(note(12)).gain(0.3)).every(8, x => x.rev())\n  )],\n  [14, stack(\n    note(\"<[c3,eb3,g3,bb3] [ab2,c3,eb3,g3]>\").s(\"piano\").attack(0.02).release(1.4).room(0.7).gain(0.56).lpf(1200),\n    s(\"rim ~ ~ ~\").bank(\"CasioRZ1\").gain(0.5).room(0.4)\n  )]\n)",
+  "createdAt": "2026-06-16T15:56:19Z"
+}

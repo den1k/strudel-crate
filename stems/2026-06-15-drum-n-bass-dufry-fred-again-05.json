@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-15-drum-n-bass-dufry-fred-again-05",
+  "batch": "2026-06-15-drum-n-bass-dufry-fred-again",
+  "prompt": "drum n bass, dufry, fred again",
+  "title": "Cathedral of Wet Air",
+  "createdAt": "2026-06-15T20:44:15Z",
+  "description": "A cavernous noise-sculpted pad: resonant white noise breathing under a faint sustained voice, so the seasick vibrato has something to bite. A slow saw filter journey climbs from sub-bass murk to airy hiss while perlin pan-scatter and a triangle pan LFO drift the wash across a wide cavern of room reverb. Over 32 cycles the resonance swells, the vibrato wobbles in primes, and the filter floor rises and falls so the bed never settles.",
+  "meta": {
+    "bpm": 174,
+    "genre": "noise pad/texture",
+    "mood": "wet, cavernous, hollow, emotive",
+    "key": "atonal",
+    "instruments": ["resonant white-noise cavern pad"],
+    "energy": 2
+  },
+  "code": "setcpm(174/4)\nstack(\n  note(\"c2\").s(\"white*2\")\n    .noise(0.85)\n    .lpf(saw.slow(32).range(180, 5200))\n    .resonance(sine.slow(23).range(10, 18))\n    .bpf(perlin.slow(29).range(400, 2600))\n    .ftype(\"ladder\")\n    .vib(\"<3 5 7>/8\").vibmod(sine.slow(13).range(0.5, 0.95))\n    .attack(2.2).release(3.5).sustain(0.9)\n    .pan(tri.slow(11).range(0.15, 0.85))\n    .off(0.013, x => x.pan(perlin.slow(7)).gain(0.4).hpf(900))\n    .gain(0.85)\n    .room(sine.slow(16).range(0.55, 0.92)).roomsize(7)\n    .orbit(2),\n  note(\"<c3 ab2 eb3 g2>/8\").s(\"sawtooth\")\n    .vib(\"<3 5 7>/8\").vibmod(0.9)\n    .lpf(saw.slow(32).range(260, 1400))\n    .resonance(6)\n    .attack(3).release(4).sustain(0.8)\n    .pan(tri.slow(13).range(0.7, 0.3))\n    .gain(0.34)\n    .room(0.8).roomsize(6)\n    .orbit(2)\n)"
+}

@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-16-crazy-vocals-with-effects-06",
+  "title": "Throat Wobble",
+  "prompt": "crazy vocals with effects",
+  "batch": "2026-06-16-crazy-vocals-with-effects",
+  "description": "A dark throat-like square sub that wobbles with deep slow vibrato so its pitch never settles, while a subtle tremolo pulses it like breathing. Over the loop the filter slowly opens and closes in stepped stages and the bit-crushed grit thickens, giving a hollow vocal-cord growl that morphs without any reverb.",
+  "meta": {
+    "bpm": 84,
+    "genre": "square sub",
+    "mood": "hollow",
+    "key": "C minor",
+    "instruments": ["dark square sub"],
+    "energy": 3
+  },
+  "createdAt": "2026-06-16T19:38:09Z",
+  "code": "setcpm(84/4)\nstack(\n  note(\"<c1 c1 g0 c1 c1 ds1 g0 c1>*2\").s(\"square\")\n    .vib(\"<3 5 7 4>/8\").vibmod(perlin.slow(13).range(0.7, 1.6))\n    .lpf(\"<300 420 260 540 360 480 220 600>/2\")\n    .lpenv(\"<2 3 1.5 2.5>/11\").lpattack(0.06).lpdecay(0.22).resonance(\"<6 9 7 11>/7\")\n    .ftype(\"ladder\")\n    .crush(\"<8 6 5 7>/16\").shape(saw.slow(23).range(0.15, 0.4))\n    .tremolosync(\"<2 3 4 6>/16\").tremolodepth(tri.slow(16).range(0.25, 0.6))\n    .penv(\"<0 -3 0 -5>/8\").pattack(0.005).pdecay(0.09)\n    .sometimesBy(0.12, x => x.coarse(3))\n    .gain(0.85)\n)"
+}

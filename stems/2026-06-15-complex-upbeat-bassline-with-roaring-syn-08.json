@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-15-complex-upbeat-bassline-with-roaring-syn-08",
+  "title": "Hollow Tide",
+  "prompt": "complex upbeat bassline with roaring synths",
+  "batch": "2026-06-15-complex-upbeat-bassline-with-roaring-syn",
+  "description": "A round, hollow FM sine sub-bass that walks an upbeat pattern in the lowest register while a slow filter journey opens and closes over 32 cycles. The FM index swells, the harmonicity steps, and a vowel-tinted formant breathes through the sub to give it a roaring, vocal undertow without ever leaving the bottom octave.",
+  "meta": {
+    "bpm": 128,
+    "genre": "fm sub bass",
+    "mood": "hollow",
+    "key": "C minor",
+    "instruments": ["fm sine sub bass"],
+    "energy": 4
+  },
+  "code": "setcpm(128/4)\nstack(\n  note(\"<c1 [c1 eb1] g0 [c1 bb0]>*4\").s(\"sine\")\n    .fm(sine.slow(24).range(1.5, 9)).fmh(\"<0.5 1 1.5 2>/8\")\n    .penv(\"<0 12 -7 5>/8\").pattack(0.001).pdecay(0.07)\n    .vowel(\"<o u o a>/16\")\n    .lpf(sine.slow(32).range(120, 1900)).resonance(sine.slow(13).range(6, 16)).ftype(\"ladder\")\n    .lpenv(2.5).lpattack(0.004).lpdecay(0.14)\n    .attack(0.004).decay(0.18).sustain(0.6).release(0.05)\n    .shape(0.3)\n    .pan(sine.slow(7).range(0.35, 0.65))\n    .off(1/8, x => x.add(note(12)).gain(0.3).room(0.2))\n    .room(0.16).gain(0.92)\n)",
+  "createdAt": "2026-06-15T18:24:54Z"
+}

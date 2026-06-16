@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-15-drum-n-bass-dufry-fred-again-02",
+  "title": "Gated Cellar",
+  "prompt": "drum n bass, dufry, fred again",
+  "batch": "2026-06-15-drum-n-bass-dufry-fred-again",
+  "description": "A dark subtractive square sub that stays in the cellar while a stepped tremolo gate chops it into euclidean and ply'd stutters. Over 32 cycles the gate rate ratchets up, the low-pass cracks open and snaps shut, and bitcrush grit fades in and out — dry and clicky, never wet.",
+  "meta": {
+    "bpm": 174,
+    "genre": "sub/808 bass",
+    "mood": "dark",
+    "key": "C minor",
+    "instruments": ["subtractive square sub"],
+    "energy": 3
+  },
+  "code": "setcpm(174/4)\nstack(\n  note(\"<c1 c1 g0 c1>*2\").s(\"square\")\n    .ply(\"<1 1 2 1 2 4 2 1>/2\")\n    .euclid(5, 8)\n    .lpf(sine.slow(23).range(220, 760))\n    .resonance(saw.slow(13).range(6, 15))\n    .lpenv(tri.slow(11).range(1.5, 4))\n    .lpattack(0.005).lpdecay(0.08)\n    .tremolosync(\"<4 8 16 8>/8\").tremolodepth(0.7)\n    .crush(\"<16 12 8 5>/8\")\n    .coarse(\"<1 1 2 1>/4\")\n    .shape(sine.slow(17).range(0.05, 0.32))\n    .gain(0.95)\n)\n",
+  "createdAt": "2026-06-15T20:44:15Z"
+}

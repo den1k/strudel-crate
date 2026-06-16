@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-16-jamie-xx-02",
+  "title": "Sleepwalker Dub",
+  "prompt": "jamie xx",
+  "batch": "2026-06-16-jamie-xx",
+  "description": "A slow, hazy downtempo cut built around a rolling sub-bass and a broken 808 kick, with sparse claps and ducking hats drifting in and out. A dub-tinged pad opens and closes like fog while perlin-driven motion keeps everything slowly breathing, ending on a long delayed tail.",
+  "meta": {
+    "bpm": 92,
+    "genre": "downtempo dub",
+    "mood": "dark, hazy, dubby",
+    "key": "C minor",
+    "instruments": ["RolandTR808 kit", "sine sub-bass", "supersaw pad", "casio chord stabs"],
+    "energy": 2
+  },
+  "code": "setcpm(92/4)\narrange(\n  [16, stack(\n    s(\"bd ~ [~ bd] ~\").bank(\"RolandTR808\").gain(1.0),\n    note(\"<c1 c1 eb1 g0>*4\").s(\"sine\").lpf(perlin.range(180,360).slow(12)).gain(0.6)\n  )],\n  [24, stack(\n    s(\"bd ~ [~ bd] ~\").bank(\"RolandTR808\").gain(1.05),\n    s(\"hh(3,8,1)\").bank(\"RolandTR808\").gain(0.5).hpf(6000).cut(1).degradeBy(0.2),\n    note(\"<c1 c1 eb1 g0>*4\").add(note(\"<0 0 0 -2>\")).s(\"sine\").lpf(perlin.range(200,420).slow(10)).gain(0.6),\n    note(\"<[c3,eb3,g3,bb3] [ab2,c3,eb3,g3]>\").s(\"supersaw\").lpf(perlin.range(300,1400).slow(16)).room(0).delay(\".4:.375:.6\").gain(0.5)\n  )],\n  [32, stack(\n    s(\"bd ~ [~ bd] ~\").bank(\"RolandTR808\").gain(1.1),\n    s(\"~ cp ~ ~\").bank(\"RolandTR808\").gain(0.7).delay(\".3:.25:.5\").sometimesBy(0.2, x => x.speed(1.5)),\n    s(\"hh(5,8,2)\").bank(\"RolandTR808\").gain(0.5).hpf(7000).cut(1).degradeBy(0.25),\n    note(\"<c1 c1 eb1 g0 c1 eb1 f1 g0>*4\").s(\"sine\").lpf(perlin.range(220,520).slow(9)).gain(0.6).shape(0.2),\n    n(\"0 ~ <3 5> ~\").scale(\"C3:phrygian\").s(\"casio\").vowel(\"<a o e>\").gain(0.45).delay(\".5:.375:.6\").off(0.125, x => x.add(note(12)).gain(0.3))\n  )],\n  [16, stack(\n    note(\"<c1 c1 eb1 g0>*4\").s(\"sine\").lpf(perlin.range(180,400).slow(14)).gain(0.6),\n    note(\"<[c3,eb3,g3,bb3] [ab2,c3,eb3,g3] [f2,ab2,c3,eb3] [g2,bb2,d3,f3]>\").s(\"supersaw\").lpf(perlin.range(400,2600).slow(8)).delay(\".5:.5:.7\").gain(0.5).crush(8)\n  )],\n  [28, stack(\n    s(\"bd ~ [~ bd] ~\").bank(\"RolandTR808\").gain(1.1).every(8, x => x.ply(2)),\n    s(\"~ cp ~ ~\").bank(\"RolandTR808\").gain(0.7).delay(\".3:.25:.5\"),\n    s(\"hh(7,8,3)\").bank(\"RolandTR808\").gain(0.5).hpf(7000).cut(1).degradeBy(0.3),\n    note(\"<c1 c1 eb1 g0 c1 eb1 f1 g0>*4\").s(\"sine\").lpf(perlin.range(240,640).slow(7)).gain(0.6).shape(0.25),\n    n(\"0 ~ <3 5> <2 ~>\").scale(\"C3:phrygian\").s(\"casio\").vowel(\"<a o e>\").gain(0.45).delay(\".5:.375:.6\").sometimesBy(0.25, x => x.add(note(12))).off(0.125, x => x.add(note(7)).gain(0.3))\n  )],\n  [14, stack(\n    note(\"<c1 c1 eb1 g0>*4\").s(\"sine\").lpf(perlin.range(160,340).slow(14)).gain(0.55).delay(\".5:.5:.7\"),\n    s(\"hh(3,8,1)\").bank(\"RolandTR808\").gain(0.35).hpf(8000).cut(1).degradeBy(0.4).delay(\".4:.375:.6\")\n  )]\n)",
+  "createdAt": "2026-06-16T16:17:48Z"
+}

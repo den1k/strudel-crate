@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-16-crazy-vocals-with-effects-08",
+  "title": "Whispergeist",
+  "prompt": "crazy vocals with effects",
+  "batch": "2026-06-16-crazy-vocals-with-effects",
+  "description": "A breathy whispered formant texture sculpted from filtered white noise: a saw/perlin-swept resonant bandpass carves vowel-like breath that morphs across <a e i o u> while perlin pan drifts the whisper across the stereo field. Stays a hiss-edged whisper, never a clean tonal pad, trailing into room and delay.",
+  "meta": {
+    "bpm": 88,
+    "genre": "noise formant texture",
+    "mood": "haunted, breathy",
+    "key": "atonal",
+    "instruments": ["filtered-noise whisper formant"],
+    "energy": 2
+  },
+  "code": "setcpm(88/4)\nstack(\n  s(\"white*2\")\n    .vowel(\"<a e i o u a o e>/2\")\n    .bpf(saw.slow(23).range(700, 3400))\n    .bpq(perlin.slow(13).range(7, 16))\n    .lpf(perlin.slow(29).range(2600, 8200))\n    .resonance(sine.slow(11).range(8, 15))\n    .noise(sine.slow(17).range(0.3, 0.8))\n    .coarse(\"<1 1 2 1>/4\")\n    .gain(perlin.slow(7).range(0.42, 0.72).mul(0.62))\n    .pan(perlin.slow(16).range(0.08, 0.92))\n    .sometimesBy(0.18, x => x.speed(\"<1.5 0.7>\"))\n    .hpf(420)\n    .room(sine.slow(31).range(0.55, 0.92))\n    .roomsize(7)\n    .delay(\"0.4:0.375:0.62\")\n    .orbit(2)\n)",
+  "createdAt": "2026-06-16T19:38:09Z"
+}

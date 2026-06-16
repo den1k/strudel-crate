@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-15-complex-upbeat-bassline-with-roaring-syn-03",
+  "title": "Corroded Reese",
+  "prompt": "complex upbeat bassline with roaring synths",
+  "batch": "2026-06-15-complex-upbeat-bassline-with-roaring-syn",
+  "description": "A low-register Reese bass built from a detuned supersaw driven through a resonant ladder filter envelope, growling and roaring as the cutoff and detune breathe on slow LFOs. Across the 32-cycle loop a degradation arc ramps in crush and coarse downsampling, so the clean roar slowly corrodes into a broken, dirty machine and then resets.",
+  "meta": {
+    "bpm": 140,
+    "genre": "reese bass",
+    "mood": "menacing",
+    "key": "F minor",
+    "instruments": ["detuned supersaw reese bass"],
+    "energy": 4
+  },
+  "code": "setcpm(140/4)\nstack(\n  note(\"<f1 f1 [f1 g1] c1 ab0 ab0 [c1 db1] f1>*2\").s(\"supersaw\")\n    .detune(sine.slow(16).range(0.12, 0.55))\n    .unison(3)\n    .lpf(sine.slow(24).range(180, 2400)).resonance(sine.slow(19).range(8, 18)).ftype(\"ladder\")\n    .lpenv(sine.slow(32).range(2, 6)).lpattack(0.005).lpdecay(0.12).lpsustain(0.4)\n    .penv(\"<0 0 -7 0>/8\").pattack(0.001).pdecay(0.05)\n    .attack(0.004).decay(0.18).sustain(0.7).release(0.05)\n    .crush(saw.slow(32).range(16, 5))\n    .coarse(\"<1 1 2 4>/16\".add(saw.slow(32).range(0, 2)).round())\n    .shape(sine.slow(28).range(0.2, 0.5))\n    .vib(\"<3 4 6>/8\").vibmod(sine.slow(13).range(0.1, 0.6))\n    .off(1/8, x => x.add(note(12)).gain(0.28).pan(0.75))\n    .pan(sine.slow(7).range(0.35, 0.65))\n    .room(0.18).gain(0.92)\n)",
+  "createdAt": "2026-06-15T18:24:54Z"
+}

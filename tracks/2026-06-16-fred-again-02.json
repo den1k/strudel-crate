@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-16-fred-again-02",
+  "title": "Roller (Sub Theory)",
+  "prompt": "fred again",
+  "batch": "2026-06-16-fred-again",
+  "description": "A raw, club-leaning four-on-the-floor house roller: a 909 kick locks the floor while a rolling, crushed sub bassline walks a four-chord progression underneath. Euclidean hats and clap ratchets build the tension, a chopped vowel-filtered topline drifts in and out, and the whole thing slow-burns into a sustained, dry peak before stripping back to just kick and sub.",
+  "meta": {
+    "bpm": 130,
+    "genre": "club house",
+    "mood": "euphoric, propulsive, raw",
+    "key": "C minor",
+    "instruments": ["RolandTR909 kit", "sine sub bass", "square pad", "chopped triangle topline"],
+    "energy": 5
+  },
+  "code": "setcpm(130/4)\narrange(\n  [16, stack(\n    s(\"bd*4\").bank(\"RolandTR909\").gain(1.05),\n    note(\"<c1 c1 eb1 g0>*4\").s(\"sine\").lpf(260).gain(0.62).shape(0.18),\n    s(\"hh(3,8)\").bank(\"RolandTR909\").gain(0.42).cut(1)\n  )],\n  [24, stack(\n    s(\"bd*4\").bank(\"RolandTR909\").gain(1.08),\n    note(\"<c1 c1 eb1 g0>*4\").s(\"sine\").lpf(320).gain(0.64).shape(0.2).crush(10),\n    s(\"hh(5,8)\").bank(\"RolandTR909\").gain(0.5).cut(1),\n    s(\"~ cp\").bank(\"RolandTR909\").gain(0.6)\n  )],\n  [32, stack(\n    s(\"bd*4\").bank(\"RolandTR909\").gain(1.1),\n    note(\"<c1 eb1 f1 g0>*4\").s(\"sine\").lpf(420).gain(0.66).shape(0.24).crush(9),\n    s(\"hh(7,16)\").bank(\"RolandTR909\").gain(0.52).cut(1).pan(sine.range(0.35,0.65)),\n    s(\"~ cp\").bank(\"RolandTR909\").gain(0.66),\n    note(\"<[c4,eb4,g4,bb4] [ab3,c4,eb4,g4] [f3,ab3,c4,eb4] [g3,bb3,d4,f4]>\").s(\"square\").lpf(900).gain(0.4).attack(0.01).release(0.3).room(0.18)\n  )],\n  [16, stack(\n    note(\"<c1 eb1 f1 g0>*4\").s(\"sine\").lpf(380).gain(0.66).shape(0.22),\n    note(\"<[c4,eb4,g4,bb4] [ab3,c4,eb4,g4] [f3,ab3,c4,eb4] [g3,bb3,d4,f4]>\").s(\"square\").lpf(sine.slow(8).range(500,1600)).gain(0.42).attack(0.02).release(0.5).room(0.25),\n    n(\"0 ~ 3 ~ 5 ~ 7 ~\").scale(\"C4:minor\").s(\"triangle\").vowel(\"<a e o>\").gain(0.34).delay(0.25).off(0.125, x => x.add(note(12)).gain(0.22))\n  )],\n  [36, stack(\n    s(\"bd*4\").bank(\"RolandTR909\").gain(1.12),\n    note(\"<c1 eb1 f1 g0>*4\").s(\"sine\").lpf(520).gain(0.68).shape(0.28).crush(8),\n    s(\"hh(7,16)\").bank(\"RolandTR909\").gain(0.55).cut(1).ply(\"<1 1 2 1>\"),\n    s(\"oh(3,8,1)\").bank(\"RolandTR909\").gain(0.4).cut(1),\n    s(\"~ cp\").bank(\"RolandTR909\").gain(0.7).every(8, x => x.ply(2)),\n    n(\"0 3 5 7 5 3\").scale(\"C4:minor\").s(\"triangle\").vowel(\"<a e o i>\").gain(0.36).delay(0.3).off(0.125, x => x.add(note(12)).gain(0.24)).sometimesBy(0.2, x => x.speed(2)),\n    note(\"<[c4,eb4,g4,bb4] [ab3,c4,eb4,g4] [f3,ab3,c4,eb4] [g3,bb3,d4,f4]>\").s(\"square\").lpf(1300).gain(0.42).attack(0.01).release(0.3)\n  )],\n  [16, stack(\n    s(\"bd*4\").bank(\"RolandTR909\").gain(1.0),\n    note(\"<c1 c1 eb1 g0>*4\").s(\"sine\").lpf(300).gain(0.6).shape(0.18),\n    s(\"hh(3,8)\").bank(\"RolandTR909\").gain(0.38).cut(1)\n  )]\n)",
+  "createdAt": "2026-06-16T16:14:32Z"
+}

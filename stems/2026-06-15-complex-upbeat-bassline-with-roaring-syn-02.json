@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-15-complex-upbeat-bassline-with-roaring-syn-02",
+  "title": "Roar Engine",
+  "prompt": "complex upbeat bassline with roaring synths",
+  "batch": "2026-06-15-complex-upbeat-bassline-with-roaring-syn",
+  "description": "A metallic FM growl bass built from a sine core driven hard by climbing fm index and stepped harmonicity, gated into rhythmic stutters by ply and euclid patterns. Over 16 cycles the growl roars open as the fm index, ladder-filter sweep and tremolo gating all travel on different clocks, then settles back to start the loop again.",
+  "meta": {
+    "bpm": 128,
+    "genre": "fm growl bass",
+    "mood": "menacing",
+    "key": "C minor",
+    "instruments": ["fm sine bass"],
+    "energy": 5
+  },
+  "code": "setcpm(128/4)\nstack(\n  note(\"<c1 c1 eb1 [g0 bb0]>(<3 5 3 5>,8)\").s(\"sine\")\n    .ply(\"<1 2 1 4>/4\")\n    .fm(sine.slow(16).range(3, 13)).fmh(\"<1 2 1.5 0.5>/4\")\n    .penv(\"<0 7 0 -5>/8\").pattack(0.001).pdecay(0.06)\n    .lpf(sine.slow(24).range(300, 3200)).resonance(14).ftype(\"ladder\")\n    .lpenv(\"<2 4 3>/8\").lpattack(0.005).lpdecay(0.12)\n    .tremolosync(\"<4 8 16>/8\").tremolodepth(sine.slow(11).range(0.2, 0.8))\n    .attack(0.003).decay(0.18).sustain(0.5).release(0.05)\n    .shape(0.4).distort(\"<0.3 0.6>/8\")\n    .off(1/16, x => x.add(note(12)).gain(0.28).pan(0.75))\n    .room(0.18).gain(0.9)\n)",
+  "createdAt": "2026-06-15T18:24:54Z"
+}

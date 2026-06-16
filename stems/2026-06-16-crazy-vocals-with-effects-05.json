@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-16-crazy-vocals-with-effects-05",
+  "title": "Choir Of The Dying Machine",
+  "prompt": "crazy vocals with effects",
+  "batch": "2026-06-16-crazy-vocals-with-effects",
+  "description": "A detuned supersaw reese swarm voiced like a screaming choir, its formant vowel shifting while a stepped ladder-filter env squelches underneath. Over 32 cycles the bit depth collapses from clean to gritty, the detune fans wider in stepped jumps, and the swarm degrades into bit-crushed grit before looping back. Dry, no reverb or delay.",
+  "meta": {
+    "bpm": 140,
+    "genre": "reese bass",
+    "mood": "screaming, degrading, menacing",
+    "key": "F minor",
+    "instruments": ["detuned supersaw reese swarm"],
+    "energy": 5
+  },
+  "code": "setcpm(140/4)\nstack(\n  note(\"<f1 f1 ab1 c2>*4\").s(\"supersaw\")\n    .unison(5)\n    .detune(\"<0.3 0.5 0.4 0.9>/8\")\n    .vowel(\"<a e i o>/11\")\n    .lpf(saw.slow(13).range(320, 2400))\n    .lpenv(\"<3 5 4 7>/7\")\n    .lpattack(0.01)\n    .lpdecay(perlin.slow(16).range(0.04, 0.16))\n    .resonance(saw.slow(23).range(6, 17))\n    .ftype(\"ladder\")\n    .shape(saw.slow(29).range(0.1, 0.55))\n    .crush(saw.slow(32).range(16, 5))\n    .sometimesBy(0.12, x => x.speed(-1))\n    .gain(0.85)\n)\n",
+  "createdAt": "2026-06-16T19:38:09Z"
+}

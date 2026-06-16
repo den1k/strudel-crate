@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-16-drum-n-bass-meets-aphex-twin-with-ambien-06",
+  "title": "Ragga Druqks Pressure",
+  "prompt": "drum n bass meets aphex twin with ambient intros",
+  "batch": "2026-06-16-drum-n-bass-meets-aphex-twin-with-ambien",
+  "description": "A sub-heavy beatless drone with distant dub stabs opens into a chopped, ragga-tinged 808 break and a growling detuned reese bass. Two driving peaks bracket a darker valley breakdown, with crushed stabs, vowel-filtered chords and a long reverberant tail.",
+  "meta": {
+    "bpm": 165,
+    "genre": "drum n bass / IDM jungle",
+    "mood": "dark, driving, dread",
+    "key": "C phrygian",
+    "instruments": ["RolandTR808 kit", "supersaw reese bass", "sawtooth dub stabs", "sub sine", "noise sweeps"],
+    "energy": 5
+  },
+  "createdAt": "2026-06-16T16:43:08Z",
+  "code": "setcpm(165/4)\narrange(\n  [16, stack(\n    note(\"<c1 c1 ab0 g0>\").s(\"sine\").gain(0.85).lpf(220).room(0.4),\n    note(\"~ <[c3,eb3,g3,bb3]> ~ ~\").s(\"sawtooth\").lpf(700).room(0.7).delay(\".5:.375:.6\").gain(0.42).vowel(\"<a o>\"),\n    s(\"~ ~ ~ sh\").bank(\"RolandTR808\").gain(0.4).room(0.6).hpf(500)\n  )],\n  [24, stack(\n    note(\"<c1 c1 ab0 g0>\").s(\"sine\").gain(0.9).lpf(240),\n    s(\"bd ~ sd [bd bd]\").bank(\"RolandTR808\").gain(1.0).shape(0.3),\n    s(\"hh(5,8,2)\").bank(\"RolandTR808\").gain(0.5).pan(sine.range(0.3,0.7)).cut(1),\n    note(\"~ <[c3,eb3,g3,bb3]> ~ <[ab2,c3,eb3,g3]>\").s(\"sawtooth\").lpf(900).room(0.5).gain(0.48).crush(7)\n  )],\n  [32, stack(\n    note(\"c1*2 <eb1 g0> c1\").s(\"supersaw\").lpf(sine.slow(16).range(400,1600)).resonance(8).gain(0.7).shape(0.45).detune(0.4),\n    s(\"bd ~ sd [bd bd] ~ sd bd ~\").bank(\"RolandTR808\").gain(1.0).shape(0.35).every(4, x => x.rev()),\n    s(\"hh*4\").bank(\"RolandTR808\").gain(0.45).cut(1).ply(\"<1 1 2 4>\").pan(0.6),\n    s(\"~ oh ~ ~\").bank(\"RolandTR808\").gain(0.4).hpf(400),\n    note(\"~ <[c3,eb3,g3,bb3]> ~ <[ab2,c3,eb3,g3]>\").s(\"sawtooth\").lpf(1100).room(0.4).gain(0.5).crush(8).off(0.125, x => x.add(note(12)).gain(0.3))\n  )],\n  [16, stack(\n    note(\"<c1 ab0>\").s(\"sine\").gain(0.85).lpf(200),\n    note(\"<[c3,eb3,g3,bb3]> <[ab2,c3,eb3,g3]> <[f2,ab2,c3,eb3]> <[g2,bb2,d3,f3]>\").s(\"sawtooth\").lpf(800).room(0.8).delay(\".5:.375:.7\").gain(0.45).vowel(\"<a e o>\").slow(2),\n    s(\"~ ~ ~ cr\").bank(\"RolandTR808\").gain(0.4).room(0.7)\n  )],\n  [32, stack(\n    note(\"c1*2 <eb1 g0> [c1 c1]\").s(\"supersaw\").lpf(sine.slow(12).range(500,2200)).resonance(10).gain(0.72).shape(0.5).detune(0.5),\n    s(\"bd ~ sd [bd bd] bd [~ sd] bd*2 sd\").bank(\"RolandTR808\").gain(1.0).shape(0.4).sometimesBy(0.25, x => x.speed(1.5)).every(8, x => x.ply(2)),\n    s(\"hh(7,8)\").bank(\"RolandTR808\").gain(0.5).cut(1).pan(sine.range(0.2,0.8)),\n    s(\"cp(3,8,1)\").bank(\"RolandTR808\").gain(0.5).room(0.3).crush(6),\n    note(\"~ <[c3,eb3,g3,bb3]> ~ <[ab2,c3,eb3,g3]>\").s(\"sawtooth\").lpf(1400).room(0.4).gain(0.5).crush(8).vowel(\"<e o>\").off(0.1875, x => x.add(note(7)).gain(0.3))\n  )],\n  [16, stack(\n    note(\"<c1 c1 ab0 g0>\").s(\"sine\").gain(0.85).lpf(saw.slow(16).range(600,180)),\n    s(\"bd ~ sd ~\").bank(\"RolandTR808\").gain(0.8).shape(0.2).degradeBy(0.3),\n    note(\"~ <[c3,eb3,g3,bb3]> ~ ~\").s(\"sawtooth\").lpf(700).room(0.8).delay(\".5:.375:.7\").gain(0.4).vowel(\"<a o>\")\n  )]\n)\n"
+}

@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-16-fred-again-04",
+  "title": "Hold Me In The Low End",
+  "prompt": "fred again",
+  "batch": "2026-06-16-fred-again",
+  "description": "A sparse, melancholic late-night dub roller at half-time: heavy slow Oberheim kick-and-snare under off-beat chord stabs that float in deep reverb. Voiced, dirt-flecked stabs drift through a four-chord minor progression while a sub and ghosted rim taps slowly thicken the room, intimate and dark, then strip back to a lonely outro.",
+  "meta": {
+    "bpm": 110,
+    "genre": "downtempo dub house",
+    "mood": "melancholic, intimate, cavernous",
+    "key": "C minor",
+    "instruments": ["OberheimDMX kit", "sawtooth dub-chord stabs", "sine sub bass", "ghost rim perc"],
+    "energy": 2
+  },
+  "code": "setcpm(110/4)\narrange(\n  [16, stack(\n    s(\"bd ~ ~ ~ sd ~ ~ ~\").bank(\"OberheimDMX\").gain(0.95),\n    note(\"~ <[c3,eb3,g3,bb3]> ~ ~\").s(\"sawtooth\").attack(0.01).decay(0.22).sustain(0).release(0.3).lpf(700).vowel(\"<a o>\").room(0.7).roomsize(6).gain(0.5)\n  )],\n  [24, stack(\n    s(\"bd ~ ~ ~ sd ~ ~ ~\").bank(\"OberheimDMX\").gain(0.95),\n    note(\"c1 ~ <c1 eb1> ~\").s(\"sine\").attack(0.02).decay(0.3).sustain(0.4).release(0.2).lpf(120).gain(0.85),\n    note(\"~ <[c3,eb3,g3,bb3]> ~ <[ab2,c3,eb3,g3]>\").s(\"sawtooth\").attack(0.01).decay(0.25).sustain(0).release(0.35).lpf(900).vowel(\"<a o e>\").crush(8).room(0.7).roomsize(7).gain(0.5)\n  )],\n  [32, stack(\n    s(\"bd ~ ~ ~ sd ~ ~ ~\").bank(\"OberheimDMX\").gain(1.0),\n    s(\"rim(3,8,2)\").bank(\"OberheimDMX\").attack(0.001).release(0.05).gain(0.4).room(0.5),\n    note(\"c1 ~ <c1 eb1> ~\").s(\"sine\").attack(0.02).decay(0.3).sustain(0.45).release(0.2).lpf(140).gain(0.9),\n    note(\"~ <[c3,eb3,g3,bb3] [ab2,c3,eb3,g3] [g2,bb2,d3,f3] [f2,ab2,c3,eb3]>\").s(\"sawtooth\").attack(0.01).decay(0.28).sustain(0).release(0.4).lpf(1100).vowel(\"<a o e o>\").crush(7).room(0.75).roomsize(8).gain(0.5).off(0.375, x => x.gain(0.28).lpf(600))\n  )],\n  [16, stack(\n    note(\"c1 ~ ~ ~\").s(\"sine\").attack(0.05).decay(0.4).sustain(0.5).release(0.4).lpf(120).gain(0.8),\n    note(\"<[c3,eb3,g3,bb3] [ab2,c3,eb3,g3] [g2,bb2,d3,f3] [f2,ab2,c3,eb3]>\").s(\"sawtooth\").attack(0.06).decay(0.6).sustain(0.3).release(0.8).lpf(800).vowel(\"<o a e o>\").room(0.85).roomsize(10).gain(0.5)\n  )],\n  [24, stack(\n    s(\"bd ~ ~ ~ sd ~ ~ ~\").bank(\"OberheimDMX\").gain(1.0),\n    s(\"rim(5,8,2)\").bank(\"OberheimDMX\").attack(0.001).release(0.06).gain(0.42).room(0.5).every(4, x => x.ply(2)),\n    note(\"c1 ~ <c1 eb1> ~\").s(\"sine\").attack(0.02).decay(0.3).sustain(0.45).release(0.2).lpf(150).gain(0.9),\n    note(\"~ <[c3,eb3,g3,bb3] [ab2,c3,eb3,g3] [g2,bb2,d3,f3] [f2,ab2,c3,eb3]>\").s(\"sawtooth\").attack(0.01).decay(0.26).sustain(0).release(0.4).lpf(1300).vowel(\"<a o e o>\").crush(6).shape(0.3).room(0.75).roomsize(8).gain(0.5).off(0.375, x => x.gain(0.26).lpf(700))\n  )],\n  [14, stack(\n    s(\"bd ~ ~ ~ ~ ~ ~ ~\").bank(\"OberheimDMX\").gain(0.85),\n    note(\"~ <[c3,eb3,g3,bb3]> ~ ~\").s(\"sawtooth\").attack(0.04).decay(0.4).sustain(0).release(0.6).lpf(600).vowel(\"<a o>\").room(0.85).roomsize(10).gain(0.48)\n  )]\n)",
+  "createdAt": "2026-06-16T16:14:32Z"
+}

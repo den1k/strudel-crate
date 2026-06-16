@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-15-uk-dance-pop-140-bpm-rap-05",
+  "title": "Felt Piano at 4AM",
+  "prompt": "uk dance pop, 140+ bpm, rap",
+  "batch": "2026-06-15-uk-dance-pop-140-bpm-rap",
+  "description": "A dreamy UK garage two-step that slow-burns from a lone felt piano into a soulful 2-step shuffle. Broken AkaiLinn kicks and swung hats carry a soft sub bass while the piano chords drift up the keyboard, leaving wide-open pockets for a sung-rap hook.",
+  "meta": {
+    "bpm": 143,
+    "genre": "uk garage / dance pop",
+    "mood": "dreamy, soulful, nocturnal",
+    "key": "C minor",
+    "instruments": ["felt piano", "AkaiLinn kit", "sub bass (sine)"],
+    "energy": 3
+  },
+  "code": "setcpm(143/4)\narrange(\n  [16, stack(\n    note(\"<[c3,eb3,g3] [ab2,c3,eb3]>\").s(\"piano\").room(0.5).gain(0.55).lpf(900)\n  )],\n  [24, stack(\n    s(\"bd ~ [~ bd] ~\").bank(\"AkaiLinn\").gain(1.0).lpf(1400),\n    note(\"<[c3,eb3,g3] [ab2,c3,eb3]>\").s(\"piano\").room(0.45).gain(0.58).lpf(1200)\n  )],\n  [32, stack(\n    s(\"bd ~ [~ bd] ~\").bank(\"AkaiLinn\").gain(1.1),\n    s(\"~ hh ~ hh\").bank(\"AkaiLinn\").gain(0.5).cut(1),\n    s(\"~ cp\").bank(\"AkaiLinn\").gain(0.6),\n    note(\"<c2 ab1>/2\").s(\"sine\").gain(0.6).lpf(420),\n    note(\"<[c3,eb3,g3] [ab2,c3,eb3]>\").s(\"piano\").room(0.4).gain(0.6)\n  )],\n  [32, stack(\n    s(\"bd ~ [~ bd] ~\").bank(\"AkaiLinn\").gain(1.1),\n    s(\"hh*4\").bank(\"AkaiLinn\").gain(0.45).cut(1).degradeBy(0.2),\n    s(\"~ cp\").bank(\"AkaiLinn\").gain(0.62),\n    note(\"<c2 ab1 eb2 g1>\").s(\"sine\").gain(0.62).lpf(520),\n    note(\"<[eb3,g3,c4] [c3,eb3,ab3]>\").s(\"piano\").room(0.4).gain(0.6).lpf(sine.slow(16).range(1200, 3000))\n  )],\n  [16, stack(\n    note(\"<[eb3,g3,c4] [c3,eb3,ab3]>\").s(\"piano\").room(0.6).gain(0.6),\n    note(\"<c2 ab1>/2\").s(\"sine\").gain(0.5).lpf(360).room(0.4)\n  )],\n  [24, stack(\n    s(\"bd ~ [~ bd] ~\").bank(\"AkaiLinn\").gain(1.1).every(8, x => x.ply(2)),\n    s(\"hh*4\").bank(\"AkaiLinn\").gain(0.5).cut(1).degradeBy(0.15),\n    s(\"~ oh ~ ~\").bank(\"AkaiLinn\").gain(0.4).cut(1),\n    s(\"~ cp\").bank(\"AkaiLinn\").gain(0.65),\n    note(\"<c2 ab1 eb2 g1>\").s(\"sine\").gain(0.62).lpf(700),\n    note(\"<[eb3,g3,c4] [c3,eb3,ab3] [f3,ab3,c4] [g3,bb3,d4]>\").s(\"piano\").room(0.4).gain(0.6).off(0.125, x => x.add(note(12)).gain(0.3))\n  )],\n  [12, stack(\n    s(\"bd ~ [~ bd] ~\").bank(\"AkaiLinn\").gain(0.9).lpf(900),\n    note(\"<[c3,eb3,g3] [ab2,c3,eb3]>\").s(\"piano\").room(0.6).gain(0.55).lpf(1000)\n  )]\n)",
+  "createdAt": "2026-06-15T20:32:40Z"
+}

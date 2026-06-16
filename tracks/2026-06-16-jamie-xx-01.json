@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-16-jamie-xx-01",
+  "title": "Warm Places",
+  "prompt": "jamie xx",
+  "batch": "2026-06-16-jamie-xx",
+  "description": "A dreamy 2-step UK garage slow-burn: felt-piano chords drift in over a soft LinnDrum breakbeat, ghost hats and a warm sub bass gather underneath, then the groove blooms into a swung, emotional peak before settling back to a hazy outro.",
+  "meta": {
+    "bpm": 124,
+    "genre": "UK garage / 2-step",
+    "mood": "dreamy, warm, emotional",
+    "key": "C minor",
+    "instruments": ["LinnDrum kit", "felt piano", "jvbass sub bass", "arpy pad"],
+    "energy": 3
+  },
+  "code": "setcpm(124/4)\narrange(\n  [16, stack(\n    note(\"<[c3,eb3,g3,bb3] [ab2,c3,eb3,g3] [f2,ab2,c3,eb3] [g2,bb2,d3,f3]>/2\").s(\"piano\").room(0.3).gain(0.6).lpf(\"<700 1100>/4\").attack(0.02).release(0.4),\n    s(\"bd ~ sd ~\").bank(\"LinnDrum\").gain(0.78)\n  )],\n  [32, stack(\n    note(\"<[c3,eb3,g3,bb3] [ab2,c3,eb3,g3] [f2,ab2,c3,eb3] [g2,bb2,d3,f3]>/2\").s(\"piano\").room(0.36).gain(0.62).lpf(\"<900 1500>/4\").attack(0.02).release(0.4),\n    s(\"bd ~ sd [~ bd]\").bank(\"LinnDrum\").gain(0.85),\n    s(\"hh(5,8,2)\").bank(\"LinnDrum\").gain(0.5).swingBy(0.16, 8).pan(0.6),\n    note(\"<c1 ab0 f0 g0>/2\").s(\"jvbass\").lpf(420).gain(0.7).crush(8)\n  )],\n  [32, stack(\n    note(\"<[c3,eb3,g3,bb3] [ab2,c3,eb3,g3] [f2,ab2,c3,eb3] [g2,bb2,d3,f3]>/2\").s(\"piano\").room(0.4).delay(\".3:.166:.4\").gain(0.6).lpf(\"<1300 2100>/4\").attack(0.01).release(0.45).off(0.125, x => x.add(note(12)).gain(0.4)),\n    s(\"bd ~ sd [~ bd]\").bank(\"LinnDrum\").gain(0.9),\n    s(\"hh(7,16,3)\").bank(\"LinnDrum\").gain(0.52).swingBy(0.18, 16).pan(sine.range(0.35, 0.7)),\n    s(\"~ oh ~ ~\").bank(\"LinnDrum\").gain(0.4),\n    note(\"<c1 ab0 f0 g0>/2\").s(\"jvbass\").lpf(\"<480 760>/4\").gain(0.72).crush(8)\n  )],\n  [16, stack(\n    note(\"<[c3,eb3,g3,bb3] [ab2,c3,eb3,g3] [f2,ab2,c3,eb3] [g2,bb2,d3,f3]>/2\").s(\"piano\").room(0.55).delay(\".4:.25:.5\").gain(0.62).lpf(\"<1600 1000>/2\").attack(0.03).release(0.6),\n    note(\"<c4 eb4 g4 bb4>/2\").s(\"arpy\").vowel(\"<a e o>\").room(0.5).gain(0.45).lpf(1800),\n    note(\"<c1 ab0 f0 g0>/2\").s(\"jvbass\").lpf(380).gain(0.6).crush(8)\n  )],\n  [24, stack(\n    note(\"<[c3,eb3,g3,bb3] [ab2,c3,eb3,g3] [f2,ab2,c3,eb3] [g2,bb2,d3,f3]>/2\").s(\"piano\").room(0.45).delay(\".3:.166:.45\").gain(0.6).lpf(\"<2200 2800>/4\").attack(0.01).release(0.4).off(0.125, x => x.add(note(12)).gain(0.42)),\n    s(\"bd ~ sd [~ bd]\").bank(\"LinnDrum\").gain(0.95).every(8, x => x.ply(\"<1 1 2 1>\")),\n    s(\"hh(9,16,4)\").bank(\"LinnDrum\").gain(0.55).swingBy(0.18, 16).pan(sine.range(0.3, 0.75)),\n    s(\"~ oh ~ oh\").bank(\"LinnDrum\").gain(0.42),\n    note(\"<c4 eb4 g4 bb4 ab3 c4 f4 g4>/2\").s(\"arpy\").vowel(\"<a e o>\").room(0.45).gain(0.46).lpf(2200).pan(0.4),\n    note(\"<c1 ab0 f0 g0>/2\").s(\"jvbass\").lpf(\"<560 880>/4\").gain(0.75).crush(8)\n  )],\n  [12, stack(\n    note(\"<[c3,eb3,g3,bb3] [ab2,c3,eb3,g3] [f2,ab2,c3,eb3] [g2,bb2,d3,f3]>/2\").s(\"piano\").room(0.55).delay(\".4:.25:.5\").gain(0.58).lpf(\"<1100 700>/4\").attack(0.03).release(0.7),\n    s(\"bd ~ sd ~\").bank(\"LinnDrum\").gain(0.72)\n  )]\n)",
+  "createdAt": "2026-06-16T16:17:48Z"
+}

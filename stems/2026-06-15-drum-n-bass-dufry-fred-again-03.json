@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-15-drum-n-bass-dufry-fred-again-03",
+  "title": "Knock Alloy",
+  "prompt": "drum n bass, dufry, fred again",
+  "batch": "2026-06-15-drum-n-bass-dufry-fred-again",
+  "description": "A designed FM sine bass for drum n bass: a metallic, knocking low-mid voice where the FM index steps through a sequence and the harmonicity rides a separate slow clock, so the timbre never repeats the same way twice. Penv clicks give each note an 808-like knock and a long delay tail smears the metallic edge into space.",
+  "meta": {
+    "bpm": 174,
+    "genre": "fm bass",
+    "mood": "metallic, knocking, restless",
+    "key": "C minor",
+    "instruments": ["fm sine bass"],
+    "energy": 4
+  },
+  "createdAt": "2026-06-15T20:44:15Z",
+  "code": "setcpm(174/4)\nstack(\n  note(\"<c1 c1 eb1 g0 c1 g0 eb1 f1>*4\").s(\"sine\")\n    .fm(\"<2 6 11 4 8 3 13 5>/8\")\n    .fmh(\"<1 1.5 0.5 2>/4\")\n    .penv(\"<14 9 20 11>/8\").pattack(0.004).pdecay(\"<0.05 0.08 0.04>/7\")\n    .lpf(sine.slow(23).range(420, 2600))\n    .lpenv(\"<2 5 3>/11\").lpattack(0.01).lpdecay(0.09)\n    .resonance(sine.slow(13).range(6, 15))\n    .ftype(\"ladder\")\n    .shape(0.32)\n    .off(0.01, x => x.add(note(0.13)).gain(0.5))\n    .delay(\"0.55:0.375:0.72\").delaytime(\"<0.375 0.1875>/16\")\n    .gain(0.92)\n)"
+}

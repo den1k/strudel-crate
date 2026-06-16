@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-15-complex-upbeat-bassline-with-roaring-syn-05",
+  "title": "Cavern Reese",
+  "prompt": "complex upbeat bassline with roaring synths",
+  "batch": "2026-06-15-complex-upbeat-bassline-with-roaring-syn",
+  "description": "A roaring detuned Reese bass in the mid register, built from a sawtooth split into a slow-beating jux copy and an off-tuned echo so the grain churns. A ladder filter, fm growl, and dual pan LFOs drift the voice across a wet, cavernous reverb over a 16-cycle morph.",
+  "meta": {
+    "bpm": 140,
+    "genre": "reese bass",
+    "mood": "roaring",
+    "key": "F minor",
+    "instruments": ["detuned sawtooth reese bass"],
+    "energy": 4
+  },
+  "createdAt": "2026-06-15T18:24:54Z",
+  "code": "setcpm(140/4)\nstack(\n  note(\"<f2 f2 ab2 [c3 eb2]>*4\").s(\"sawtooth\")\n    .detune(sine.slow(11).range(0.12, 0.42))\n    .fm(sine.slow(16).range(1.5, 7)).fmh(\"<1 1.5 2 0.5>/4\")\n    .lpf(sine.slow(24).range(320, 2600)).resonance(15).ftype(\"ladder\")\n    .lpenv(2.5).lpattack(0.01).lpdecay(0.18)\n    .attack(0.006).decay(0.22).sustain(0.6).release(0.08)\n    .shape(0.32)\n    .jux(rev)\n    .off(0.013, x => x.add(note(0.15)).gain(0.5).pan(sine.slow(7).range(0.1, 0.9)))\n    .pan(sine.slow(13).range(0.2, 0.8))\n    .room(0.7).roomsize(6).delay(\"0.4:0.375:0.6\").orbit(2)\n    .gain(0.85)\n)"
+}

@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-15-complex-upbeat-bassline-with-roaring-syn-01",
+  "title": "Reese Leviathan",
+  "prompt": "complex upbeat bassline with roaring synths",
+  "batch": "2026-06-15-complex-upbeat-bassline-with-roaring-syn",
+  "description": "A low-register Reese bass built from a detune-thickened supersaw core that roars and screams as a slow filter journey opens the ladder over 32 cycles. Detune width, drive and resonance all travel on prime-numbered clocks while jux-split echoes thicken the stereo field.",
+  "meta": {
+    "bpm": 140,
+    "genre": "reese bass",
+    "mood": "menacing",
+    "key": "F minor",
+    "instruments": ["detune supersaw reese bass"],
+    "energy": 5
+  },
+  "code": "setcpm(140/4)\nstack(\n  note(\"<f1 f1 <ab1 c2> [f1 eb1]>*4\").s(\"supersaw\")\n    .detune(sine.slow(23).range(0.1, 0.6)).unison(7).spread(saw.slow(17).range(0.3, 0.9))\n    .fm(\"<0 1 2 0>/8\").fmh(\"<1 1.5 0.5>/4\")\n    .lpf(sine.slow(32).range(180, 3200)).resonance(sine.slow(19).range(8, 18)).ftype(\"ladder\")\n    .lpenv(sine.slow(29).range(1, 4)).lpattack(0.01).lpdecay(0.2)\n    .shape(saw.slow(13).range(0.2, 0.55)).distort(\"<0 0.3 0.5 0.2>/8\")\n    .attack(0.005).decay(0.18).sustain(0.7).release(0.08)\n    .vib(\"<0 5 8>/16\").vibmod(0.4)\n    .jux(rev)\n    .off(1/8, x => x.add(note(12)).gain(0.3).pan(0.75).lpf(2400))\n    .pan(sine.slow(11).range(0.35, 0.65))\n    .room(0.18).delay(\"0.4:0.375:0.5\")\n    .gain(0.92)\n)",
+  "createdAt": "2026-06-15T18:24:54Z"
+}

@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-15-drum-n-bass-dufry-fred-again-01",
+  "batch": "2026-06-15-drum-n-bass-dufry-fred-again",
+  "prompt": "drum n bass, dufry, fred again",
+  "title": "Neuro Reese Stairwell",
+  "createdAt": "2026-06-15T20:44:15Z",
+  "description": "A growling detuned-supersaw Reese that screams through stepped ladder-filter stairs and stepped distortion kicks, while a slow saw crush-ramp degrades the bit depth over 32 cycles. Dry and driven: the filter steps and grit walk in primes so the morph never quite repeats.",
+  "meta": {
+    "bpm": 174,
+    "genre": "reese-or-fm bass",
+    "mood": "menacing, driven, screaming",
+    "key": "F minor",
+    "instruments": ["detuned supersaw reese bass"],
+    "energy": 5
+  },
+  "code": "setcpm(174/4)\nstack(\n  note(\"<f1 f1 ab1 c2>*4\").s(\"supersaw\").unison(5).detune(0.3)\n    .lpf(\"<260 540 380 900 220 700 460 1500>/2\")\n    .resonance(\"<9 13 11 17>/4\")\n    .ftype(\"ladder\")\n    .lpenv(\"<5 9 3 12>/8\").lpattack(0.004).lpdecay(0.09).lpsustain(0.3)\n    .attack(0.003).decay(0.12).sustain(0.55).release(0.03)\n    .distort(\"<0.6 2.4 1.2 3.6>/4\")\n    .shape(\"<0.25 0.45 0.55 0.35>/8\")\n    .crush(saw.slow(32).range(16, 5))\n    .coarse(\"<1 1 2 1 4 1 2 1>/4\")\n    .off(1/8, x => x.add(note(12)).gain(0.32).pan(0.7).hpf(600).distort(1.2))\n    .gain(0.92)\n)"
+}

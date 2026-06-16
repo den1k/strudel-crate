@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-15-complex-upbeat-bassline-with-roaring-syn-18",
+  "title": "Corroded Choir",
+  "prompt": "complex upbeat bassline with roaring synths",
+  "batch": "2026-06-15-complex-upbeat-bassline-with-roaring-syn",
+  "description": "A metallic FM pad sitting in the low-mid register, built from a sine core driven hard by a slowly climbing FM index and a stepped harmonicity that keeps the timbre evolving. Over 32 cycles it crawls from clean to corroded as crush bits drop and coarse downsampling rises, the ladder filter and vowel formants sweeping it from a hollow choir into a roaring, bit-mangled growl.",
+  "meta": {
+    "bpm": 128,
+    "genre": "fm pad",
+    "mood": "metallic",
+    "key": "C minor",
+    "instruments": ["fm sine pad"],
+    "energy": 4
+  },
+  "code": "setcpm(128/4)\nstack(\n  note(\"<c2 c2 <eb2 g2> <f2 g1>>/2\").s(\"sine\")\n    .fm(sine.slow(24).range(2, 11)).fmh(\"<1 1.5 2 0.5 3>/8\")\n    .attack(0.06).decay(0.3).sustain(0.7).release(0.4)\n    .vowel(\"<a o e o>/4\")\n    .crush(saw.slow(32).range(16, 4)).coarse(\"<1 1 2 4 6>/8\")\n    .lpf(sine.slow(16).range(300, 2600)).resonance(14).ftype(\"ladder\")\n    .lpenv(2.5).lpattack(0.05).lpdecay(0.3)\n    .shape(sine.slow(28).range(0.1, 0.45))\n    .pan(sine.slow(7).range(0.2, 0.8))\n    .off(1/4, x => x.add(note(12)).gain(0.3).vowel(\"i\"))\n    .room(0.3).delay(\"0.4:0.375:0.6\").gain(0.85)\n)",
+  "createdAt": "2026-06-15T18:24:54Z"
+}

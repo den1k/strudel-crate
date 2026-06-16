@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-16-crazy-vocals-with-effects-12",
+  "title": "Tin Vox Decay",
+  "prompt": "crazy vocals with effects",
+  "batch": "2026-06-16-crazy-vocals-with-effects",
+  "description": "A metallic vocal-ish sample chopped into a granular cloud that pitch-warps through stepped speeds while a 32-cycle crush ramp drags it down from clean to broken robot static. The bit depth falls, a band/high-pass sweep hollows it out, and the coarse grit thickens as the loop degrades, then resets.",
+  "meta": {
+    "bpm": 120,
+    "genre": "sample-mangle vocal",
+    "mood": "crushed, robotic, broken",
+    "key": "atonal",
+    "instruments": ["mangled metallic vocal sample"],
+    "energy": 4
+  },
+  "code": "setcpm(120/4)\nstack(\n  s(\"metal*4\")\n    .chop(\"<2 4 8 4 16 8 4 2>/2\")\n    .striate(\"<1 2 4 2>/4\")\n    .speed(\"<1 1.5 0.5 2 -1 0.75 1.25 -0.5>\")\n    .crush(saw.slow(32).range(16, 5))\n    .coarse(saw.slow(23).range(1, 9))\n    .bpf(tri.slow(13).range(700, 4200))\n    .hpf(saw.slow(29).range(120, 900))\n    .resonance(saw.slow(16).range(4, 14))\n    .sometimesBy(0.2, x => x.speed(-1))\n    .gain(0.85)\n)\n",
+  "createdAt": "2026-06-16T19:38:09Z"
+}

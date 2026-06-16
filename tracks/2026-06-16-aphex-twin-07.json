@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-16-aphex-twin-07",
+  "title": "Twitch Lattice",
+  "prompt": "aphex twin. Energy: mid groove. Register focus: melody-led arpeggio. Palette: RolandTR606 kit + square/FM arpeggio. Tempo: 134 BPM. Arc shape: continuous evolution. Mood modifier: playful, nervy, twitchy.",
+  "batch": "2026-06-16-aphex-twin",
+  "description": "A nervy, melody-led square arpeggio skitters over a broken 606 groove, mutating its mode and FM grit as it goes. The middle thickens with euclidean hats and ratcheting fills before stripping back to a dry, twitchy outro.",
+  "meta": {
+    "bpm": 134,
+    "genre": "idm",
+    "mood": "playful, nervy, twitchy",
+    "key": "C minor",
+    "instruments": ["RolandTR606 kit", "square arpeggio", "FM square lead", "sub bass"],
+    "energy": 3
+  },
+  "code": "setcpm(134/4)\narrange(\n  [16, stack(\n    n(\"0 2 4 7\").scale(\"<C3:minor C3:dorian>/8\").s(\"square\").decay(0.1).sustain(0).gain(0.5)\n      .off(0.125, x => x.add(note(12)).gain(0.32)).crush(8).pan(sine.range(0.3,0.7)),\n    s(\"bd ~ [~ bd] ~\").bank(\"RolandTR606\").gain(1.05)\n  )],\n  [32, stack(\n    n(\"0 2 4 7 9 7 4 2\").scale(\"<C3:minor C3:phrygian>/8\").s(\"square\").decay(0.12).sustain(0).gain(0.5)\n      .off(0.125, x => x.add(note(12)).gain(0.3)).crush(7).fm(2).fmh(1.5).pan(sine.range(0.2,0.8)),\n    s(\"bd ~ [~ bd] ~\").bank(\"RolandTR606\").gain(1.05),\n    s(\"hh(5,8,2)\").bank(\"RolandTR606\").gain(0.55).cut(1),\n    n(\"<0 0 5 3>\").scale(\"C2:minor\").s(\"square\").lpf(700).decay(0.3).sustain(0.2).gain(0.6)\n  )],\n  [32, stack(\n    n(\"0 2 4 7 9 7 4 2\").scale(\"<C3:minor C3:dorian C3:phrygian C3:minor>/4\").s(\"square\").decay(0.12).sustain(0).gain(0.52)\n      .off(0.125, x => x.add(note(12)).gain(0.32)).crush(6).fm(\"<2 3 4>\").fmh(1.5)\n      .sometimesBy(0.25, x => x.speed(2)).pan(sine.range(0.2,0.8)),\n    s(\"bd ~ [~ bd] ~\").bank(\"RolandTR606\").gain(1.1),\n    s(\"hh(7,8,1)\").bank(\"RolandTR606\").gain(0.55).cut(1).degradeBy(0.15),\n    s(\"~ sd ~ sd\").bank(\"RolandTR606\").gain(0.7).every(8, x => x.ply(\"<1 1 2 4>\")),\n    n(\"<0 0 5 3>\").scale(\"C2:minor\").s(\"square\").lpf(900).decay(0.3).sustain(0.25).gain(0.6)\n  )],\n  [16, stack(\n    n(\"0 4 7 9\").scale(\"<C3:phrygian C3:lydian>/4\").s(\"square\").decay(0.2).sustain(0.1).gain(0.5)\n      .off(0.25, x => x.add(note(12)).gain(0.3)).crush(7).fm(3).fmh(2).room(0.3).pan(sine.range(0.3,0.7)),\n    s(\"oh ~ oh ~\").bank(\"RolandTR606\").gain(0.45).cut(1),\n    n(\"<0 5>\").scale(\"C2:minor\").s(\"square\").lpf(600).decay(0.4).sustain(0.3).gain(0.55)\n  )],\n  [24, stack(\n    n(\"0 2 4 7 9 11 9 7\").scale(\"<C3:dorian C3:phrygian>/8\").s(\"square\").decay(0.1).sustain(0).gain(0.52)\n      .off(0.125, x => x.add(note(12)).gain(0.34)).crush(6).fm(\"<3 4 5>\").fmh(\"<1.5 2>\")\n      .every(4, x => x.rev()).sometimesBy(0.3, x => x.speed(2)).pan(sine.range(0.15,0.85)),\n    s(\"bd ~ [~ bd] [~ bd]\").bank(\"RolandTR606\").gain(1.1),\n    s(\"hh(7,8,3)\").bank(\"RolandTR606\").gain(0.55).cut(1).degradeBy(0.1),\n    s(\"~ sd ~ sd\").bank(\"RolandTR606\").gain(0.7).every(8, x => x.ply(\"<1 2 4 8>\")),\n    n(\"<0 0 5 3>\").scale(\"C2:minor\").s(\"square\").lpf(1100).decay(0.3).sustain(0.25).gain(0.6).shape(0.3)\n  )],\n  [14, stack(\n    n(\"0 2 4 7\").scale(\"<C3:minor C3:dorian>/8\").s(\"square\").decay(0.1).sustain(0).gain(0.5)\n      .off(0.125, x => x.add(note(12)).gain(0.3)).crush(8).pan(sine.range(0.3,0.7)),\n    s(\"bd ~ [~ bd] ~\").bank(\"RolandTR606\").gain(1.0)\n  )]\n)",
+  "createdAt": "2026-06-16T15:56:19Z"
+}

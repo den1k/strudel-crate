@@ -1,0 +1,18 @@
+{
+  "id": "2026-06-15-euro-dance-pop-01-v2",
+  "versionOf": "2026-06-15-euro-dance-pop-01",
+  "title": "Hands-Up Halo v2",
+  "prompt": "euro dance pop",
+  "batch": "2026-06-15-euro-dance-pop",
+  "description": "The same screaming bright supersaw hands-up lead, now driven at 160 BPM with doubled stab density, faster stepped tremolo gating, and snappier filter envelopes so it reads as genuinely quicker and more relentless. Over 32 cycles the square-pumped filter env still blooms, the detune widens, and the room/delay tail opens, then the arc resets.",
+  "meta": {
+    "bpm": 160,
+    "genre": "supersaw lead",
+    "mood": "euphoric",
+    "key": "F minor",
+    "instruments": ["supersaw lead"],
+    "energy": 5
+  },
+  "code": "setcpm(160/4)\nstack(\n  note(\"<f4 f4 ab4 c5>*8\").s(\"supersaw\")\n    .unison(7).detune(sine.slow(23).range(0.18,0.55))\n    .tremolosync(\"<8 16 16 8>/8\").tremolodepth(0.88)\n    .gain(square.slow(2).range(0.5,1.05))\n    .lpf(square.slow(7).range(1000,5600))\n    .lpenv(square.slow(16).range(2,8)).lpattack(0.005).lpdecay(0.08)\n    .resonance(sine.slow(13).range(10,18)).ftype(\"ladder\")\n    .shape(saw.slow(29).range(0.2,0.58)).distort(\"<0.3 0.5>/8\")\n    .pan(square.slow(11).range(0.3,0.7))\n    .room(sine.slow(32).range(0.25,0.6)).roomsize(4)\n    .delay(\"0.3:0.09375:0.55\").delayfb(0.5)\n    .gain(0.9)\n)\n",
+  "createdAt": "2026-06-15T20:30:20Z"
+}

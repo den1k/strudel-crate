@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-16-crazy-vocals-with-effects-11",
+  "title": "Chrome Larynx",
+  "prompt": "crazy vocals with effects",
+  "batch": "2026-06-16-crazy-vocals-with-effects",
+  "description": "A single metallic hit chopped into a granular cloud and rhythmically gated by an accelerating tremolo into a robotic, high-register vocal-hit pattern. Over 32 cycles the gating speeds up, the chop count climbs, a bandpass sweeps the formant, and bit-crush degradation creeps in before resetting room-only.",
+  "meta": {
+    "bpm": 124,
+    "genre": "sample-mangle perc",
+    "mood": "metallic, robotic, frantic",
+    "key": "atonal",
+    "instruments": ["chopped metal vox-hit"],
+    "energy": 4
+  },
+  "code": "setcpm(124/4)\nstack(\n  s(\"metal*4\")\n    .chop(\"<8 12 16 24>/8\")\n    .speed(\"<2 1.5 3 2.5>/4\")\n    .tremolosync(\"<4 8 16 32>/8\")\n    .tremolodepth(sine.slow(23).range(0.55, 0.95))\n    .bpf(saw.slow(16).range(700, 4200))\n    .resonance(sine.slow(13).range(6, 16))\n    .hpf(220)\n    .crush(saw.slow(29).range(16, 5))\n    .coarse(\"<1 1 2 4>/8\")\n    .shape(0.3)\n    .sometimesBy(0.18, x => x.speed(-1))\n    .pan(sine.slow(11).range(0.2, 0.8))\n    .room(0.34)\n    .roomsize(3)\n    .gain(0.85)\n)\n",
+  "createdAt": "2026-06-16T19:38:09Z"
+}

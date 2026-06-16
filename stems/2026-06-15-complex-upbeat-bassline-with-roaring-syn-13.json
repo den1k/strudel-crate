@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-15-complex-upbeat-bassline-with-roaring-syn-13",
+  "title": "Liquid Roar Lead",
+  "prompt": "complex upbeat bassline with roaring synths",
+  "batch": "2026-06-15-complex-upbeat-bassline-with-roaring-syn",
+  "description": "A high-register roaring supersaw lead with liquid detune: jux-mirrored and octave-stacked off-copies thicken it while dual pan LFOs drift the layers across the field. Over 24 cycles the FM index, band-pass sweep and filter envelope all travel on prime clocks so the roar swells, liquefies and resets.",
+  "meta": {
+    "bpm": 140,
+    "genre": "supersaw lead",
+    "mood": "liquid",
+    "key": "F minor",
+    "instruments": ["roaring supersaw lead"],
+    "energy": 4
+  },
+  "code": "setcpm(140/4)\nstack(\n  note(\"<f4 [ab4 c5] eb5 <c5 g4>>*2\").s(\"supersaw\")\n    .fm(sine.slow(19).range(1.5, 7)).fmh(\"<1 2 1.5 3>/4\")\n    .detune(sine.slow(11).range(0.1, 0.6)).unison(5).spread(0.7)\n    .bpf(sine.slow(24).range(600, 4200)).resonance(14).ftype(\"ladder\")\n    .lpenv(2.5).lpattack(0.01).lpdecay(0.18)\n    .vib(\"<5 7>/8\").vibmod(sine.slow(13).range(0.1, 0.8))\n    .shape(0.3).attack(0.01).decay(0.18).sustain(0.6).release(0.1)\n    .pan(sine.slow(7).range(0.15, 0.85))\n    .jux(rev)\n    .off(1/8, x => x.add(note(12)).gain(0.3).pan(saw.slow(9).range(0.85, 0.15)))\n    .sometimesBy(0.12, x => x.speed(-1))\n    .delay(\"0.4:0.375:0.6\").room(0.4).gain(0.8)\n)",
+  "createdAt": "2026-06-15T18:24:54Z"
+}

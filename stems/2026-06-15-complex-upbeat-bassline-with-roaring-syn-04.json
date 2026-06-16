@@ -1,0 +1,18 @@
+{
+  "id": "2026-06-15-complex-upbeat-bassline-with-roaring-syn-04",
+  "title": "Liquid Roar Engine",
+  "prompt": "complex upbeat bassline with roaring synths",
+  "batch": "2026-06-15-complex-upbeat-bassline-with-roaring-syn",
+  "description": "A driving FM sub-bass built on a sine core whose fm index and harmonicity roar and twist on separate slow clocks. A pitch envelope snaps each note into place while a ladder filter sweep and wobbling resonance give it a liquid, wobble-bass character that morphs over a 32-cycle arc before repeating.",
+  "meta": {
+    "bpm": 128,
+    "genre": "fm bass",
+    "mood": "liquid",
+    "key": "C minor",
+    "instruments": ["fm sine bass"],
+    "energy": 4
+  },
+  "code": "setcpm(128/4)\nstack(\n  note(\"<c1 c1 eb1 g0 c1 [eb1 f1] g0 bb0>*4\").s(\"sine\")\n    .fm(sine.slow(19).range(2, 13)).fmh(\"<1 1.5 2 0.5 3>/5\")\n    .penv(\"<12 0 -7 5>/8\").pattack(0.001).pdecay(0.07)\n    .lpf(sine.slow(31).range(220, 2600)).resonance(sine.slow(11).range(8, 18)).ftype(\"ladder\")\n    .lpenv(4).lpattack(0.005).lpdecay(0.14)\n    .attack(0.003).decay(0.18).sustain(0.55).release(0.06)\n    .vib(\"<5 7>/8\").vibmod(sine.slow(13).range(0.1, 0.9))\n    .shape(0.34)\n    .pan(sine.slow(23).range(0.35, 0.65))\n    .off(1/8, x => x.add(note(12)).gain(0.22).pan(0.75))\n    .room(0.14).gain(0.9)\n)"
+,
+  "createdAt": "2026-06-15T18:24:54Z"
+}

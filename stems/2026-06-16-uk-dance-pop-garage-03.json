@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-16-uk-dance-pop-garage-03",
+  "batch": "2026-06-16-uk-dance-pop-garage",
+  "prompt": "uk dance pop garage",
+  "title": "Vowel Hook",
+  "createdAt": "2026-06-16T19:23:48Z",
+  "description": "A liquid, mid-register formant stab that sings like a chopped garage vocal hook: sawtooth voice run through a slow-cycling vowel sweep so each stab lands on a different sung shape. A snappy pitch envelope bends every hit up into pitch before settling, vibrato curls the sustained tails, and a stepped vowel/fm/bpf morph plus reverse-speed flickers carry an 8-cycle arc. Bone-dry except a syncopated dotted delay throwing the hook back across the stereo field.",
+  "meta": {
+    "bpm": 130,
+    "genre": "formant vocal lead",
+    "mood": "liquid, vocal, bouncy",
+    "key": "C minor",
+    "instruments": ["formant vocal stab"],
+    "energy": 4
+  },
+  "code": "setcpm(130/4)\nstack(\n  note(\"<c4 [c4 d4] f4 eb4>/2\").s(\"sawtooth\")\n    .struct(\"<x ~ x x ~ x ~ x>(5,8,<0 2 1 3>/4)\")\n    .vowel(\"<a e i o a o e i u e>/3\")\n    .penv(\"<7 5 9 4 12 6>/8\").pattack(\"<0.04 0.02 0.06>/7\").pdecay(\"<0.12 0.08 0.18>/11\")\n    .vib(\"<5 7 6 9 4>/13\").vibmod(\"<0.3 0.6 0.4 0.9 0.5>/11\")\n    .fm(\"<0 1 2 1 3 1>/8\").fmh(\"<1 2 1.5 1>/7\")\n    .bpf(\"<700 1300 950 1700 1100>/13\").resonance(\"<6 10 8 13>/11\")\n    .lpenv(\"<3 5 7 4>/8\").lpattack(0.01).lpdecay(\"<0.1 0.16 0.08>/7\")\n    .attack(0.005).decay(0.14).sustain(0.55).release(0.06)\n    .shape(\"<0.15 0.3 0.22 0.4>/16\")\n    .speed(\"<1 1 1 -1 1 1 -1 1>/8\")\n    .pan(\"<0.4 0.6 0.45 0.65 0.5>/11\")\n    .off(0.01, x => x.add(note(0.12)).gain(0.5))\n    .off(3/16, x => x.add(note(12)).vowel(\"<i e a o>/4\").gain(0.34).pan(0.75).hpf(900).bpf(2200))\n    .delay(\"0.45:0.1875:0.55\").delayfeedback(0.45)\n    .gain(0.92)\n)"
+}

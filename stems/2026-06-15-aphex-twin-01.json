@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-15-aphex-twin-01",
+  "batch": "2026-06-15-aphex-twin",
+  "prompt": "aphex twin",
+  "title": "Acid Lung",
+  "createdAt": "2026-06-15T20:39:51Z",
+  "description": "A single screaming low-register FM sine bass with a stepped, ever-shifting metallic timbre — fm and fmh ratchet on separate clocks so the harmonic edge never settles. A clicky penv attack snaps each note, a resonant ladder filter squelches acid-style, and stepped ply/euclid gating plus stepped reverse-speed stutters keep the motion jittery and unstable. Bone-dry, no reverb, pure Aphex acid menace.",
+  "meta": {
+    "bpm": 138,
+    "genre": "fm acid bass",
+    "mood": "menacing, aggressive, unstable",
+    "key": "C minor",
+    "instruments": ["fm sine acid bass"],
+    "energy": 5
+  },
+  "code": "setcpm(138/4)\nstack(\n  note(\"<c1 c1 eb1 g0>*4\").s(\"sine\")\n    .fm(\"<2 6 11 4 8 3 13 5>/8\").fmh(\"<1 1.5 0.5 2 1 0.75 1.5 0.5>/4\")\n    .penv(\"<24 18 30 12>/8\").pattack(0.001).pdecay(\"<0.04 0.06 0.03>/6\")\n    .accelerate(\"<0 -0.4 0.3 -0.6>/16\")\n    .lpf(saw.slow(13).range(220, 4200)).resonance(sine.slow(11).range(9, 19)).ftype(\"ladder\")\n    .lpenv(\"<4 7 10 6>/8\").lpattack(0.002).lpdecay(\"<0.08 0.12 0.05>/7\")\n    .attack(0.001).decay(0.11).sustain(0.35).release(0.03)\n    .ply(\"<1 1 2 1 1 4 1 2>/8\")\n    .struct(\"<x x*2 x ~ x x*3 x x>\".euclid(5, 8))\n    .speed(\"<1 1 -1 1 1 -1 1 1>/8\")\n    .shape(sine.slow(23).range(0.2, 0.55))\n    .crush(\"<16 12 8 10>/16\")\n    .off(1/16, x => x.add(note(12)).gain(0.28).pan(0.7).hpf(800).fm(7))\n    .delay(\"0.18:0.0625:0.25\")\n    .gain(0.95)\n)"
+}

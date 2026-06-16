@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-15-complex-upbeat-bassline-with-roaring-syn-29",
+  "title": "Cavern Maw",
+  "prompt": "complex upbeat bassline with roaring synths",
+  "batch": "2026-06-15-complex-upbeat-bassline-with-roaring-syn",
+  "description": "A single space-sample chopped into a granular roar that prowls the full register, its grains stretched and reversed by a shifting speed pattern. Over 24 cycles a degradation arc grinds crush and coarse downward while a ladder filter and cavernous reverb open, turning a clean cloud into a clipped, roaring beast.",
+  "meta": {
+    "bpm": 138,
+    "genre": "granular noise bass",
+    "mood": "cavernous",
+    "key": "atonal",
+    "instruments": ["granular space roar"],
+    "energy": 5
+  },
+  "createdAt": "2026-06-15T18:24:54Z",
+  "code": "setcpm(138/4)\nstack(\n  s(\"space*2\").n(\"<0 2 1 3>/4\")\n    .chop(\"<8 16 24 32>/8\")\n    .speed(\"<1 -1 0.5 -0.75 1.5 -0.5>\")\n    .striate(\"<2 4 8>/16\")\n    .lpf(sine.slow(24).range(180, 6500)).resonance(sine.slow(13).range(8, 19)).ftype(\"ladder\")\n    .lpenv(saw.slow(32).range(1, 5)).lpattack(0.01).lpdecay(0.18)\n    .crush(saw.slow(32).range(16, 4))\n    .coarse(\"<1 1 2 4 8>/16\")\n    .shape(sine.slow(16).range(0.2, 0.65))\n    .squiz(\"<1 1 2 1.5>/8\")\n    .pan(sine.slow(7).range(0.12, 0.88))\n    .sometimesBy(0.18, x => x.speed(-2))\n    .degradeBy(saw.slow(32).range(0, 0.25))\n    .delay(\"0.4:0.375:0.7\").room(sine.slow(32).range(0.3, 0.9)).orbit(2)\n    .gain(0.9)\n)"
+}

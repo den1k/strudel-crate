@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-15-uk-dance-pop-140-bpm-rap-10",
+  "title": "Concrete Ritual",
+  "prompt": "uk dance pop, 140+ bpm, rap",
+  "batch": "2026-06-15-uk-dance-pop-140-bpm-rap",
+  "description": "A dark, cinematic grime cut built on a sparse half-time DMX kick, leaving wide-open space for a rap. Sawtooth dub-chord stabs step through a minor progression while a sub bass slides underneath; the track peaks early then deconstructs into a delay-soaked breakdown before a stripped outro.",
+  "meta": {
+    "bpm": 140,
+    "genre": "grime / UK rap",
+    "mood": "dark, cinematic, half-time",
+    "key": "C minor",
+    "instruments": ["OberheimDMX kit", "sawtooth dub chord stabs", "sub bass (sawtooth)"],
+    "energy": 4
+  },
+  "code": "setcpm(140/4)\narrange(\n  [16, stack(\n    s(\"bd ~ ~ ~ sd ~ ~ ~\").bank(\"OberheimDMX\").gain(1.0),\n    note(\"~ <[c3,eb3,g3]> ~ <[ab2,c3,eb3]>\").s(\"sawtooth\").lpf(500).room(0.3).gain(0.45)\n  )],\n  [24, stack(\n    s(\"bd ~ ~ ~ sd ~ ~ ~\").bank(\"OberheimDMX\").gain(1.0),\n    s(\"~ ~ hh ~ ~ ~ hh ~\").bank(\"OberheimDMX\").gain(0.5),\n    note(\"~ <[c3,eb3,g3] [c3,eb3,g3]> ~ <[ab2,c3,eb3] [bb2,d3,f3]>\").s(\"sawtooth\").lpf(700).room(0.4).gain(0.5),\n    note(\"<c1 c1 ab0 bb0>\").s(\"sawtooth\").lpf(220).gain(0.6)\n  )],\n  [32, stack(\n    s(\"bd ~ ~ ~ sd ~ ~ ~\").bank(\"OberheimDMX\").gain(1.0),\n    s(\"~ ~ hh ~ ~ hh ~ hh\").bank(\"OberheimDMX\").gain(0.55).degradeBy(0.15),\n    s(\"~ ~ ~ ~ ~ ~ ~ rim\").bank(\"OberheimDMX\").gain(0.5),\n    note(\"~ <[c3,eb3,g3] [eb3,g3,bb3]> ~ <[ab2,c3,eb3] [bb2,d3,f3]>\").s(\"sawtooth\").lpf(sine.slow(16).range(800,1600)).room(0.45).delay(\".3:.1875:.4\").gain(0.55),\n    note(\"<c1 c1 ab0 bb0>\").s(\"sawtooth\").lpf(300).gain(0.65)\n  )],\n  [16, stack(\n    note(\"~ <[c3,eb3,g3]> ~ <[ab2,c3,eb3]>\").s(\"sawtooth\").lpf(900).room(0.6).delay(\".5:.25:.6\").gain(0.55),\n    s(\"~ ~ ~ ~ cr ~ ~ ~\").bank(\"OberheimDMX\").gain(0.4).room(0.5),\n    note(\"<c1 ab0>/2\").s(\"sawtooth\").lpf(260).gain(0.6)\n  )],\n  [28, stack(\n    s(\"bd ~ ~ bd sd ~ ~ ~\").bank(\"OberheimDMX\").gain(1.0),\n    s(\"hh ~ hh ~ hh ~ hh hh\").bank(\"OberheimDMX\").gain(0.5).degradeBy(0.2),\n    s(\"~ ~ ~ ~ ~ ~ ~ <rim cp>\").bank(\"OberheimDMX\").gain(0.5),\n    note(\"~ <[c3,eb3,g3] [eb3,g3,bb3] [f3,ab3,c4] [g3,bb3,d4]> ~ <[ab2,c3,eb3] [bb2,d3,f3]>\").s(\"sawtooth\").lpf(sine.slow(12).range(1000,2000)).room(0.4).delay(\".3:.1875:.45\").gain(0.55),\n    note(\"<c1 c1 ab0 bb0>\").s(\"sawtooth\").lpf(360).gain(0.65)\n  )],\n  [20, stack(\n    note(\"~ <[c3,eb3,g3]> ~ <[ab2,c3,eb3]>/2\").s(\"sawtooth\").lpf(saw.slow(20).range(1200,400)).room(0.6).delay(\".5:.25:.55\").gain(0.5),\n    s(\"bd ~ ~ ~ ~ ~ ~ ~\").bank(\"OberheimDMX\").gain(0.9),\n    note(\"<c1 ab0>/4\").s(\"sawtooth\").lpf(220).delay(\".4:.25:.4\").gain(0.55)\n  )],\n  [12, stack(\n    s(\"bd ~ ~ ~ sd ~ ~ ~\").bank(\"OberheimDMX\").gain(0.9),\n    note(\"~ <[c3,eb3,g3]> ~ <[ab2,c3,eb3]>\").s(\"sawtooth\").lpf(450).room(0.4).delay(\".4:.25:.3\").gain(0.4)\n  )]\n)\n",
+  "createdAt": "2026-06-15T20:32:40Z"
+}

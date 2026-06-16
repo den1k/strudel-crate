@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-16-uk-dance-pop-garage-05",
+  "title": "Liquid Vox Stutter",
+  "prompt": "uk dance pop garage",
+  "batch": "2026-06-16-uk-dance-pop-garage",
+  "description": "One pitched 'east' hit mangled into a chopped, vocal-ish garage hook: chop(16) grains stutter through stepped speed (reverse and half-speed) for a granular cloud, while vowel formants and a crush/filter morph make it liquid. Pitch, timbre, vowel, and chop density all shift across a 16-cycle arc, tailing into room plus dotted delay.",
+  "meta": {
+    "bpm": 132,
+    "genre": "sample mangle",
+    "mood": "liquid",
+    "key": "atonal",
+    "instruments": ["chopped vocal-ish east sample"],
+    "energy": 3
+  },
+  "code": "setcpm(132/4)\nstack(\n  s(\"east*2\")\n    .chop(\"<16 16 24 16 12 16 32 16>/2\")\n    .speed(\"<1 -1 0.5 1 -1 2 0.5 -0.5>/2\")\n    .n(\"<0 1 0 2>\")\n    .vowel(\"<a e i o u e a o>/2\")\n    .crush(perlin.range(5, 12).slow(13))\n    .lpf(sine.range(500, 4200).slow(11))\n    .resonance(sine.range(6, 16).slow(7))\n    .pan(sine.range(0.15, 0.85).slow(23))\n    .sometimesBy(0.2, x => x.speed(-1).chop(32))\n    .every(8, x => x.rev())\n    .gain(0.9)\n    .shape(0.3)\n    .room(sine.range(0.25, 0.6).slow(29))\n    .delay(\"0.45:0.1875:0.55\")\n    .orbit(1)\n)\n",
+  "createdAt": "2026-06-16T19:23:48Z"
+}

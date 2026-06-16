@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-16-aphex-twin-08",
+  "title": "Submerged Ledger",
+  "prompt": "aphex twin",
+  "batch": "2026-06-16-aphex-twin",
+  "description": "A bass-led, hypnotic 707 roller that breathes underwater: a deep sine sub leads a rolling minor progression while bitcrushed hats stutter off the grid. It climbs to a first peak, sinks into a sub-only valley, then surfaces for a harder second peak before settling back down.",
+  "meta": {
+    "bpm": 124,
+    "genre": "ambient techno",
+    "mood": "deep, hypnotic, submerged",
+    "key": "C minor",
+    "instruments": ["RolandTR707 kit", "deep sine sub bass", "sine pad"],
+    "energy": 3
+  },
+  "code": "setcpm(124/4)\narrange(\n  [16, stack(\n    note(\"<c1 c1 eb1 g0>*4\").s(\"sine\").lpf(perlin.range(160,420).slow(12)).gain(0.62).shape(0.18).room(0.25),\n    s(\"bd*4\").bank(\"RolandTR707\").gain(0.92).lpf(900),\n    s(\"hh(3,8)\").bank(\"RolandTR707\").gain(0.4).crush(7).cut(1).pan(perlin.range(0.35,0.65))\n  )],\n  [24, stack(\n    note(\"<c1 c1 eb1 g0>*4\").s(\"sine\").lpf(perlin.range(180,520).slow(14)).gain(0.64).shape(0.2).fm(2).fmh(1).room(0.25),\n    s(\"bd*4\").bank(\"RolandTR707\").gain(0.96),\n    s(\"hh(5,8,2)\").bank(\"RolandTR707\").gain(0.42).crush(6).cut(1).swingBy(0.08,8).pan(perlin.range(0.3,0.7)),\n    s(\"~ cp ~ cp\").bank(\"RolandTR707\").gain(0.5).room(0.3)\n  )],\n  [32, stack(\n    note(\"<c1 c1 eb1 g0>*4\").s(\"sine\").lpf(perlin.range(220,640).slow(16)).gain(0.66).shape(0.22).fm(3).fmh(2).room(0.28),\n    s(\"bd*4\").bank(\"RolandTR707\").gain(1.0),\n    s(\"hh(7,8,2)\").bank(\"RolandTR707\").gain(0.44).crush(6).cut(1).swingBy(0.08,8).off(0.125, x => x.gain(0.3)),\n    s(\"~ sd ~ sd\").bank(\"RolandTR707\").gain(0.55).room(0.3),\n    n(\"0 3 5 7\").scale(\"C4:dorian\").s(\"sine\").lpf(1400).gain(0.4).shape(0.15).room(0.35).every(4, x => x.rev())\n  )],\n  [16, stack(\n    note(\"<c1 eb1 f1 g0>*2\").s(\"sine\").lpf(perlin.range(140,360).slow(10)).gain(0.6).shape(0.18).room(0.4),\n    n(\"<0 3 5 2>\").scale(\"C4:phrygian\").s(\"sine\").lpf(900).gain(0.42).room(0.45).sometimesBy(0.3, x => x.add(note(12)))\n  )],\n  [28, stack(\n    note(\"<c1 c1 eb1 g0>*4\").s(\"sine\").lpf(perlin.range(260,760).slow(18)).gain(0.68).shape(0.26).fm(4).fmh(2).room(0.28),\n    s(\"bd*4\").bank(\"RolandTR707\").gain(1.05),\n    s(\"hh(7,8,2)\").bank(\"RolandTR707\").gain(0.46).crush(5).cut(1).swingBy(0.08,8).ply(\"<1 1 2 4>\"),\n    s(\"~ cp ~ cp\").bank(\"RolandTR707\").gain(0.55).room(0.3).every(8, x => x.ply(2)),\n    s(\"lt(3,8,4)\").bank(\"RolandTR707\").gain(0.5).shape(0.2).pan(perlin.range(0.2,0.8)),\n    n(\"0 3 5 7\").scale(\"C4:dorian\").s(\"sine\").lpf(1700).gain(0.42).shape(0.18).room(0.35).off(0.25, x => x.add(note(7)).gain(0.3))\n  )],\n  [16, stack(\n    note(\"<c1 c1 eb1 g0>*4\").s(\"sine\").lpf(perlin.range(160,380).slow(12)).gain(0.62).shape(0.18).room(0.35),\n    s(\"bd*4\").bank(\"RolandTR707\").gain(0.9).lpf(800),\n    s(\"hh(3,8)\").bank(\"RolandTR707\").gain(0.38).crush(7).cut(1).pan(perlin.range(0.35,0.65))\n  )]\n)",
+  "createdAt": "2026-06-16T15:56:19Z"
+}

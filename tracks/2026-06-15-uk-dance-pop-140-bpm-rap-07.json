@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-15-uk-dance-pop-140-bpm-rap-07",
+  "title": "Concrete Pirate Signal",
+  "prompt": "uk dance pop, 140+ bpm, rap",
+  "batch": "2026-06-15-uk-dance-pop-140-bpm-rap",
+  "description": "A driving 160bpm UK dance-pop cut that comes in hot on a chopped LinnDrum breakbeat and a bright square-wave arp hook, then deconstructs itself across the back half. Jungle-leaning ratchets and an opening filter leave a tight pocket for a rap to ride before the kit strips back to a lone pulsing arpeggio.",
+  "meta": {
+    "bpm": 160,
+    "genre": "uk dance pop / jungle-pop",
+    "mood": "funky, driving, restless",
+    "key": "C minor",
+    "instruments": ["LinnDrum kit", "square arp synth", "square sub bass"],
+    "energy": 5
+  },
+  "code": "setcpm(160/4)\narrange(\n  [16, stack(\n    n(\"0 2 4 7\").scale(\"C4:minor\").s(\"square\").decay(0.1).sustain(0).gain(0.45).lpf(900).room(0.3).delay(\".4:.1875:.4\"),\n    s(\"hh*8\").bank(\"LinnDrum\").gain(0.4).degradeBy(0.3).cut(1)\n  )],\n  [24, stack(\n    s(\"bd ~ sd [bd bd]\").bank(\"LinnDrum\").gain(1.0),\n    s(\"hh*8\").bank(\"LinnDrum\").gain(0.5).degradeBy(0.2).cut(1),\n    n(\"0 2 4 7 <0 5> 7 4 2\").scale(\"C4:minor\").s(\"square\").decay(0.1).sustain(0).gain(0.5).lpf(saw.slow(24).range(700, 3200)).room(0.25).delay(\".4:.1875:.4\")\n  )],\n  [32, stack(\n    s(\"bd ~ sd [bd bd]\").bank(\"LinnDrum\").gain(1.0).ply(\"<1 1 1 2>\"),\n    s(\"hh*8\").bank(\"LinnDrum\").gain(0.5).degradeBy(0.15).cut(1),\n    s(\"~ cp ~ cp\").bank(\"LinnDrum\").gain(0.6).room(0.2),\n    n(\"0 2 4 7 <0 5 -2 3> 7 4 2\").scale(\"C4:minor\").s(\"square\").decay(0.1).sustain(0).gain(0.55).lpf(3000).room(0.25).delay(\".4:.1875:.4\"),\n    n(\"<0 0 -3 -1>\").scale(\"C2:minor\").s(\"square\").decay(0.25).sustain(0.2).gain(0.55).lpf(600)\n  )],\n  [32, stack(\n    s(\"bd ~ sd [bd bd]\").bank(\"LinnDrum\").gain(1.0).ply(\"<1 2 1 4>\"),\n    s(\"hh(7,8)\").bank(\"LinnDrum\").gain(0.5).cut(1),\n    s(\"~ oh ~ ~\").bank(\"LinnDrum\").gain(0.45).cut(1),\n    s(\"~ cp ~ cp\").bank(\"LinnDrum\").gain(0.6).room(0.2),\n    n(\"7 9 11 12 <7 14> 12 11 9\").scale(\"C4:minor\").s(\"square\").decay(0.1).sustain(0).gain(0.5).lpf(4000).room(0.3).delay(\".4:.1875:.5\"),\n    n(\"<0 0 -3 -1>\").scale(\"C2:minor\").s(\"square\").decay(0.25).sustain(0.2).gain(0.6).lpf(800)\n  )],\n  [16, stack(\n    n(\"0 2 4 7 <0 5> 7 4 2\").scale(\"C4:minor\").s(\"square\").decay(0.1).sustain(0).gain(0.5).lpf(sine.slow(16).range(500, 2800)).room(0.5).delay(\".5:.25:.6\"),\n    s(\"~ cp ~ ~\").bank(\"LinnDrum\").gain(0.5).room(0.5),\n    n(\"<0 -3>\").scale(\"C2:minor\").s(\"square\").decay(0.3).sustain(0.3).gain(0.5).lpf(500).room(0.3)\n  )],\n  [24, stack(\n    s(\"bd ~ sd [bd bd]\").bank(\"LinnDrum\").gain(1.0).ply(\"<2 1 4 8>\").every(8, x => x.ply(2)),\n    s(\"hh(7,8)\").bank(\"LinnDrum\").gain(0.5).cut(1).ply(\"<1 1 2 1>\"),\n    s(\"~ cp ~ cp\").bank(\"LinnDrum\").gain(0.6).room(0.2),\n    n(\"0 2 4 7 <0 5 -2 3> 7 4 2\").scale(\"C4:minor\").s(\"square\").decay(0.1).sustain(0).gain(0.55).lpf(4000).room(0.3).delay(\".4:.1875:.5\"),\n    n(\"<0 0 -3 -1>\").scale(\"C2:minor\").s(\"square\").decay(0.25).sustain(0.2).gain(0.6).lpf(900)\n  )],\n  [16, stack(\n    n(\"0 2 4 7\").scale(\"C4:minor\").s(\"square\").decay(0.1).sustain(0).gain(0.45).lpf(sine.slow(16).range(600, 1800)).room(0.4).delay(\".4:.1875:.4\"),\n    s(\"hh*8\").bank(\"LinnDrum\").gain(0.35).degradeBy(0.4).cut(1)\n  )]\n)",
+  "createdAt": "2026-06-15T20:32:40Z"
+}

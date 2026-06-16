@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-16-drum-n-bass-meets-aphex-twin-with-ambien-02",
+  "title": "Half-Light Druqks",
+  "prompt": "drum n bass meets aphex twin with ambient intros",
+  "batch": "2026-06-16-drum-n-bass-meets-aphex-twin-with-ambien",
+  "description": "An evolving beatless drone opens into a dark half-time IDM groove led by a rolling sine sub, with a crushed metallic top and a 909 kit. Two peaks driven by euclidean density and bitcrush rise around a hushed valley before the track strips back to its opening haze.",
+  "meta": {
+    "bpm": 168,
+    "genre": "halftime drum and bass / IDM",
+    "mood": "dark, hypnotic, brooding",
+    "key": "C phrygian",
+    "instruments": ["RolandTR909 kit", "rolling sine sub", "crushed metal texture", "supersaw pad", "noise drone"],
+    "energy": 4
+  },
+  "code": "setcpm(168/4)\narrange(\n  [16, stack(\n    note(\"<c2 c2 eb2 g1>\").s(\"supersaw\").lpf(sine.slow(16).range(220,640)).attack(2).release(3).gain(0.5).delay(\".4:.166:.6\"),\n    s(\"brown\").lpf(500).gain(0.32).pan(sine.slow(12).range(0.3,0.7))\n  )],\n  [24, stack(\n    note(\"<c1 c1 eb1 g0>*4\").s(\"sine\").lpf(280).gain(0.6),\n    note(\"<c2 c2 eb2 g1>\").s(\"supersaw\").lpf(700).attack(1.5).release(2).gain(0.42).delay(\".4:.166:.5\"),\n    s(\"bd ~ ~ ~ sd ~ ~ ~\").bank(\"RolandTR909\").gain(0.85)\n  )],\n  [32, stack(\n    note(\"<c1 c1 eb1 g0>*4\").s(\"sine\").lpf(320).gain(0.62).ply(\"<1 1 2 1>\"),\n    s(\"bd ~ ~ ~ sd ~ ~ ~\").bank(\"RolandTR909\").gain(0.92),\n    s(\"hh(5,8)\").bank(\"RolandTR909\").gain(0.5).cut(1),\n    s(\"metal*4\").crush(6).hpf(1200).gain(0.34).pan(0.65).delay(\".3:.125:.5\")\n  )],\n  [32, stack(\n    note(\"<c1 c1 eb1 g0>*4\").s(\"sine\").lpf(380).gain(0.64).ply(\"<1 2 2 4>\").shape(0.3),\n    s(\"bd(3,8) ~ sd ~\").bank(\"RolandTR909\").gain(0.95),\n    s(\"hh(7,8)\").bank(\"RolandTR909\").gain(0.52).cut(1),\n    s(\"metal*4\").crush(4).hpf(1000).gain(0.36).pan(0.6).delay(\".3:.125:.55\").every(4, x=>x.rev()),\n    note(\"<[c3,eb3,g3,bb3] [ab2,c3,eb3,g3]>\").s(\"supersaw\").lpf(900).attack(0.5).gain(0.4).delay(\".4:.166:.5\")\n  )],\n  [20, stack(\n    note(\"<c2 c2 eb2 g1>\").s(\"sine\").lpf(240).gain(0.55),\n    note(\"<[c3,eb3,g3,bb3] [ab2,c3,eb3,g3]>\").s(\"supersaw\").lpf(sine.slow(10).range(300,900)).attack(2).release(3).gain(0.46).delay(\".5:.2:.6\"),\n    s(\"metal*2\").crush(8).hpf(1400).gain(0.3).pan(sine.slow(8).range(0.3,0.7)).delay(\".4:.166:.6\")\n  )],\n  [28, stack(\n    note(\"<c1 c1 eb1 g0>*4\").s(\"sine\").lpf(440).gain(0.66).ply(\"<2 2 4 4>\").shape(0.4),\n    s(\"bd(3,8) bd ~ sd ~\").bank(\"RolandTR909\").gain(0.98),\n    s(\"hh(7,8,2)\").bank(\"RolandTR909\").gain(0.55).cut(1).every(8, x=>x.ply(2)),\n    s(\"cp(3,8)\").bank(\"RolandTR909\").gain(0.4).delay(\".3:.125:.5\"),\n    s(\"metal*4\").crush(3).hpf(900).gain(0.38).pan(0.55).delay(\".3:.125:.6\").off(0.125, x=>x.gain(0.6).speed(1.5)),\n    note(\"0 3 2 4\").scale(\"C3:phrygian\").s(\"square\").lpf(1100).gain(0.34).delay(\".4:.166:.5\")\n  )],\n  [12, stack(\n    note(\"<c2 c2 eb2 g1>\").s(\"supersaw\").lpf(sine.slow(12).range(240,560)).attack(2).release(3).gain(0.5).delay(\".4:.166:.6\"),\n    s(\"brown\").lpf(420).gain(0.3).pan(sine.slow(12).range(0.3,0.7))\n  )]\n)",
+  "createdAt": "2026-06-16T16:43:08Z"
+}

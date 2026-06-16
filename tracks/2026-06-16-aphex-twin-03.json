@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-16-aphex-twin-03",
+  "title": "Analord Squelch Vigil",
+  "prompt": "aphex twin | Energy: dense/driving. Register focus: chord-led acid. Palette: RolandTR909 + a characterful acid line. Tempo: 128 BPM. Arc shape: slow-burn build. Mood modifier: hypnotic, gritty, Analord-acid.",
+  "batch": "2026-06-16-aphex-twin",
+  "description": "A slow-burning Analord-style acid workout: gritty TR-909 four-on-the-floor locks under off-beat chord stabs that morph into a resonant, distorted squelch line. Over four minutes the filter cracks open, the progression rotates through four dub-minor chords, and ratcheting transforms keep the hypnosis gritty and alive.",
+  "meta": {
+    "bpm": 128,
+    "genre": "acid techno",
+    "mood": "hypnotic, gritty, driving",
+    "key": "C minor",
+    "instruments": ["RolandTR909 kit", "resonant acid sawtooth", "dub chord stabs"],
+    "energy": 4
+  },
+  "createdAt": "2026-06-16T15:56:19Z",
+  "code": "setcpm(128/4)\narrange(\n  [16, stack(\n    s(\"bd*4\").bank(\"RolandTR909\").gain(1.0),\n    s(\"hh*4\").bank(\"RolandTR909\").gain(0.45).hpf(7000).cut(1),\n    note(\"~ <[c3,eb3,g3,bb3]> ~ <[ab2,c3,eb3,g3]>\").s(\"sawtooth\").lpf(620).resonance(8).shape(0.2).room(0.4).gain(0.5)\n  )],\n  [24, stack(\n    s(\"bd*4\").bank(\"RolandTR909\").gain(1.05),\n    s(\"hh(5,8,2)\").bank(\"RolandTR909\").gain(0.5).hpf(6500).cut(1),\n    s(\"~ cp ~ cp\").bank(\"RolandTR909\").gain(0.55).room(0.3),\n    note(\"<c2 eb2 ab1 g1>\").s(\"sawtooth\").lpf(saw.slow(24).range(500, 1500)).resonance(15).shape(0.4).decay(0.18).sustain(0.1).gain(0.55)\n  )],\n  [32, stack(\n    s(\"bd*4\").bank(\"RolandTR909\").gain(1.1),\n    s(\"hh*4\").bank(\"RolandTR909\").gain(0.5).hpf(6000).cut(1),\n    s(\"~ sd ~ sd\").bank(\"RolandTR909\").gain(0.6),\n    s(\"~ ~ oh ~\").bank(\"RolandTR909\").gain(0.4).cut(1),\n    n(\"0 ~ 3 ~ 5 ~ 7 10\").scale(\"C2:dorian\").s(\"sawtooth\").lpf(saw.slow(16).range(700, 2400)).resonance(18).shape(0.5).crush(8).decay(0.16).sustain(0).off(0.125, x => x.add(note(12)).gain(0.4)).gain(0.55),\n    note(\"<[c3,eb3,g3,bb3] [ab2,c3,eb3,g3] [f2,ab2,c3,eb3] [g2,bb2,d3,f3]>\").s(\"sawtooth\").lpf(1100).resonance(10).shape(0.3).room(0.4).gain(0.45)\n  )],\n  [16, stack(\n    s(\"~ ~ ~ ~\").bank(\"RolandTR909\").gain(0.3),\n    note(\"<[c3,eb3,g3,bb3] [ab2,c3,eb3,g3] [f2,ab2,c3,eb3] [g2,bb2,d3,f3]>\").s(\"sawtooth\").lpf(900).resonance(12).shape(0.3).room(0.6).delay(\".5:.125:.6\").gain(0.5),\n    n(\"0 3 5 7\").scale(\"C3:dorian\").s(\"sawtooth\").lpf(1600).resonance(14).coarse(3).room(0.5).delay(0.4).gain(0.4)\n  )],\n  [24, stack(\n    s(\"bd*4\").bank(\"RolandTR909\").gain(1.1),\n    s(\"hh(7,8)\").bank(\"RolandTR909\").gain(0.5).hpf(5500).cut(1),\n    s(\"~ cp ~ cp\").bank(\"RolandTR909\").gain(0.6).room(0.25),\n    s(\"lt*3\").bank(\"RolandTR909\").gain(0.4).every(4, x => x.ply(2)),\n    n(\"0 ~ 3 ~ 5 ~ 7 10\").scale(\"C2:dorian\").s(\"sawtooth\").lpf(saw.slow(8).range(900, 3000)).resonance(20).shape(0.55).crush(7).decay(0.15).sustain(0).sometimesBy(0.25, x => x.speed(2)).off(0.125, x => x.add(note(12)).gain(0.4)).gain(0.55),\n    note(\"<[c3,eb3,g3,bb3] [ab2,c3,eb3,g3] [f2,ab2,c3,eb3] [g2,bb2,d3,f3]>\").s(\"sawtooth\").lpf(1300).resonance(11).shape(0.35).room(0.4).gain(0.45)\n  )],\n  [12, stack(\n    s(\"bd*4\").bank(\"RolandTR909\").gain(0.9),\n    s(\"hh*4\").bank(\"RolandTR909\").gain(0.4).hpf(7000).cut(1),\n    note(\"~ <[c3,eb3,g3,bb3]> ~ <[ab2,c3,eb3,g3]>\").s(\"sawtooth\").lpf(700).resonance(8).shape(0.2).room(0.5).delay(\".5:.125:.5\").gain(0.5)\n  )]\n)"
+}

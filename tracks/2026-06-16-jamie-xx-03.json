@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-16-jamie-xx-03",
+  "title": "Steel & Sunlight",
+  "prompt": "jamie xx",
+  "batch": "2026-06-16-jamie-xx",
+  "description": "A bright, bouncing four-on-the-floor house cut led by a plucky steel-pan-flavored melody that ratchets and reharmonizes as it climbs. It peaks early into a dense, funky groove, then deconstructs the lead into glassy fragments over a tight, dry TR707 kit before stripping back to a single arp.",
+  "meta": {
+    "bpm": 126,
+    "genre": "melodic house",
+    "mood": "bright, funky, bouncing",
+    "key": "C minor",
+    "instruments": ["RolandTR707 kit", "square pluck lead", "triangle bass", "marimba arp"],
+    "energy": 4
+  },
+  "code": "setcpm(126/4)\narrange(\n  [16, stack(\n    s(\"bd*4\").bank(\"RolandTR707\").gain(0.95),\n    n(\"0 2 4 7\").scale(\"C3:minor\").s(\"square\").decay(0.1).sustain(0).gain(0.5).shape(0.2).lpf(1600).room(0.12)\n  )],\n  [24, stack(\n    s(\"bd*4\").bank(\"RolandTR707\").gain(1.05),\n    s(\"hh(7,16)\").bank(\"RolandTR707\").gain(0.5).cut(1),\n    n(\"0 2 4 7 4 2\").scale(\"C3:minor\").s(\"square\").decay(0.1).sustain(0).gain(0.55).ply(\"<1 1 2 1>\").shape(0.25).crush(10).lpf(2200).room(0.12),\n    note(\"<c2 c2 g1 g1>\").s(\"triangle\").decay(0.25).sustain(0.1).gain(0.6).shape(0.2)\n  )],\n  [32, stack(\n    s(\"bd*4\").bank(\"RolandTR707\").gain(1.1),\n    s(\"hh(11,16)\").bank(\"RolandTR707\").gain(0.5).cut(1).swingBy(0.08, 8),\n    s(\"~ cp ~ cp\").bank(\"RolandTR707\").gain(0.55),\n    s(\"oh(3,8,2)\").bank(\"RolandTR707\").gain(0.35).cut(1),\n    n(\"0 2 4 7 4 2 7 9\").scale(\"<C3:minor C3:dorian>/4\").s(\"square\").decay(0.11).sustain(0).gain(0.6).ply(\"<1 2 1 4>\").off(0.125, x => x.add(note(12)).gain(0.35)).fm(3).fmh(2).shape(0.3).crush(8).lpf(3000).room(0.14),\n    note(\"<c2 eb2 f1 g1>\").s(\"triangle\").decay(0.3).sustain(0.12).gain(0.62).shape(0.25).lpf(900)\n  )],\n  [16, stack(\n    s(\"bd ~ ~ bd ~ ~ bd ~\").bank(\"RolandTR707\").gain(0.85),\n    n(\"0 2 4 7 9 11\").scale(\"C4:dorian\").s(\"square\").decay(0.18).sustain(0).gain(0.5).every(2, x => x.rev()).delay(0.4).delay(\".5:.1875:.6\").shape(0.2).lpf(2600).room(0.35),\n    note(\"<f1 g1>\").s(\"triangle\").decay(0.4).sustain(0.2).gain(0.55).lpf(700).room(0.2)\n  )],\n  [28, stack(\n    s(\"bd*4\").bank(\"RolandTR707\").gain(1.1),\n    s(\"hh(13,16)\").bank(\"RolandTR707\").gain(0.5).cut(1).swingBy(0.08, 8),\n    s(\"~ cp ~ cp\").bank(\"RolandTR707\").gain(0.6),\n    s(\"cb(3,8)\").bank(\"RolandTR707\").gain(0.4),\n    s(\"oh(5,8,2)\").bank(\"RolandTR707\").gain(0.35).cut(1),\n    n(\"0 2 4 7 4 2 7 9\").scale(\"<C3:minor C3:dorian C3:phrygian C3:minor>/4\").s(\"square\").decay(0.11).sustain(0).gain(0.62).ply(\"<1 2 4 2>\").off(0.125, x => x.add(note(12)).gain(0.3)).sometimesBy(0.2, x => x.speed(2)).fm(4).fmh(2).shape(0.3).crush(8).lpf(3400).room(0.14),\n    note(\"<c2 eb2 f1 g1>\").s(\"triangle\").decay(0.3).sustain(0.12).gain(0.62).shape(0.25).lpf(1000)\n  )],\n  [12, stack(\n    s(\"bd*4\").bank(\"RolandTR707\").gain(0.9),\n    n(\"0 2 4 7\").scale(\"C3:minor\").s(\"square\").decay(0.1).sustain(0).gain(0.5).shape(0.2).lpf(1600).room(0.14)\n  )]\n)",
+  "createdAt": "2026-06-16T16:17:48Z"
+}

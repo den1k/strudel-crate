@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-16-crazy-vocals-with-effects-10",
+  "title": "Spliced Choir Drift",
+  "prompt": "crazy vocals with effects",
+  "batch": "2026-06-16-crazy-vocals-with-effects",
+  "description": "An interleaved vocal-grain cloud cut from a single pitched dirt sample: striated slices scatter across the stereo field on a perlin drift while the grain count, formant vowel, and bit-crush degradation creep in over a 24-cycle pass. The tail is delay-only echo smear, no reverb.",
+  "meta": {
+    "bpm": 128,
+    "genre": "sample-mangle vocal grains",
+    "mood": "liquid, unstable",
+    "key": "atonal",
+    "instruments": ["striated vocal-grain sample"],
+    "energy": 3
+  },
+  "code": "setcpm(128/4)\nstack(\n  s(\"east*2\")\n    .striate(\"<6 8 12 8 16 8 12 6>/2\")\n    .speed(perlin.slow(13).range(0.85, 1.18))\n    .pan(perlin.slow(7).range(0.08, 0.92))\n    .vowel(\"<a e i o u e a o>/2\")\n    .bpf(saw.slow(23).range(420, 3200))\n    .resonance(rand.slow(11).range(4, 13))\n    .coarse(\"<1 1 2 1 4 1 2 8>/2\")\n    .crush(sine.slow(29).range(16, 6))\n    .squiz(perlin.slow(17).range(0, 0.8))\n    .sometimesBy(0.18, x => x.speed(-1))\n    .gain(0.85)\n    .delay(\"0.55:0.1875:0.74\")\n    .delaytime(perlin.slow(31).range(0.12, 0.26))\n    .orbit(2)\n)\n",
+  "createdAt": "2026-06-16T19:38:09Z"
+}
