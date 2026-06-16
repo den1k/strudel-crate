@@ -2,19 +2,16 @@ import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
 import express from 'express';
 import { collectionFor } from './runner.mjs';
+import { saveRating, getProfile, setArtistName } from './instant.mjs';
 
 const ID_RE = /^[A-Za-z0-9_-]+$/; // rating files are written as <id>.json — no path chars
 
 // Express 4 doesn't catch async handler rejections — route them to the error handler.
 const wrap = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
 
-// One set of list + rating routes per collection (tracks, stems) at /api/<name>.
-// `requireAuth` gates the mutating route only; listing stays public.
-function collectionRoutes(app, name, store, requireAuth) {
-  app.get(`/api/${name}`, wrap(async (_req, res) => {
-    res.json(await store.listTracks());
-  }));
-
+// One rating route per collection at /api/<name>/:id/rating (id = slug).
+// Listing is retired — the client reads Instant directly.
+function collectionRoutes(app, name, adminDb, requireAuth) {
   app.put(`/api/${name}/:id/rating`, requireAuth, wrap(async (req, res) => {
     const { id } = req.params;
     if (!ID_RE.test(id)) return res.status(400).json({ error: 'invalid id' });
@@ -22,13 +19,24 @@ function collectionRoutes(app, name, store, requireAuth) {
     if (rating != null && !(Number.isInteger(rating) && rating >= 1 && rating <= 5)) {
       return res.status(400).json({ error: 'rating must be an integer 1-5' });
     }
-    if (notes != null && typeof notes !== 'string') {
-      return res.status(400).json({ error: 'notes must be a string' });
+    if (notes != null && typeof notes !== 'string') return res.status(400).json({ error: 'notes must be a string' });
+    if (lesson != null && typeof lesson !== 'string') return res.status(400).json({ error: 'lesson must be a string' });
+    const saved = await saveRating(adminDb, name, id, { rating, notes, lesson });
+    if (!saved) return res.status(404).json({ error: 'not found' });
+    res.json(saved);
+  }));
+}
+
+function profileRoutes(app, adminDb, requireAuth) {
+  app.get('/api/profile', requireAuth, wrap(async (req, res) => {
+    res.json(await getProfile(adminDb, req.user));
+  }));
+  app.put('/api/profile', requireAuth, wrap(async (req, res) => {
+    const { artistName } = req.body ?? {};
+    if (typeof artistName !== 'string' || !artistName.trim() || artistName.length > 60) {
+      return res.status(400).json({ error: 'artistName required (1-60 chars)' });
     }
-    if (lesson != null && typeof lesson !== 'string') {
-      return res.status(400).json({ error: 'lesson must be a string' });
-    }
-    res.json(await store.saveRating(id, { rating, notes, lesson }));
+    res.json(await setArtistName(adminDb, req.user, artistName.trim()));
   }));
 }
 
@@ -84,15 +92,20 @@ function jobRoutes(app, jobStore, runner, progressFor, requireAuth) {
   }));
 }
 
-export function createApp(stores, opts = {}) {
+export function createApp(opts = {}) {
   const app = express();
   app.use(express.json());
 
   // Optional auth gate for mutations. Default no-op keeps tests + local dev open;
   // production passes a middleware that verifies an Instant token + allowlist.
   const requireAuth = opts.requireAuth ?? ((_req, _res, next) => next());
+  const adminDb = opts.adminDb;
+  const namespaces = opts.namespaces ?? ['tracks', 'stems'];
 
-  for (const [name, store] of Object.entries(stores)) collectionRoutes(app, name, store, requireAuth);
+  if (adminDb) {
+    for (const name of namespaces) collectionRoutes(app, name, adminDb, requireAuth);
+    profileRoutes(app, adminDb, requireAuth);
+  }
 
   if (opts.jobStore && opts.runner) jobRoutes(app, opts.jobStore, opts.runner, opts.progressFor, requireAuth);
 
