@@ -3,26 +3,30 @@ import { dirname, join } from 'node:path';
 import { existsSync } from 'node:fs';
 import { init as initAdmin } from '@instantdb/admin';
 import { createApp } from './app.mjs';
-import { createStore } from './store.mjs';
 import { createJobStore } from './jobs.mjs';
-import { createRunner, idsIn, liveProduced } from './runner.mjs';
+import { createRunner, liveProduced } from './runner.mjs';
+import { itemSlugs } from './instant.mjs';
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const distDir = join(repoRoot, 'dist');
 
-// Auth gate for mutating routes (generation + rating). Verifies an InstantDB
-// token and checks the email allowlist. When Instant env vars are absent
-// (local dev) the gate is omitted and those routes stay open.
+// Local `npm run dev` doesn't get systemd's EnvironmentFile — load .env ourselves.
+try { process.loadEnvFile(join(repoRoot, '.env')); } catch { /* prod: env already set */ }
+
 const allowedEmails = (process.env.CRATE_ALLOWED_EMAILS ?? '')
   .split(',').map((s) => s.trim().toLowerCase()).filter(Boolean);
 
+const { INSTANT_APP_ID, INSTANT_ADMIN_TOKEN } = process.env;
+const adminDb = INSTANT_APP_ID && INSTANT_ADMIN_TOKEN
+  ? initAdmin({ appId: INSTANT_APP_ID, adminToken: INSTANT_ADMIN_TOKEN })
+  : null;
+if (!adminDb) console.warn('[crate] Instant admin not configured — writes will fail');
+
 function buildRequireAuth() {
-  const { INSTANT_APP_ID, INSTANT_ADMIN_TOKEN } = process.env;
-  if (!INSTANT_APP_ID || !INSTANT_ADMIN_TOKEN) {
+  if (!adminDb) {
     console.warn('[crate] Instant auth not configured — mutating routes are OPEN');
     return undefined;
   }
-  const adminDb = initAdmin({ appId: INSTANT_APP_ID, adminToken: INSTANT_ADMIN_TOKEN });
   return async (req, res, next) => {
     const header = req.headers.authorization ?? '';
     const token = header.startsWith('Bearer ') ? header.slice(7) : null;
@@ -30,9 +34,7 @@ function buildRequireAuth() {
     try {
       const user = await adminDb.auth.verifyToken(token);
       const email = user?.email?.toLowerCase();
-      if (!email || !allowedEmails.includes(email)) {
-        return res.status(403).json({ error: 'account not allowed' });
-      }
+      if (!email || !allowedEmails.includes(email)) return res.status(403).json({ error: 'account not allowed' });
       req.user = user;
       next();
     } catch {
@@ -42,28 +44,23 @@ function buildRequireAuth() {
 }
 
 const requireAuth = buildRequireAuth();
-
 const jobStore = createJobStore({ jobsDir: join(repoRoot, 'data', 'jobs') });
-const dirs = { stems: 'stems', tracks: 'tracks' };
-const runner = createRunner({ repoRoot, dirs, jobStore });
+const runner = createRunner({ repoRoot, jobStore, adminDb });
 
-// Live produced-count for a running job: items in its collection dir now,
-// minus the baseline captured when it started.
 const progressFor = async (job) => {
   if (job.status !== 'running') return undefined;
-  const count = (await idsIn(join(repoRoot, dirs[job.collection]))).size;
+  const count = (await itemSlugs(adminDb, job.collection)).size;
   return liveProduced(job, count);
 };
 
-const app = createApp(
-  {
-    tracks: createStore({ tracksDir: 'tracks', ratingsDir: 'data/ratings' }),
-    stems: createStore({ tracksDir: 'stems', ratingsDir: 'data/stem-ratings' }),
-  },
-  { jobStore, runner, progressFor, requireAuth, distDir: existsSync(distDir) ? distDir : undefined },
-);
+const app = createApp({
+  adminDb,
+  namespaces: ['tracks', 'stems'],
+  jobStore, runner, progressFor, requireAuth,
+  distDir: existsSync(distDir) ? distDir : undefined,
+});
 
-await runner.recover(); // requeue/clean up jobs left over from a restart
+await runner.recover();
 
 const port = process.env.PORT ?? 3001;
 app.listen(port, () => console.log(`strudel-ai api listening on http://localhost:${port}`));
