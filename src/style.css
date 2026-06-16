@@ -380,3 +380,5 @@ body {
 }
 .auth-x:hover { color: var(--hot); }
 .auth-err { color: var(--hot); font-size: 12px; margin-top: 12px; }
+.profile-edit input { font: inherit; padding: 0.25rem 0.5rem; border-radius: 6px; }
+.profile-edit input.saved { outline: 2px solid #4caf50; }

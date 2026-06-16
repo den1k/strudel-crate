@@ -31,6 +31,7 @@ export function setupAuth() {
   if (!db) return; // Instant not configured — leave the app open
   const btn = mountButton();
   const modal = mountModal(db);
+  const profile = mountProfile();
 
   // The generate panel triggers the auth-gated /api/jobs route, so it stays
   // hidden until a user is signed in.
@@ -47,10 +48,12 @@ export function setupAuth() {
       btn.title = user.email;
       btn.onclick = () => db.auth.signOut();
       modal.close();
+      profile.show();
     } else {
       btn.textContent = 'sign in';
       btn.title = 'sign in to generate & rate';
       btn.onclick = () => modal.open();
+      profile.hide();
     }
   });
 }
@@ -63,6 +66,40 @@ function mountButton() {
   btn.textContent = 'sign in';
   nav?.appendChild(btn);
   return btn;
+}
+
+function mountProfile() {
+  const nav = document.querySelector('.nav');
+  const wrap = document.createElement('form');
+  wrap.className = 'profile-edit';
+  wrap.hidden = true;
+  wrap.innerHTML = `<input type="text" name="artist" placeholder="artist name" maxlength="60" />`;
+  nav?.appendChild(wrap);
+  const input = wrap.elements.artist;
+
+  async function load() {
+    try {
+      const res = await fetch('/api/profile');
+      if (res.ok) { const p = await res.json(); input.value = p.artistName ?? ''; }
+    } catch { /* ignore */ }
+  }
+  async function save() {
+    const artistName = input.value.trim();
+    if (!artistName) return;
+    try {
+      const res = await fetch('/api/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ artistName }),
+      });
+      input.classList.toggle('saved', res.ok);
+      setTimeout(() => input.classList.remove('saved'), 600);
+    } catch { /* ignore */ }
+  }
+  wrap.addEventListener('submit', (e) => { e.preventDefault(); save(); input.blur(); });
+  input.addEventListener('blur', save);
+
+  return { show: () => { wrap.hidden = false; load(); }, hide: () => { wrap.hidden = true; } };
 }
 
 function mountModal(db) {
