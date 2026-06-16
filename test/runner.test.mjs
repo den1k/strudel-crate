@@ -255,4 +255,27 @@ describe2('createRunner worker', () => {
     await until(async () => (await jobStore.get('j1')).status === 'done');
     expect2((await jobStore.get('j1')).batch).toBeNull();
   });
+
+  it2('marks the job failed when Instant throws mid-run', async () => {
+    const { spawn, children } = fakeSpawnFactory();
+    const admin = fakeAdmin({ profiles: [], stems: [], tracks: [] });
+    // Make query throw on the second call (the post-run itemSlugs call), simulating
+    // Instant becoming unreachable after the job has started running.
+    let queryCalls = 0;
+    const origQuery = admin.query.bind(admin);
+    admin.query = async (q) => {
+      queryCalls += 1;
+      if (queryCalls >= 2) throw new Error('instant down');
+      return origQuery(q);
+    };
+    const runner = createRunner({ repoRoot, jobStore, adminDb: admin, spawn, now: ticks });
+    await jobStore.write(baseJob('j1'));
+    await runner.enqueue(baseJob('j1'));
+    await until(() => children.length === 1);
+    children[0].emit('close', 0);
+    await until(async () => (await jobStore.get('j1')).status === 'failed');
+    const failed = await jobStore.get('j1');
+    expect2(failed.status).toBe('failed');
+    expect2(failed.error).toBeTruthy();
+  });
 });

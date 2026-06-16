@@ -94,19 +94,23 @@ export function createRunner({
     const job = await jobStore.get(id);
     if (!job) return;
     const ns = job.collection; // 'tracks' | 'stems'
-    const authorProfileId = job.userId
-      ? await ensureProfile(adminDb, { id: job.userId, email: job.userEmail })
-      : null;
-    const before = await itemSlugs(adminDb, ns);
-    await jobStore.update(id, { status: 'running', startedAt: now(), baselineCount: before.size });
-    const { code, out } = await runClaude(job, authorProfileId);
-    const after = await itemSlugs(adminDb, ns);
-    const newItems = diffNew(before, after);
-    const newRows = await itemsBySlug(adminDb, ns, newItems);
-    const patch = { finishedAt: now(), newItems, batch: majorityBatch(newRows) };
-    if (code === 0) { patch.status = 'done'; patch.summary = parseSummary(out); }
-    else { patch.status = 'failed'; patch.error = `claude exited ${code}`; }
-    await jobStore.update(id, patch);
+    try {
+      const authorProfileId = job.userId
+        ? await ensureProfile(adminDb, { id: job.userId, email: job.userEmail })
+        : null;
+      const before = await itemSlugs(adminDb, ns);
+      await jobStore.update(id, { status: 'running', startedAt: now(), baselineCount: before.size });
+      const { code, out } = await runClaude(job, authorProfileId);
+      const after = await itemSlugs(adminDb, ns);
+      const newItems = diffNew(before, after);
+      const newRows = await itemsBySlug(adminDb, ns, newItems);
+      const patch = { finishedAt: now(), newItems, batch: majorityBatch(newRows) };
+      if (code === 0) { patch.status = 'done'; patch.summary = parseSummary(out); }
+      else { patch.status = 'failed'; patch.error = `claude exited ${code}`; }
+      await jobStore.update(id, patch);
+    } catch (err) {
+      await jobStore.update(id, { status: 'failed', finishedAt: now(), error: String(err?.message ?? err) });
+    }
   }
 
   async function pump() {
