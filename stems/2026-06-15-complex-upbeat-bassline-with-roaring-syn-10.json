@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-15-complex-upbeat-bassline-with-roaring-syn-10",
+  "title": "Bouncing Subterror",
+  "prompt": "complex upbeat bassline with roaring synths",
+  "batch": "2026-06-15-complex-upbeat-bassline-with-roaring-syn",
+  "description": "A bouncy sub-low bassline where a sine sub is thickened by a detuned saw an octave up, gated through shifting euclidean rhythms. Over 16 cycles the FM index, ladder filter and gate density morph from rounded thump to roaring, restless drive.",
+  "meta": {
+    "bpm": 140,
+    "genre": "sub bass",
+    "mood": "bouncy",
+    "key": "F minor",
+    "instruments": ["detuned sub saw bass"],
+    "energy": 4
+  },
+  "createdAt": "2026-06-15T18:24:54Z",
+  "code": "setcpm(140/4)\nstack(\n  note(\"<f1 f1 ab1 c2 f1 eb1 db1 c2>(<5 7 5 3>/2,8)\").s(\"sine\")\n    .fm(sine.slow(16).range(1.5, 9)).fmh(\"<1 2 1.5 0.5>/4\")\n    .penv(\"<8 0 12 4>/8\").pattack(0.001).pdecay(0.07)\n    .lpf(sine.slow(24).range(220, 2600)).resonance(13).ftype(\"ladder\")\n    .lpenv(sine.slow(32).range(2, 5)).lpattack(0.005).lpdecay(0.13)\n    .attack(0.003).decay(0.18).sustain(0.45).release(0.05)\n    .shape(saw.slow(12).range(0.2, 0.5)).postgain(0.9)\n    .off(0.005, x => x.add(note(12.07)).s(\"sawtooth\").gain(0.32).pan(0.7).lpf(1800))\n    .pan(sine.slow(7).range(0.35, 0.65))\n    .room(0.16).gain(0.9)\n)"
+}

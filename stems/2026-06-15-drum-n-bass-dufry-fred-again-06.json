@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-15-drum-n-bass-dufry-fred-again-06",
+  "batch": "2026-06-15-drum-n-bass-dufry-fred-again",
+  "prompt": "drum n bass, dufry, fred again",
+  "title": "Stutter Letter",
+  "createdAt": "2026-06-15T20:44:15Z",
+  "description": "A chopped, stuttering vocal-chop mangle in the Fred-again signature: an 'east' dirt hit is granulated into a re-sliced cloud whose chop count and stepped speed/reverse play wander across the loop, smearing it forward, backward and half-speed. A swept band-pass, drifting crush degradation, panned grains and a wet feedback delay morph the cloud over 32 cycles.",
+  "meta": {
+    "bpm": 174,
+    "genre": "sample-mangle",
+    "mood": "glitchy, wet, restless",
+    "key": "atonal",
+    "instruments": ["chopped east vocal mangle"],
+    "energy": 3
+  },
+  "code": "setcpm(174/4)\nstack(\n  s(\"east*2\")\n    .chop(\"<16 24 12 32>/4\")\n    .speed(\"<1 -1 0.5 -0.5 1 2 -1 0.5>/2\")\n    .striate(\"<2 4 3 4>/8\")\n    .bpf(tri.slow(23).range(420, 2600)).bpq(\"<6 9 7 11>/4\")\n    .lpf(saw.slow(16).range(1100, 5200)).resonance(\"<5 9 7 11>/8\")\n    .crush(sine.slow(29).range(16, 6))\n    .shape(\"<0.1 0.18 0.14 0.22>/8\")\n    .sometimesBy(0.18, x => x.speed(-1))\n    .degradeBy(saw.slow(13).range(0.0, 0.25))\n    .pan(sine.slow(11).range(0.28, 0.72))\n    .off(0.008, x => x.speed(\"<2 -1 0.5>/3\").gain(0.45).crush(7))\n    .delay(\"0.42:0.1875:0.6\").delaytime(0.1875).delayfeedback(saw.slow(17).range(0.3, 0.62))\n    .gain(0.92)\n)"
+}

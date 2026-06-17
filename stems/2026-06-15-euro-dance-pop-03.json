@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-15-euro-dance-pop-03",
+  "title": "Chrome Growler",
+  "prompt": "euro dance pop",
+  "batch": "2026-06-15-euro-dance-pop",
+  "description": "A low, metallic FM bass that growls and re-sculpts its own timbre through stepped FM index and harmonicity ratios, no LFO sweep. A short penv click gives every note a plucked attack, the root walks through a euro-dance riff, and a rhythmic delay throws the metal into the offbeat.",
+  "meta": {
+    "bpm": 128,
+    "genre": "fm bass",
+    "mood": "menacing",
+    "key": "C minor",
+    "instruments": ["fm sine bass"],
+    "energy": 4
+  },
+  "code": "setcpm(128/4)\nstack(\n  note(\"<c1 c1 eb1 g0 c1 g0 bb0 f1>*4\").s(\"sine\")\n    .fm(\"<3 6 9 12 7 4>/2\")\n    .fmh(\"<1.5 1 0.5 2 3>/3\")\n    .fm(perlin.range(2,10).slow(23).mul(\"<1 1.5 1>/4\"))\n    .penv(\"<14 20 8>/8\").pattack(0.003).pdecay(\"<0.04 0.07 0.05>/2\")\n    .lpf(\"<700 1400 1000 1800>/4\").resonance(\"<6 11 8>/3\").ftype(\"ladder\")\n    .lpenv(\"<2 5 3>/2\").lpattack(0.01).lpdecay(0.08)\n    .shape(\"<0.25 0.4 0.3>/5\")\n    .delay(\"0.4:0.1875:0.6\").delaytime(\"<0.1875 0.125 0.25>/4\")\n    .pan(sine.range(0.4,0.6).slow(13))\n    .gain(0.9)\n)\n",
+  "createdAt": "2026-06-15T20:26:40Z"
+}

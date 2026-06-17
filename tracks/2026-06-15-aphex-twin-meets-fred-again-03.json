@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-15-aphex-twin-meets-fred-again-03",
+  "title": "Tears in the Warehouse",
+  "prompt": "aphex twin meets fred again",
+  "batch": "2026-06-15-aphex-twin-meets-fred-again",
+  "description": "A slow-burning warm house track: a hazy filtered chord drifts in, four-on-the-floor 909 kicks lock the groove, and dub chord stabs swell from muffled to euphoric as hats and claps build toward a sustained, glowing peak before stripping back to the mist.",
+  "meta": {
+    "bpm": 126,
+    "genre": "melodic house",
+    "mood": "warm, emotional, euphoric",
+    "key": "C minor",
+    "instruments": ["RolandTR909 kit", "sawtooth dub-chord stabs", "supersaw pad", "triangle sub"],
+    "energy": 4
+  },
+  "code": "setcpm(126/4)\narrange(\n  [16, stack(\n    note(\"<[c4,eb4,g4] [c4,eb4,g4] [ab3,c4,eb4] [bb3,d4,f4]>\").s(\"supersaw\").attack(0.6).release(2).lpf(sine.slow(16).range(400,1100)).room(0.7).gain(0.42),\n    s(\"bd*4\").bank(\"RolandTR909\").gain(0.7).lpf(700)\n  )],\n  [24, stack(\n    s(\"bd*4\").bank(\"RolandTR909\").gain(1.05),\n    note(\"~ <[c3,eb3,g3]> ~ <[ab2,c3,eb3]>\").s(\"sawtooth\").attack(0.01).decay(0.3).sustain(0.2).release(0.2).lpf(700).room(0.5).gain(0.55),\n    note(\"<[c4,eb4,g4] [ab3,c4,eb4] [bb3,d4,f4] [g3,bb3,d4]>\").s(\"supersaw\").attack(0.5).release(1.8).lpf(sine.slow(24).range(500,1400)).room(0.7).gain(0.4),\n    s(\"hh*8\").bank(\"RolandTR909\").gain(0.4).mask(\"<0 0 1 1>\").cut(1)\n  )],\n  [32, stack(\n    s(\"bd*4\").bank(\"RolandTR909\").gain(1.1),\n    s(\"~ cp ~ cp\").bank(\"RolandTR909\").gain(0.55).room(0.3),\n    note(\"~ <[c3,eb3,g3]> ~ <[ab2,c3,eb3]>\").s(\"sawtooth\").attack(0.01).decay(0.25).sustain(0.3).release(0.25).lpf(sine.slow(32).range(900,2200)).room(0.5).gain(saw.slow(8).range(0.45,0.62)),\n    note(\"<[c4,eb4,g4] [ab3,c4,eb4] [bb3,d4,f4] [g3,bb3,d4]>\").s(\"supersaw\").attack(0.4).release(1.6).lpf(sine.slow(16).range(800,2000)).room(0.6).gain(0.4),\n    s(\"hh*8\").bank(\"RolandTR909\").gain(0.45).cut(1).degradeBy(0.1),\n    note(\"c2 ~ <eb2 ab1> ~\").s(\"triangle\").attack(0.01).decay(0.2).sustain(0.4).release(0.15).gain(0.6)\n  )],\n  [16, stack(\n    note(\"<[c4,eb4,g4] [ab3,c4,eb4] [bb3,d4,f4] [g3,bb3,d4]>\").s(\"supersaw\").attack(0.8).release(2.5).lpf(sine.slow(16).range(500,1600)).room(0.8).gain(0.46),\n    note(\"~ <[c3,eb3,g3]> ~ <[ab2,c3,eb3]>\").s(\"sawtooth\").attack(0.02).decay(0.4).sustain(0.2).release(0.5).lpf(1200).room(0.7).gain(0.4),\n    s(\"oh ~ oh ~\").bank(\"RolandTR909\").gain(0.3).room(0.4).cut(1)\n  )],\n  [32, stack(\n    s(\"bd*4\").bank(\"RolandTR909\").gain(1.1),\n    s(\"~ cp ~ cp\").bank(\"RolandTR909\").gain(0.6).room(0.3),\n    s(\"hh*8\").bank(\"RolandTR909\").gain(0.5).cut(1).degradeBy(0.08),\n    s(\"~ ~ oh ~\").bank(\"RolandTR909\").gain(0.4).cut(1),\n    note(\"~ <[c3,eb3,g3]> ~ <[ab2,c3,eb3]>\").s(\"sawtooth\").attack(0.01).decay(0.2).sustain(0.35).release(0.3).lpf(sine.slow(16).range(1400,3000)).room(0.5).gain(saw.slow(4).range(0.5,0.68)),\n    note(\"<[c4,eb4,g4] [ab3,c4,eb4] [bb3,d4,f4] [g3,bb3,d4]>\").s(\"supersaw\").attack(0.3).release(1.4).lpf(2400).room(0.6).gain(0.42),\n    note(\"c2 ~ <eb2 ab1> ~\").s(\"triangle\").attack(0.01).decay(0.18).sustain(0.4).release(0.15).gain(0.62)\n  )],\n  [12, stack(\n    note(\"<[c4,eb4,g4] [c4,eb4,g4] [ab3,c4,eb4] [bb3,d4,f4]>\").s(\"supersaw\").attack(0.8).release(3).lpf(sine.slow(12).range(900,400)).room(0.85).gain(0.4),\n    s(\"bd*4\").bank(\"RolandTR909\").gain(0.7).lpf(600)\n  )]\n)",
+  "createdAt": "2026-06-15T20:48:45Z"
+}

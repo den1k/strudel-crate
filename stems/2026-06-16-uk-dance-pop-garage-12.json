@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-16-uk-dance-pop-garage-12",
+  "title": "Woven Garage Stutter",
+  "prompt": "uk dance pop garage",
+  "batch": "2026-06-16-uk-dance-pop-garage",
+  "description": "A pitched dirt sample is striated into interleaved grains that stutter and weave across the stereo field on a perlin/saw pan drift, while stepped speed shifts its register and a slow filter+crush morph opens and closes the timbre. Mid-low, rhythmic and glitchy — a garage edit layer that resolves into a dry room tail.",
+  "meta": {
+    "bpm": 132,
+    "genre": "sample-mangle",
+    "mood": "stuttered, woven, rhythmic",
+    "key": "atonal",
+    "instruments": ["striated dirt-sample stutter"],
+    "energy": 4
+  },
+  "code": "setcpm(132/4)\nstack(\n  s(\"east*2\")\n    .striate(\"<8 8 16 8 12 16 8 24>/2\")\n    .speed(\"<0.5 0.75 0.5 1 0.5 0.75 0.5 0.66>\")\n    .ply(\"<1 2 1 1 2 1 4 1>/2\")\n    .sometimesBy(0.22, x => x.speed(-1))\n    .pan(perlin.range(0.08, 0.92).fast(2))\n    .jux(x => x.pan(saw.range(0.9, 0.1).slow(7)))\n    .lpf(sine.slow(23).range(420, 2600))\n    .resonance(saw.slow(13).range(6, 14))\n    .crush(\"<16 16 8 16 6 16 16 4>/2\")\n    .shape(perlin.range(0.1, 0.42).slow(11))\n    .room(saw.slow(29).range(0.08, 0.24))\n    .roomsize(2)\n    .gain(0.92)\n)\n",
+  "createdAt": "2026-06-16T19:23:48Z"
+}

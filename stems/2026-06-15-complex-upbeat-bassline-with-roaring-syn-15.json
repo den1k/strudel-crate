@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-15-complex-upbeat-bassline-with-roaring-syn-15",
+  "title": "Rustlung",
+  "prompt": "complex upbeat bassline with roaring synths",
+  "batch": "2026-06-15-complex-upbeat-bassline-with-roaring-syn",
+  "description": "A roaring FM-core bass-lead that prowls the full register, its harmonicity and fm index climbing on slow primes while a ladder filter snarls underneath. Over a 32-cycle arc a coarse/crush degradation ramp corrodes the tone from clean roar to broken, bit-mangled aggression and back.",
+  "meta": {
+    "bpm": 140,
+    "genre": "fm bass-lead",
+    "mood": "aggressive",
+    "key": "C minor",
+    "instruments": ["fm sawtooth roar"],
+    "energy": 5
+  },
+  "createdAt": "2026-06-15T18:24:54Z",
+  "code": "setcpm(140/4)\nstack(\n  note(\"<c1 c1 [eb1 g1] c2 g0 c1 [bb0 c1] eb1>*4\").s(\"sawtooth\")\n    .fm(sine.slow(19).range(2, 13)).fmh(\"<1 1.5 2 0.5 3>/4\")\n    .penv(\"<0 0 12 -7>/8\").pattack(0.001).pdecay(0.07)\n    .coarse(sine.slow(32).range(1, 9).round())\n    .crush(saw.slow(24).range(16, 5))\n    .lpf(sine.slow(23).range(300, 4200)).resonance(15).ftype(\"ladder\")\n    .lpenv(4).lpattack(0.004).lpdecay(0.14)\n    .attack(0.003).decay(0.18).sustain(0.55).release(0.05)\n    .shape(sine.slow(16).range(0.2, 0.6))\n    .vib(\"<3 5 7>/8\").vibmod(sine.slow(13).range(0.1, 1.2))\n    .pan(sine.slow(7).range(0.2, 0.8))\n    .sometimesBy(0.12, x => x.speed(-1))\n    .off(1/8, x => x.add(note(12)).gain(0.28).pan(0.75).crush(6))\n    .room(0.18).gain(0.9)\n)"
+}

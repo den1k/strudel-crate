@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-15-euro-dance-pop-06",
+  "title": "Stutter Saints",
+  "prompt": "euro dance pop",
+  "batch": "2026-06-15-euro-dance-pop",
+  "description": "A chopped, granular vocal-stab cloud mangled out of a pitched dirt sample: euro-dance-pop grains stutter, reverse, and scatter across the stereo field via perlin/rand panning and stepped playback speed. Over 16 cycles the grain count, stereo width, delay feedback, and crush all crawl, so the hook keeps reassembling into new glitchy shapes without ever reaching for reverb.",
+  "meta": {
+    "bpm": 128,
+    "genre": "granular vocal stab",
+    "mood": "glitchy euphoric",
+    "key": "atonal",
+    "instruments": ["chopped vocal-stab cloud"],
+    "energy": 4
+  },
+  "code": "setcpm(128/4)\nstack(\n  s(\"east*2\")\n    .chop(\"<16 24 32 16>/2\")\n    .speed(\"<1 -1 0.5 1 -0.5 2 1 -1>\")\n    .striate(\"<2 4 3 4>/4\")\n    .pan(perlin.range(0.05, 0.95).fast(3))\n    .jux(rev)\n    .sometimesBy(0.3, x => x.speed(-1))\n    .degradeBy(rand.range(0, 0.35).slow(11))\n    .crush(perlin.range(16, 6).slow(13))\n    .hpf(180)\n    .lpf(sine.range(1400, 7000).slow(23))\n    .resonance(8)\n    .delay(\"<0.3 0.5 0.4 0.6>/4\")\n    .delaytime(\"0.1875\")\n    .delayfeedback(saw.range(0.2, 0.55).slow(16))\n    .shape(rand.range(0.1, 0.4).slow(7))\n    .gain(0.85)\n)",
+  "createdAt": "2026-06-15T20:26:40Z"
+}

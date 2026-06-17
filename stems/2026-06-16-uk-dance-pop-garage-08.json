@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-16-uk-dance-pop-garage-08",
+  "batch": "2026-06-16-uk-dance-pop-garage",
+  "prompt": "uk dance pop garage",
+  "title": "Chrome Rim Drift",
+  "createdAt": "2026-06-16T19:23:48Z",
+  "description": "One metallic sample shredded into a clicky garage rim/clave layer: striate interleaves the grains while a perlin pan LFO scatters them across the stereo field, drifting on its own clock. Over 23 cycles the striate count, playback speed, bit-crush grit and shape drive all morph on prime periods so the metallic cloud never settles, with a tight delay-only tail and no reverb.",
+  "meta": {
+    "bpm": 132,
+    "genre": "designed metallic percussion",
+    "mood": "metallic, dry, clicky",
+    "key": "atonal",
+    "instruments": ["striated metallic rim hit"],
+    "energy": 4
+  },
+  "code": "setcpm(132/4)\nstack(\n  s(\"metal*4\")\n    .striate(\"<8 12 6 16 8 24 6 12>/8\")\n    .speed(\"<1 1 1.5 1 -1 1 0.5 2>/8\")\n    .n(\"<0 2 1 3>/4\")\n    .pan(perlin.slow(13).range(0.08, 0.92))\n    .pan(\"<0.5 0.2 0.8 0.35 0.65>/16\")\n    .hpf(sine.slow(23).range(380, 1400))\n    .bpf(saw.slow(11).range(900, 5200)).resonance(sine.slow(7).range(6, 15))\n    .crush(\"<16 12 8 10 14 6>/16\")\n    .coarse(\"<1 1 2 1 4 1>/11\")\n    .shape(sine.slow(29).range(0.18, 0.52))\n    .gain(perlin.slow(17).range(0.55, 1.0))\n    .struct(\"x x ~ x x ~ x*2 x\".euclid(7, 8))\n    .degradeBy(sine.slow(16).range(0, 0.35))\n    .sometimesBy(0.18, x => x.speed(-1).striate(4))\n    .off(0.0625, x => x.gain(0.3).hpf(1600).pan(0.85).crush(6).striate(16))\n    .delay(\"0.32:0.09375:0.55\").delayfeedback(sine.slow(19).range(0.2, 0.55))\n    .gain(0.95)\n)"
+}

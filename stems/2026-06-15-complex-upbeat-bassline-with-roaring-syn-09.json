@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-15-complex-upbeat-bassline-with-roaring-syn-09",
+  "title": "Rust Engine",
+  "prompt": "complex upbeat bassline with roaring synths",
+  "batch": "2026-06-15-complex-upbeat-bassline-with-roaring-syn",
+  "description": "A low-register 808-style subtractive bass with a roaring, broken character whose bit-crush slowly ramps from clean to shattered over the loop while a ladder filter sweeps and the pitch knock deepens. It corrodes from a tight punch into a fractured, degraded growl and resets.",
+  "meta": {
+    "bpm": 140,
+    "genre": "808 subtractive bass",
+    "mood": "broken, menacing",
+    "key": "F minor",
+    "instruments": ["808 subtractive bass"],
+    "energy": 4
+  },
+  "code": "setcpm(140/4)\nstack(\n  note(\"<f1 f1 [f1 ab0] c1 f1 [eb1 f1] db1 c1>*2\").s(\"sawtooth\")\n    .penv(\"<24 18 30 14>/8\").pattack(0.001).pdecay(\"<0.08 0.05 0.12>/4\")\n    .lpf(sine.slow(24).range(180, 1400)).resonance(15).ftype(\"ladder\")\n    .lpenv(sine.slow(16).range(2, 6)).lpattack(0.004).lpdecay(0.16)\n    .crush(saw.slow(16).range(16, 3))\n    .coarse(\"<1 1 2 4>/8\")\n    .shape(sine.slow(32).range(0.2, 0.6))\n    .attack(0.003).decay(0.22).sustain(0.45).release(0.05)\n    .sometimesBy(0.12, x => x.speed(-1))\n    .off(1/8, x => x.add(note(12)).crush(4).gain(0.22).pan(0.8))\n    .room(0.18).gain(0.92)\n)",
+  "createdAt": "2026-06-15T18:24:54Z"
+}

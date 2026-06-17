@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-15-complex-upbeat-bassline-with-roaring-syn-19",
+  "title": "Clicked Bass Stab",
+  "prompt": "complex upbeat bassline with roaring synths",
+  "batch": "2026-06-15-complex-upbeat-bassline-with-roaring-syn",
+  "description": "A dry, clicky bass-stab percussion hit sculpted from a sawtooth: a hard subtractive pitch-drop knock with soft shape drive, gated through shifting euclid rhythms in the low register. Over 32 cycles the euclid pulses migrate, the ladder filter and its envelope sweep open, and the pitch-env click sharpens then dulls so the one hit keeps re-articulating itself.",
+  "meta": {
+    "bpm": 128,
+    "genre": "designed bass percussion",
+    "mood": "punchy",
+    "key": "atonal",
+    "instruments": ["sculpted saw bass stab"],
+    "energy": 4
+  },
+  "code": "setcpm(128/4)\nstack(\n  note(\"c1\").s(\"sawtooth\")\n    .struct(\"<t(5,8) t(3,8,2) t(5,8,1) t(7,16)>\")\n    .penv(\"<28 22 18 24>/8\").pattack(0.001).pdecay(sine.slow(24).range(0.02, 0.07))\n    .lpf(sine.slow(32).range(180, 1900)).resonance(sine.slow(19).range(8, 16)).ftype(\"ladder\")\n    .lpenv(\"<2 4 6 3>/8\").lpattack(0.002).lpdecay(0.06)\n    .attack(0.001).decay(0.09).sustain(0).release(0.02)\n    .shape(sine.slow(28).range(0.25, 0.55)).distort(\"<0.2 0.4>/4\")\n    .pan(sine.slow(7).range(0.38, 0.62))\n    .off(1/16, x => x.add(note(12)).gain(0.22).hpf(800))\n    .room(0.08).gain(1.0)\n)",
+  "createdAt": "2026-06-15T18:24:54Z"
+}

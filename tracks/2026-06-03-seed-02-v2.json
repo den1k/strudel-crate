@@ -1,0 +1,18 @@
+{
+  "id": "2026-06-03-seed-02-v2",
+  "versionOf": "2026-06-03-seed-02",
+  "batch": "2026-06-03-seed",
+  "prompt": "seed: melancholy piano sketch, 72bpm",
+  "title": "Felt Hammer v2",
+  "createdAt": "2026-06-15T18:17:24Z",
+  "description": "A melancholy felt-piano piece that now breathes and builds: a hushed chordal intro gives way to a rolling left-hand arpeggio, brushed 707 percussion, and a low sub that swells into a fuller, more urgent middle before stripping back to a quiet outro. Faster and more restless than the original sketch while keeping the soft, intimate piano at its heart.",
+  "meta": {
+    "bpm": 96,
+    "genre": "neoclassical / downtempo",
+    "mood": "melancholy, yearning, building",
+    "key": "C minor",
+    "instruments": ["felt piano", "sub bass (triangle)", "RolandTR707 kit"],
+    "energy": 3
+  },
+  "code": "setcpm(96/4)\narrange(\n  [12, stack(\n    note(\"<[c3,eb3,g3] [ab2,c3,eb3] [bb2,d3,f3] [g2,bb2,d3]>\").s(\"piano\").room(0.7).gain(0.85).lpf(1600),\n    n(\"0 ~ 4 ~ 7 ~ 3 ~\").scale(\"C4:minor\").s(\"piano\").slow(2).gain(0.5).delay(0.3).room(0.4)\n  )],\n  [16, stack(\n    note(\"<[c3,eb3,g3] [ab2,c3,eb3] [bb2,d3,f3] [g2,bb2,d3]>\").s(\"piano\").room(0.6).gain(0.85),\n    n(\"0 7 4 7 3 7 2 7\").scale(\"C4:minor\").s(\"piano\").gain(0.55).delay(0.25).room(0.3),\n    note(\"<c2 ab1 bb1 g1>\").s(\"triangle\").lpf(saw.slow(16).range(300, 900)).gain(0.7).attack(0.02).release(0.4),\n    s(\"~ ~ rim ~\").bank(\"RolandTR707\").gain(0.45)\n  )],\n  [24, stack(\n    note(\"<[c3,eb3,g3] [ab2,c3,eb3] [bb2,d3,f3] [g2,bb2,d3]>\").s(\"piano\").room(0.5).gain(0.9),\n    n(\"[0 7] [4 7] [3 7] [2 7]\").scale(\"C4:minor\").s(\"piano\").gain(0.6).delay(0.25).room(0.3).off(0.125, x => x.add(note(12)).gain(0.4)),\n    note(\"<c2 ab1 bb1 g1>\").s(\"triangle\").lpf(900).gain(0.75).attack(0.02).release(0.4),\n    s(\"bd ~ ~ bd ~ ~ bd ~\").bank(\"RolandTR707\").gain(0.7),\n    s(\"~ ~ rim ~\").bank(\"RolandTR707\").gain(0.5),\n    s(\"[~ hh]*4\").bank(\"RolandTR707\").gain(0.4).pan(sine.range(0.35, 0.65)).degradeBy(0.15)\n  )],\n  [16, stack(\n    note(\"<[c3,eb3,g3] [ab2,c3,eb3] [bb2,d3,f3] [g2,bb2,d3]>\").s(\"piano\").room(0.8).gain(0.8).lpf(1400),\n    n(\"0 ~ 4 ~ 7 ~ 11 ~\").scale(\"C4:minor\").s(\"piano\").slow(2).gain(0.55).delay(0.4).room(0.6),\n    note(\"<c2 ab1 bb1 g1>\").s(\"triangle\").lpf(600).gain(0.6).attack(0.05).release(0.6)\n  )],\n  [24, stack(\n    note(\"<[c3,eb3,g3] [ab2,c3,eb3] [bb2,d3,f3] [g2,bb2,d3]>\").s(\"piano\").room(0.5).gain(0.95),\n    n(\"[0 7] [4 9] [3 7] [2 9]\").scale(\"C4:minor\").s(\"piano\").gain(0.65).delay(0.25).room(0.3).off(0.125, x => x.add(note(12)).gain(0.45)),\n    note(\"<c2 ab1 bb1 g1>\").s(\"triangle\").lpf(1100).gain(0.8).attack(0.01).release(0.4),\n    s(\"bd ~ bd bd ~ bd bd ~\").bank(\"RolandTR707\").gain(0.75),\n    s(\"~ ~ rim ~\").bank(\"RolandTR707\").gain(0.55),\n    s(\"[~ hh]*4\").bank(\"RolandTR707\").gain(0.45).pan(sine.range(0.3, 0.7)).degradeBy(0.1),\n    s(\"~ ~ ~ cp\").bank(\"RolandTR707\").gain(0.4).room(0.3).every(4, x => x.ply(2))\n  )],\n  [14, stack(\n    note(\"<[c3,eb3,g3] [ab2,c3,eb3] [bb2,d3,f3] [g2,bb2,d3]>\").s(\"piano\").room(0.8).gain(0.8).lpf(1500),\n    n(\"0 ~ [4 2] ~ 7 ~ [3 2] ~\").scale(\"C4:minor\").s(\"piano\").slow(2).gain(0.5).delay(0.3).room(0.5),\n    s(\"~ ~ rim ~\").bank(\"RolandTR707\").gain(0.35)\n  )]\n)"
+}

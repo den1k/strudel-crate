@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-16-aphex-twin-09",
+  "title": "Lurchwork",
+  "prompt": "aphex twin. Energy: half-time, mid. Register focus: melody-led arpeggio over a heavy half-time kit. Palette: OberheimDMX kit + plucked arpeggio. Tempo: 96 BPM. Arc shape: slow-burn build. Mood modifier: brooding, off-kilter, lurching.",
+  "batch": "2026-06-16-aphex-twin",
+  "description": "A brooding half-time beat on a dusty OberheimDMX kit anchors a plucked minor arpeggio that slowly mutates from clean pluck into bit-crushed FM grit. Over a slow-burn build the harmony lurches from C minor into phrygian and back, euclidean hats stagger off the grid, and a delay tail trails every phrase into the dark.",
+  "meta": {
+    "bpm": 96,
+    "genre": "idm",
+    "mood": "brooding, off-kilter, lurching",
+    "key": "C minor",
+    "instruments": ["OberheimDMX kit", "plucked square arpeggio", "sub bass"],
+    "energy": 3
+  },
+  "createdAt": "2026-06-16T15:56:19Z",
+  "code": "setcpm(96/4)\narrange(\n  [16, stack(\n    s(\"bd ~ ~ ~ sd ~ ~ ~\").bank(\"OberheimDMX\").gain(1.0),\n    n(\"0 2 4 7\").scale(\"C3:minor\").s(\"square\").attack(0.005).decay(0.12).sustain(0).release(0.08).gain(0.5).lpf(900).delay(\".4:.16:.5\")\n  )],\n  [24, stack(\n    s(\"bd ~ ~ ~ sd ~ ~ ~\").bank(\"OberheimDMX\").gain(1.0),\n    s(\"hh(5,8,2)\").bank(\"OberheimDMX\").gain(0.5).cut(1),\n    n(\"0 2 4 7 4 2\").scale(\"C3:minor\").s(\"square\").attack(0.005).decay(0.14).sustain(0).release(0.1).gain(0.52).lpf(sine.slow(16).range(700,1600)).delay(\".4:.16:.55\"),\n    n(\"<0 5 3 7>\").scale(\"C2:minor\").s(\"square\").attack(0.01).decay(0.4).sustain(0.2).release(0.1).gain(0.5).lpf(500)\n  )],\n  [32, stack(\n    s(\"bd ~ ~ bd sd ~ ~ ~\").bank(\"OberheimDMX\").gain(1.0),\n    s(\"hh(5,8,2)\").bank(\"OberheimDMX\").gain(0.5).cut(1).sometimesBy(0.25, x => x.speed(1.5)),\n    s(\"~ rim(3,8)\").bank(\"OberheimDMX\").gain(0.45),\n    n(\"0 2 4 7 4 2 7 9\").scale(\"<C3:minor C3:phrygian>/8\").s(\"square\").attack(0.005).decay(0.14).sustain(0).release(0.1).gain(0.54).crush(8).off(0.125, x => x.add(note(12)).gain(0.4)).delay(\".4:.16:.55\"),\n    n(\"<0 5 3 7>\").scale(\"C2:minor\").s(\"square\").attack(0.01).decay(0.4).sustain(0.2).release(0.12).gain(0.52).lpf(600)\n  )],\n  [16, stack(\n    s(\"bd ~ ~ ~ ~ ~ ~ ~\").bank(\"OberheimDMX\").gain(0.95),\n    n(\"0 2 4 7 11 9 7 4\").scale(\"C3:phrygian\").s(\"square\").attack(0.005).decay(0.18).sustain(0).release(0.2).gain(0.5).crush(6).delay(\".5:.16:.65\"),\n    n(\"<0 3>\").scale(\"C2:minor\").s(\"square\").attack(0.02).decay(0.6).sustain(0.3).release(0.2).gain(0.5).lpf(500)\n  )],\n  [32, stack(\n    s(\"bd ~ ~ bd sd ~ ~ bd\").bank(\"OberheimDMX\").gain(1.0),\n    s(\"hh(7,8,1)\").bank(\"OberheimDMX\").gain(0.5).cut(1).every(4, x => x.ply(\"<1 1 2 3>\")),\n    s(\"~ cp ~ ~ ~ ~ rim ~\").bank(\"OberheimDMX\").gain(0.5),\n    n(\"0 2 4 7 4 2 7 9\").scale(\"<C3:minor C3:phrygian C3:dorian>/8\").s(\"square\").attack(0.005).decay(0.13).sustain(0).release(0.1).gain(0.55).crush(7).fm(3).fmh(2).off(0.125, x => x.add(note(12)).gain(0.4)).every(8, x => x.rev()).delay(\".4:.16:.6\"),\n    n(\"<0 5 3 7>\").scale(\"C2:minor\").s(\"square\").attack(0.01).decay(0.4).sustain(0.2).release(0.12).gain(0.52).lpf(700)\n  )],\n  [12, stack(\n    s(\"bd ~ ~ ~ sd ~ ~ ~\").bank(\"OberheimDMX\").gain(0.9),\n    n(\"0 2 4 7\").scale(\"C3:minor\").s(\"square\").attack(0.005).decay(0.12).sustain(0).release(0.15).gain(0.48).lpf(800).delay(\".5:.16:.6\")\n  )]\n)"
+}

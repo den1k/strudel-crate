@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-15-complex-upbeat-bassline-with-roaring-syn-11",
+  "title": "Throat of the Saw",
+  "prompt": "complex upbeat bassline with roaring synths",
+  "batch": "2026-06-15-complex-upbeat-bassline-with-roaring-syn",
+  "description": "A roaring subtractive supersaw lead screaming in the high register, thickened by detuned octave copies and hard drive. A slow 32-cycle ladder-filter journey opens it from a muffled growl into a full screaming roar while vibrato, FM bite and stereo width breathe underneath.",
+  "meta": {
+    "bpm": 128,
+    "genre": "supersaw lead",
+    "mood": "roaring",
+    "key": "F minor",
+    "instruments": ["roaring supersaw lead"],
+    "energy": 5
+  },
+  "code": "setcpm(128/4)\nstack(\n  note(\"<f3 [f3 c4] ab3 <eb4 g4>>*2\").s(\"sawtooth\")\n    .add(note(\"0,0.07,-0.07\"))\n    .fm(sine.slow(21).range(0.5, 4)).fmh(\"<1 2 1.5>/8\")\n    .vib(\"<5 7 9>/8\").vibmod(sine.slow(13).range(0.1, 1.2))\n    .lpf(sine.slow(32).range(380, 7200)).resonance(sine.slow(24).range(8, 19)).ftype(\"ladder\")\n    .lpenv(\"<2 3 4>/4\").lpattack(0.01).lpdecay(0.22).lpsustain(0.5)\n    .attack(0.006).decay(0.18).sustain(0.7).release(0.08)\n    .shape(sine.slow(16).range(0.2, 0.55)).distort(0.4)\n    .pan(sine.slow(7).range(0.18, 0.82))\n    .off(0.01, x => x.add(note(0.12)).gain(0.5))\n    .off(1/8, x => x.add(note(12)).gain(0.3).pan(0.75))\n    .jux(rev)\n    .sometimesBy(0.12, x => x.crush(7))\n    .delay(\"0.4:0.1875:0.55\").room(0.25)\n    .gain(0.85)\n)",
+  "createdAt": "2026-06-15T18:24:54Z"
+}

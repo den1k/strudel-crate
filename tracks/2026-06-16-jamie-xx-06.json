@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-16-jamie-xx-06",
+  "title": "Loud Places at Dawn",
+  "prompt": "jamie xx",
+  "batch": "2026-06-16-jamie-xx",
+  "description": "A warm, gospel-tinged house roller at 122 BPM: a soulful felt-piano chord riff stabs over a steady four-on-the-floor TR606 kick, building to a hands-in-the-air peak, dropping into a reverbless delay-soaked valley, then surging back for a second, brighter climax before the kit strips away.",
+  "meta": {
+    "bpm": 122,
+    "genre": "house",
+    "mood": "soulful, uplifting, euphoric",
+    "key": "C minor",
+    "instruments": ["RolandTR606 kit", "felt piano", "jvbass", "clap"],
+    "energy": 4
+  },
+  "code": "setcpm(122/4)\narrange(\n  [16, stack(\n    s(\"bd*4\").bank(\"RolandTR606\").gain(0.92),\n    note(\"<[c3,eb3,g3,bb3] [ab2,c3,eb3,g3] [f2,ab2,c3,eb3] [g2,bb2,d3,f3]>/2\").s(\"piano\").lpf(900).room(0.45).gain(0.56)\n  )],\n  [24, stack(\n    s(\"bd*4\").bank(\"RolandTR606\").gain(1.0),\n    s(\"hh(5,8)\").bank(\"RolandTR606\").gain(0.5).cut(1),\n    note(\"<[c3,eb3,g3,bb3] [ab2,c3,eb3,g3] [f2,ab2,c3,eb3] [g2,bb2,d3,f3]>\").s(\"piano\").lpf(1500).room(0.4).gain(0.58)\n      .off(0.125, x => x.add(note(12)).gain(0.4))\n  )],\n  [32, stack(\n    s(\"bd*4\").bank(\"RolandTR606\").gain(1.08),\n    s(\"~ cp\").gain(0.62).room(0.3),\n    s(\"hh*3\").bank(\"RolandTR606\").gain(0.46).cut(1).swingBy(0.12, 8),\n    s(\"~ ~ oh ~\").bank(\"RolandTR606\").gain(0.4),\n    note(\"<c2 ab1 f1 g1>\").s(\"jvbass\").lpf(700).shape(0.3).gain(0.74),\n    note(\"<[c3,eb3,g3,bb3] [ab2,c3,eb3,g3] [f2,ab2,c3,eb3] [g2,bb2,d3,f3]>\").s(\"piano\").lpf(2200).room(0.35).gain(0.6)\n      .off(0.125, x => x.add(note(12)).gain(0.42))\n      .every(8, x => x.add(note(\"<0 5>\")))\n  )],\n  [16, stack(\n    s(\"bd ~ ~ ~\").bank(\"RolandTR606\").gain(0.7),\n    note(\"<[c3,eb3,g3,bb3] [f2,ab2,c3,eb3]>/2\").s(\"piano\").lpf(1300).delay(\".55:.166:.6\").gain(0.6)\n      .off(0.25, x => x.add(note(12)).gain(0.34))\n  )],\n  [40, stack(\n    s(\"bd*4\").bank(\"RolandTR606\").gain(1.12),\n    s(\"~ cp\").gain(0.66).delay(\".4:.125:.4\"),\n    s(\"hh(7,8)\").bank(\"RolandTR606\").gain(0.5).cut(1).swingBy(0.1, 8),\n    s(\"~ ~ oh ~\").bank(\"RolandTR606\").gain(0.44),\n    note(\"<c2 ab1 f1 g1>\").s(\"jvbass\").lpf(\"<800 1100>/4\").shape(0.34).gain(0.76),\n    note(\"<[c3,eb3,g3,bb3] [ab2,c3,eb3,g3] [f2,ab2,c3,eb3] [g2,bb2,d3,f3]>\").s(\"piano\").lpf(2800).room(0.3).gain(0.62)\n      .off(0.125, x => x.add(note(12)).gain(0.46))\n      .sometimesBy(0.25, x => x.add(note(7)))\n      .every(8, x => x.add(note(\"<0 7 5 12>\")))\n  )],\n  [16, stack(\n    s(\"bd*4\").bank(\"RolandTR606\").gain(0.84),\n    note(\"<[c3,eb3,g3,bb3] [ab2,c3,eb3,g3] [f2,ab2,c3,eb3] [g2,bb2,d3,f3]>/2\").s(\"piano\").lpf(1100).delay(\".5:.166:.55\").gain(0.56)\n      .off(0.25, x => x.add(note(12)).gain(0.32))\n  )]\n)",
+  "createdAt": "2026-06-16T16:17:48Z"
+}

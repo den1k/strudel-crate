@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-16-jamie-xx-04",
+  "title": "Gosh Valley",
+  "prompt": "jamie xx",
+  "batch": "2026-06-16-jamie-xx",
+  "description": "A half-time dub-tense slow-builder: off-beat sawtooth chord stabs swell out of a cavernous OberheimDMX pulse, climbing through a four-chord minor progression with delay-thrown echoes. The arc rises to a first peak, drops into a hollow sub-and-stab valley, then swells back to a darker, fuller second peak before stripping bare.",
+  "meta": {
+    "bpm": 110,
+    "genre": "dub techno",
+    "mood": "dark, tense, suspenseful, cavernous",
+    "key": "C minor",
+    "instruments": ["OberheimDMX kit", "sawtooth dub chord stabs", "sine sub bass", "filtered noise sweep"],
+    "energy": 3
+  },
+  "createdAt": "2026-06-16T16:17:48Z",
+  "code": "setcpm(110/4)\narrange(\n  [16, stack(\n    s(\"bd ~ ~ ~ sd ~ ~ ~\").bank(\"OberheimDMX\").gain(0.95),\n    note(\"~ <[c3,eb3,g3,bb3]> ~ <[ab2,c3,eb3,g3]>\").s(\"sawtooth\").lpf(520).attack(0.04).decay(0.3).sustain(0.2).release(0.4).room(0.6).delay(\".4:.166:.55\").gain(0.5).shape(0.2)\n  )],\n  [24, stack(\n    s(\"bd ~ ~ ~ sd ~ ~ ~\").bank(\"OberheimDMX\").gain(1.0),\n    s(\"hh(3,8,2)\").bank(\"OberheimDMX\").gain(0.5).coarse(2).pan(0.65),\n    note(\"~ <[c3,eb3,g3,bb3]> ~ <[ab2,c3,eb3,g3]>\").s(\"sawtooth\").lpf(700).resonance(6).attack(0.03).decay(0.35).sustain(0.2).release(0.45).room(0.6).delay(\".4:.166:.55\").gain(0.52).shape(0.25).off(0.375, x => x.add(note(12)).gain(0.32))\n  )],\n  [32, stack(\n    s(\"bd ~ ~ ~ sd ~ ~ ~\").bank(\"OberheimDMX\").gain(1.05),\n    s(\"hh(5,8,2)\").bank(\"OberheimDMX\").gain(0.55).coarse(2).pan(sine.range(0.35,0.7)),\n    s(\"~ ~ rim ~\").bank(\"OberheimDMX\").gain(0.5).delay(\".5:.125:.5\"),\n    note(\"<c1 c1 ab0 g0>\").s(\"sine\").lpf(180).attack(0.01).decay(0.4).sustain(0.6).release(0.3).gain(0.7),\n    note(\"~ <[c3,eb3,g3,bb3]> ~ <[ab2,c3,eb3,g3]>\").s(\"sawtooth\").lpf(1100).resonance(7).attack(0.02).decay(0.4).sustain(0.25).release(0.5).vowel(\"<a o>\").room(0.55).delay(\".4:.166:.55\").gain(0.55).shape(0.3).off(0.375, x => x.add(note(12)).gain(0.35))\n  )],\n  [16, stack(\n    note(\"<c1 ~ ab0 ~>\").s(\"sine\").lpf(160).attack(0.02).decay(0.5).sustain(0.5).release(0.6).gain(0.65),\n    note(\"~ <[c3,eb3,g3,bb3]> ~ <[ab2,c3,eb3,g3]>\").s(\"sawtooth\").lpf(620).resonance(8).attack(0.06).decay(0.6).sustain(0.3).release(0.8).vowel(\"<o e>\").crush(7).room(0.8).delay(\".6:.166:.6\").gain(0.5)\n  )],\n  [32, stack(\n    s(\"bd ~ ~ ~ sd ~ ~ ~\").bank(\"OberheimDMX\").gain(1.1).every(8, x => x.ply(\"<1 1 1 2>\")),\n    s(\"hh(7,8,3)\").bank(\"OberheimDMX\").gain(0.55).coarse(3).pan(sine.range(0.3,0.75)),\n    s(\"~ cp ~ ~\").bank(\"OberheimDMX\").gain(0.5).room(0.4).delay(\".5:.125:.5\"),\n    note(\"<c1 c1 ab0 g0>\").s(\"sine\").lpf(200).attack(0.01).decay(0.4).sustain(0.6).release(0.3).gain(0.72).shape(0.2),\n    note(\"~ <[c3,eb3,g3,bb3]> ~ <[ab2,c3,eb3,g3]>\").s(\"sawtooth\").lpf(1400).resonance(8).attack(0.02).decay(0.45).sustain(0.25).release(0.55).vowel(\"<a o e>\").crush(8).room(0.55).delay(\".4:.166:.6\").gain(0.55).shape(0.35).off(0.375, x => x.add(note(12)).gain(0.38)).every(4, x => x.rev())\n  )],\n  [12, stack(\n    s(\"bd ~ ~ ~ sd ~ ~ ~\").bank(\"OberheimDMX\").gain(0.9),\n    note(\"~ <[c3,eb3,g3,bb3]> ~ <[ab2,c3,eb3,g3]>\").s(\"sawtooth\").lpf(480).attack(0.05).decay(0.4).sustain(0.2).release(0.6).room(0.75).delay(\".5:.166:.6\").gain(0.48).shape(0.2)\n  )]\n)\n"
+}

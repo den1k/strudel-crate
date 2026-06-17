@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-15-complex-upbeat-bassline-with-roaring-syn-28",
+  "title": "Foundry Maw",
+  "prompt": "complex upbeat bassline with roaring synths",
+  "batch": "2026-06-15-complex-upbeat-bassline-with-roaring-syn",
+  "description": "A single metal sample mangled into a roaring industrial bass: chopped and striated into granular shrapnel, dragged into the low register, with reverse-speed lurches and a crushed ladder-filter sweep. Over 16 cycles the chop density, fm-driven roar, filter, and dirt all travel on separate clocks so the loop keeps grinding into new shapes.",
+  "meta": {
+    "bpm": 140,
+    "genre": "industrial mangled bass",
+    "mood": "menacing",
+    "key": "atonal",
+    "instruments": ["mangled metal bass"],
+    "energy": 5
+  },
+  "code": "setcpm(140/4)\nstack(\n  s(\"metal*2\").n(\"<0 2 1 3>/2\")\n    .speed(\"<0.5 -0.5 0.35 -0.7>/4\")\n    .chop(\"<4 8 16 8>/8\").striate(\"<2 4 8>/16\")\n    .fm(sine.slow(16).range(2, 11)).fmh(\"<1 0.5 1.5 2>/4\")\n    .lpf(sine.slow(24).range(180, 2400)).resonance(15).ftype(\"ladder\")\n    .lpenv(\"<2 4 6>/8\").lpattack(0.005).lpdecay(0.18)\n    .crush(\"<16 8 6 4>/16\").coarse(\"<1 1 2 4>/4\").shape(0.4)\n    .sometimesBy(0.2, x => x.speed(-1))\n    .pan(sine.slow(7).range(0.2, 0.8))\n    .delay(\"0.4:0.1875:0.6\").room(0.25)\n    .attack(0.002).decay(0.25).sustain(0.4).release(0.08)\n    .gain(0.95)\n)\n",
+  "createdAt": "2026-06-15T18:24:54Z"
+}

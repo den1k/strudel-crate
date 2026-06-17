@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-15-euro-dance-pop-04",
+  "title": "Glass Vowel Hook",
+  "prompt": "euro dance pop",
+  "batch": "2026-06-15-euro-dance-pop",
+  "description": "A vocal-ish formant lead that talks through vowels like a synthetic singer, stepping a e i o u o across a slow loop while envelope-driven vibrato makes it quiver. A swept band-pass and a deepening room tail open the hook from hollow to liquid over a 32-cycle morph.",
+  "meta": {
+    "bpm": 128,
+    "genre": "formant lead",
+    "mood": "liquid hollow vocal",
+    "key": "C minor",
+    "instruments": ["formant vowel lead"],
+    "energy": 3
+  },
+  "code": "setcpm(128/4)\nstack(\n  note(\"<c4 [c4 d4] f4 eb4 [g4 f4] eb4 d4 c4>/2\")\n    .s(\"sawtooth\")\n    .vowel(\"<a e i o u o e a>/3\")\n    .vib(saw.slow(13).range(3.5, 7.5))\n    .vibmod(perlin.slow(11).range(0.15, 0.6))\n    .bpf(tri.slow(23).range(700, 2600))\n    .resonance(perlin.slow(17).range(6, 13))\n    .shape(0.18)\n    .room(saw.slow(29).range(0.25, 0.78))\n    .roomsize(5)\n    .pan(sine.slow(7).range(0.32, 0.68))\n    .off(0.012, x => x.add(note(0.12)).gain(0.5))\n    .gain(0.85)\n)",
+  "createdAt": "2026-06-15T20:26:40Z"
+}

@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-15-drum-n-bass-dufry-fred-again-04",
+  "batch": "2026-06-15-drum-n-bass-dufry-fred-again",
+  "prompt": "drum n bass, dufry, fred again",
+  "title": "Vowel Letter, Liquid",
+  "createdAt": "2026-06-15T20:44:15Z",
+  "description": "A liquid Fred-again-style formant lead: a sawtooth sings stepped vowels (a-e-i-o) over a slow triangle band-pass journey while a saw LFO opens the low-pass, with breathing vibrato that deepens and fades. A short delay and a kept-in-check room give it a wet, vocal-but-present tail that morphs across 32 cycles.",
+  "meta": {
+    "bpm": 174,
+    "genre": "formant vocal lead",
+    "mood": "liquid, vocal, lush",
+    "key": "C minor",
+    "instruments": ["formant sawtooth vocal lead"],
+    "energy": 3
+  },
+  "code": "setcpm(174/4)\nstack(\n  note(\"<c4 [c4 d4] f4 eb4>/2\").s(\"sawtooth\")\n    .vowel(\"<a e i o>/3\")\n    .vib(tri.slow(13).range(3.5, 6.5)).vibmod(saw.slow(23).range(0.12, 0.55))\n    .bpf(tri.slow(29).range(520, 2100)).bpq(\"<5 8 6 10>/4\")\n    .lpf(saw.slow(16).range(900, 4200)).resonance(\"<7 11 9 13>/8\")\n    .lpenv(\"<3 5 2 6>/4\").lpattack(0.02).lpdecay(0.18).lpsustain(0.5)\n    .attack(0.03).decay(0.2).sustain(0.7).release(0.12)\n    .shape(\"<0.12 0.2 0.16 0.24>/8\")\n    .pan(sine.slow(11).range(0.32, 0.68))\n    .off(0.01, x => x.add(note(0.12)).gain(0.4).vowel(\"<e i o a>/3\"))\n    .delay(\"0.32:0.375:0.45\").delaytime(0.375)\n    .room(0.34).roomsize(3)\n    .gain(0.88)\n)"
+}

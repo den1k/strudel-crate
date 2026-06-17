@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-15-complex-upbeat-bassline-with-roaring-syn-12",
+  "title": "Chrome Glide",
+  "prompt": "complex upbeat bassline with roaring synths",
+  "batch": "2026-06-15-complex-upbeat-bassline-with-roaring-syn",
+  "description": "A roaring metallic FM lead in the mid-high register whose FM index and harmonicity swell while a pitch envelope accelerates into each note as a glide. Over 16 cycles the glide steepens and the timbre brightens from hollow to screaming chrome, then resets.",
+  "meta": {
+    "bpm": 140,
+    "genre": "fm lead",
+    "mood": "roaring",
+    "key": "C minor",
+    "instruments": ["fm metallic lead"],
+    "energy": 5
+  },
+  "createdAt": "2026-06-15T18:24:54Z",
+  "code": "setcpm(140/4)\nstack(\n  note(\"<c3 [c3 eb3] g3 <bb3 f3>>*2\").s(\"sine\")\n    .fm(sine.slow(16).range(3, 13)).fmh(\"<2 2.5 3.5 1.5>/4\")\n    .penv(sine.slow(24).range(-7, -22)).pattack(sine.slow(16).range(0.18, 0.02)).pdecay(0.04)\n    .lpf(sine.slow(32).range(900, 5200)).resonance(15).ftype(\"ladder\")\n    .lpenv(4).lpattack(0.005).lpdecay(0.12)\n    .attack(0.004).decay(0.18).sustain(0.55).release(0.07)\n    .shape(0.4).crush(\"<16 12 8>/8\")\n    .vib(\"<5 7>/8\").vibmod(sine.slow(13).range(0.2, 1.1))\n    .pan(sine.slow(7).range(0.2, 0.8))\n    .off(1/8, x => x.add(note(12)).gain(0.25).pan(0.85))\n    .delay(\"0.4:0.375:0.6\").room(0.25).gain(0.85)\n)"
+}

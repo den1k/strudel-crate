@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-16-fred-again-05",
+  "title": "Felt You Leaving",
+  "prompt": "fred again",
+  "batch": "2026-06-16-fred-again",
+  "description": "A fragile felt piano and a low pad open beatless and tender, then a soft 707 kit and sub creep in for a slow-burn bloom before everything recedes back into reverb and delay. Dreamy and emotional, it builds patiently and lets go just as gently.",
+  "meta": {
+    "bpm": 120,
+    "genre": "ambient house",
+    "mood": "tender, dreamy, melancholic",
+    "key": "C minor",
+    "instruments": ["felt piano", "sawtooth pad", "RolandTR707 kit", "sub sine bass"],
+    "energy": 3
+  },
+  "code": "setcpm(120/4)\narrange(\n  [16, stack(\n    note(\"<[c3,eb3,g3,bb3] [ab2,c3,eb3,g3]>\").s(\"piano\").room(0.5).gain(0.6)\n      .off(0.125, x => x.add(note(12)).gain(0.32)),\n    note(\"<c2 ab1>/2\").s(\"sawtooth\").lpf(sine.slow(16).range(320, 700)).room(0.55).gain(0.45)\n  )],\n  [24, stack(\n    note(\"<[c3,eb3,g3,bb3] [ab2,c3,eb3,g3] [f3,ab3,c4,eb4] [g2,bb2,d3,f3]>\").s(\"piano\").room(0.45).gain(0.6)\n      .off(0.125, x => x.add(note(12)).gain(0.3)),\n    note(\"<c2 ab1>/2\").s(\"sawtooth\").lpf(sine.slow(24).range(360, 1100)).room(0.5).gain(0.45),\n    s(\"hh(5,8)\").bank(\"RolandTR707\").gain(0.3).crush(8).room(0.3).cut(1)\n  )],\n  [32, stack(\n    note(\"<[c3,eb3,g3,bb3] [ab2,c3,eb3,g3] [f3,ab3,c4,eb4] [g2,bb2,d3,f3]>\").s(\"piano\").room(0.4).gain(0.58)\n      .off(0.125, x => x.add(note(12)).gain(0.28)),\n    note(\"<c2 c2 ab1 g1>\").s(\"sine\").lpf(420).shape(0.25).room(0.2).gain(0.6),\n    s(\"bd ~ ~ bd ~ ~ bd ~\").bank(\"RolandTR707\").gain(0.62),\n    s(\"~ cp ~ cp\").bank(\"RolandTR707\").room(0.35).gain(0.4),\n    s(\"hh(5,8)\").bank(\"RolandTR707\").gain(0.34).crush(8).cut(1).swingBy(0.08, 8)\n  )],\n  [16, stack(\n    note(\"<[f3,ab3,c4,eb4] [g2,bb2,d3,f3]>\").s(\"piano\").room(0.6).delay(\"0.4:0.166:0.5\").gain(0.6)\n      .off(0.25, x => x.add(note(12)).gain(0.3)),\n    note(\"<c2 ab1>/2\").s(\"sawtooth\").lpf(sine.slow(16).range(400, 1600)).room(0.6).gain(0.42)\n  )],\n  [28, stack(\n    note(\"<[c3,eb3,g3,bb3] [ab2,c3,eb3,g3] [f3,ab3,c4,eb4] [g2,bb2,d3,f3]>\").s(\"piano\").room(0.4).gain(0.58)\n      .off(0.125, x => x.add(note(12)).gain(0.3))\n      .every(8, x => x.rev()),\n    note(\"<c2 c2 ab1 g1>\").s(\"sine\").lpf(520).shape(0.3).room(0.2).gain(0.62),\n    s(\"bd ~ ~ bd ~ ~ bd ~\").bank(\"RolandTR707\").gain(0.64),\n    s(\"~ cp ~ cp\").bank(\"RolandTR707\").room(0.35).gain(0.42),\n    s(\"hh*3\").bank(\"RolandTR707\").gain(0.32).crush(7).cut(1).degradeBy(0.2),\n    s(\"hh(7,8)\").bank(\"RolandTR707\").gain(0.3).cut(1).swingBy(0.08, 8)\n  )],\n  [16, stack(\n    note(\"<[c3,eb3,g3,bb3] [ab2,c3,eb3,g3]>\").s(\"piano\").room(0.6).delay(\"0.4:0.166:0.5\").gain(0.58)\n      .off(0.125, x => x.add(note(12)).gain(0.28)),\n    note(\"<c2 ab1>/2\").s(\"sawtooth\").lpf(sine.slow(16).range(520, 320)).room(0.6).gain(0.4)\n  )]\n)\n",
+  "createdAt": "2026-06-16T16:14:32Z"
+}

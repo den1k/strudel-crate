@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-16-aphex-twin-12",
+  "title": "Felt Glass Druqks",
+  "prompt": "aphex twin. Energy: dense IDM breakbeat. Register focus: melody/chord-led — felt piano over chopped breaks. Palette: CasioRZ1 break bank + felt piano. Tempo: 156 BPM. Arc shape: early peak then deconstruction. Mood modifier: bittersweet, intricate, Druqks-like.",
+  "batch": "2026-06-16-aphex-twin",
+  "description": "A bittersweet felt-piano line drifts over chopped CasioRZ1 breakbeats that ratchet and stutter into IDM territory. It peaks early in a dense intricate flurry, then deconstructs — drums fall away to leave the piano ringing in reverb before a brittle, glitchy outro.",
+  "meta": {
+    "bpm": 156,
+    "genre": "IDM breakbeat",
+    "mood": "bittersweet, intricate, glitchy",
+    "key": "C minor",
+    "instruments": ["CasioRZ1 break kit", "felt piano"],
+    "energy": 4
+  },
+  "code": "setcpm(156/4)\narrange(\n  [16, stack(\n    note(\"<[c3,eb3,g3,bb3] [ab2,c3,eb3,g3]>/2\").s(\"piano\").room(0.5).gain(0.62),\n    s(\"hh*4\").bank(\"CasioRZ1\").gain(0.4).pan(sine.range(0.3,0.7)).degradeBy(0.3)\n  )],\n  [24, stack(\n    s(\"bd ~ sd [bd bd]\").bank(\"CasioRZ1\").gain(0.95),\n    s(\"hh(5,8,2)\").bank(\"CasioRZ1\").gain(0.45).cut(1),\n    note(\"<[c3,eb3,g3,bb3] [ab2,c3,eb3,g3] [f2,ab2,c3,eb3] [g2,bb2,d3,f3]>\").s(\"piano\").room(0.45).gain(0.6)\n  )],\n  [32, stack(\n    s(\"bd ~ sd [bd bd]\").bank(\"CasioRZ1\").gain(1.0).every(4, x => x.ply(2)),\n    s(\"hh*8\").bank(\"CasioRZ1\").gain(0.4).cut(1).ply(\"<1 1 2 4>\").crush(8),\n    s(\"sd(3,8,1)\").bank(\"CasioRZ1\").gain(0.5).speed(\"<1 1.5>\").sometimesBy(0.25, x => x.speed(2)),\n    note(\"<[c3,eb3,g3,bb3] [ab2,c3,eb3,g3] [f2,ab2,c3,eb3] [g2,bb2,d3,f3]>\").s(\"piano\").room(0.4).gain(0.6),\n    n(\"0 3 5 <7 10>\").scale(\"C4:minor\").s(\"piano\").gain(0.4).off(0.125, x => x.add(note(12)).gain(0.3)).room(0.35)\n  )],\n  [16, stack(\n    note(\"<[c3,eb3,g3,bb3] [ab2,c3,eb3,g3] [f2,ab2,c3,eb3] [g2,bb2,d3,f3]>\").s(\"piano\").room(0.6).gain(0.62),\n    n(\"0 ~ 3 ~ 5 ~ <7 10> ~\").scale(\"C4:minor\").s(\"piano\").gain(0.42).room(0.5).delay(0.3)\n  )],\n  [24, stack(\n    s(\"bd ~ sd [bd bd]\").bank(\"CasioRZ1\").gain(1.0).every(4, x => x.ply(2)).every(8, x => x.rev()),\n    s(\"hh*8\").bank(\"CasioRZ1\").gain(0.42).cut(1).ply(\"<1 2 1 4>\").crush(7),\n    s(\"rim(5,8)\").bank(\"CasioRZ1\").gain(0.45).coarse(\"<1 2 4>\"),\n    note(\"<[c3,eb3,g3,bb3] [ab2,c3,eb3,g3] [f2,ab2,c3,eb3] [g2,bb2,d3,f3]>\").s(\"piano\").room(0.4).gain(0.6),\n    n(\"0 3 5 <7 10>\").scale(\"C4:minor\").s(\"piano\").gain(0.4).off(0.125, x => x.add(note(12)).gain(0.3)).sometimesBy(0.25, x => x.speed(2)).room(0.35)\n  )],\n  [14, stack(\n    note(\"<[c3,eb3,g3,bb3] [ab2,c3,eb3,g3]>/2\").s(\"piano\").room(0.6).gain(0.6),\n    s(\"hh*4\").bank(\"CasioRZ1\").gain(0.35).degradeBy(0.5).crush(6).pan(sine.range(0.3,0.7))\n  )]\n)\n",
+  "createdAt": "2026-06-16T15:56:19Z"
+}

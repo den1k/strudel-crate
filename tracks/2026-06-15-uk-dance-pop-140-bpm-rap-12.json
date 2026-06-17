@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-15-uk-dance-pop-140-bpm-rap-12",
+  "title": "Lucid Pavement",
+  "prompt": "uk dance pop, 140+ bpm, rap",
+  "batch": "2026-06-15-uk-dance-pop-140-bpm-rap",
+  "description": "A dreamy beatless opening of warm pad and a glassy square arpeggio slowly gathers tension, then a 909 kit slides in piece by piece until it locks into a driving 144-bpm UK dance-pop groove. The filter peels open as the arp climbs registers, leaving an airy rhythmic pocket for a rap before the track dissolves back to its ambient bed.",
+  "meta": {
+    "bpm": 144,
+    "genre": "uk dance pop",
+    "mood": "dreamy then driving",
+    "key": "C minor",
+    "instruments": ["square arp synth", "sawtooth pad", "RolandTR909 kit"],
+    "energy": 4
+  },
+  "code": "setcpm(144/4)\narrange(\n  [16, stack(\n    note(\"<c2 ab1>/2\").s(\"sawtooth\").lpf(420).room(0.6).gain(0.42),\n    n(\"0 ~ 2 ~ 4 ~ 7 ~\").scale(\"C4:minor\").s(\"square\").decay(0.18).sustain(0).lpf(1400).room(0.5).gain(0.42)\n  )],\n  [24, stack(\n    note(\"<c2 ab1>/2\").s(\"sawtooth\").lpf(perlin.range(380, 900).slow(12)).room(0.55).gain(0.46),\n    n(\"0 2 4 7 9 7 4 2\").scale(\"C4:minor\").s(\"square\").decay(0.14).sustain(0).lpf(1800).room(0.45).gain(0.45),\n    s(\"hh*8\").bank(\"RolandTR909\").gain(0.4).hpf(6000).degradeBy(0.25)\n  )],\n  [32, stack(\n    note(\"<c2 ab1>/2\").s(\"sawtooth\").lpf(saw.range(500, 2400).slow(16)).room(0.4).gain(0.5),\n    n(\"<0 3>(3,8) <4 7>(3,8,2)\").scale(\"C4:minor\").s(\"square\").decay(0.12).sustain(0).lpf(2600).room(0.35).gain(0.5),\n    s(\"bd*4\").bank(\"RolandTR909\").gain(0.95),\n    s(\"~ cp ~ cp\").bank(\"RolandTR909\").room(0.25).gain(0.7),\n    s(\"hh*8\").bank(\"RolandTR909\").gain(0.45).hpf(5000).ply(\"<1 1 2 1>\")\n  )],\n  [16, stack(\n    note(\"<c2 ab1>/2\").s(\"sawtooth\").lpf(700).room(0.7).gain(0.5),\n    n(\"0 ~ 4 ~ 7 ~ 11 ~\").scale(\"C5:minor\").s(\"square\").decay(0.2).sustain(0).lpf(3000).room(0.6).gain(0.46),\n    s(\"oh ~ oh ~\").bank(\"RolandTR909\").gain(0.4).room(0.4)\n  )],\n  [32, stack(\n    note(\"<c2 ab1 eb2 g1>/2\").s(\"sawtooth\").lpf(saw.range(800, 3200).slow(16)).room(0.35).gain(0.52),\n    n(\"<0 3 5 7>(5,8) 11 9 7\").scale(\"C5:minor\").s(\"square\").decay(0.11).sustain(0).lpf(3200).room(0.3).gain(0.52),\n    s(\"bd*4\").bank(\"RolandTR909\").gain(1.0),\n    s(\"~ cp ~ cp\").bank(\"RolandTR909\").room(0.2).gain(0.72),\n    s(\"hh*8\").bank(\"RolandTR909\").gain(0.5).hpf(5000).ply(\"<1 2 1 4>\").degradeBy(0.1),\n    s(\"~ ~ oh ~\").bank(\"RolandTR909\").gain(0.45)\n  )],\n  [16, stack(\n    note(\"<c2 ab1>/2\").s(\"sawtooth\").lpf(520).room(0.7).gain(0.45),\n    n(\"0 ~ 2 ~ 4 ~ 7 ~\").scale(\"C4:minor\").s(\"square\").decay(0.18).sustain(0).lpf(1500).room(0.6).gain(0.42)\n  )]\n)\n",
+  "createdAt": "2026-06-15T20:32:40Z"
+}

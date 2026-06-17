@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-15-complex-upbeat-bassline-with-roaring-syn-22",
+  "title": "Banshee Ascent",
+  "prompt": "complex upbeat bassline with roaring synths",
+  "batch": "2026-06-15-complex-upbeat-bassline-with-roaring-syn",
+  "description": "A roaring white-noise riser that screams from a low sub-rumble into a full-spectrum shriek across a 32-cycle filter journey. Resonance climbs, the band-pass sweep tears upward, and a phaser plus reversed echoes give it a clawing, banshee character before it resets.",
+  "meta": {
+    "bpm": 128,
+    "genre": "noise riser",
+    "mood": "screaming",
+    "key": "atonal",
+    "instruments": ["white noise riser"],
+    "energy": 5
+  },
+  "createdAt": "2026-06-15T18:24:54Z",
+  "code": "setcpm(128/4)\nstack(\n  s(\"white*4\")\n    .lpf(saw.slow(32).range(180, 9000)).resonance(sine.slow(16).range(8, 22)).ftype(\"ladder\")\n    .lpenv(sine.slow(24).range(2, 8)).lpattack(0.005).lpdecay(0.18)\n    .bpf(sine.slow(13).range(400, 6000)).bpq(sine.slow(7).range(3, 12))\n    .shape(sine.slow(11).range(0.2, 0.55)).crush(\"<16 12 8 6>/8\")\n    .phaser(sine.slow(9).range(0.2, 2)).phaserdepth(0.8)\n    .pan(sine.slow(5).range(0.15, 0.85))\n    .attack(0.02).decay(0.25).sustain(0.6).release(0.08)\n    .sometimesBy(0.18, x => x.speed(-1))\n    .off(0.125, x => x.hpf(2000).gain(0.3).pan(0.2))\n    .room(0.35).gain(0.9)\n)"
+}

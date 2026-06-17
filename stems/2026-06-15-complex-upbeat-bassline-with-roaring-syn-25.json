@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-15-complex-upbeat-bassline-with-roaring-syn-25",
+  "title": "Throat of the Machine",
+  "prompt": "complex upbeat bassline with roaring synths",
+  "batch": "2026-06-15-complex-upbeat-bassline-with-roaring-syn",
+  "description": "A talking sawtooth bass in the low register whose vowel slowly morphs through a-e-o-u, giving it a roaring, vocal-ish character. FM grit, a band-pass sweep and a deep slow vibrato all travel on separate clocks so the loop never sits still over its ~32 second arc.",
+  "meta": {
+    "bpm": 124,
+    "genre": "formant bass",
+    "mood": "roaring",
+    "key": "C minor",
+    "instruments": ["formant sawtooth bass"],
+    "energy": 4
+  },
+  "code": "setcpm(124/4)\nstack(\n  note(\"<c1 [c1 eb1] g1 <f1 g0>>*4\").s(\"sawtooth\")\n    .vowel(\"<a e o u>/8\")\n    .fm(sine.slow(24).range(1, 6)).fmh(\"<1 1.5 2>/6\")\n    .penv(\"<0 0 9 -4>/8\").pattack(0.002).pdecay(0.07)\n    .bpf(sine.slow(17).range(180, 1600)).resonance(14).ftype(\"ladder\")\n    .lpenv(2.5).lpattack(0.005).lpdecay(0.18)\n    .vib(\"<3 5 7>/8\").vibmod(sine.slow(13).range(0.1, 1.2))\n    .shape(sine.slow(32).range(0.2, 0.5))\n    .pan(sine.slow(11).range(0.35, 0.65))\n    .attack(0.005).decay(0.18).sustain(0.6).release(0.07)\n    .sometimesBy(0.12, x => x.speed(-1))\n    .off(1/8, x => x.add(note(12)).gain(0.3).vowel(\"<e i>/4\"))\n    .room(0.2).delay(\"0.3:0.375:0.5\").gain(0.9)\n)",
+  "createdAt": "2026-06-15T18:24:54Z"
+}

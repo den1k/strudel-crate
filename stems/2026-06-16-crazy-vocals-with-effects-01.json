@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-16-crazy-vocals-with-effects-01",
+  "title": "Banshee Vowel",
+  "prompt": "crazy vocals with effects",
+  "batch": "2026-06-16-crazy-vocals-with-effects",
+  "description": "A screaming sawtooth formant lead that cycles through vowel shapes while a slow triangle-and-saw pair drags a resonant bandpass across its throat. Over a 24-cycle pass the pitch climbs in stepped octave leaps, the vibrato deepens, and the drive bites harder before everything smears into a long delay-and-room tail.",
+  "meta": {
+    "bpm": 130,
+    "genre": "formant lead",
+    "mood": "shrieking",
+    "key": "C minor",
+    "instruments": ["screaming sawtooth formant lead"],
+    "energy": 5
+  },
+  "code": "setcpm(130/4)\nstack(\n  note(\"<c4 [c4 d4] f4 eb4 [g4 f4] c5 [eb4 d4] f4>/2\")\n    .add(note(\"<0 0 12 0 7 12>/4\"))\n    .s(\"sawtooth\")\n    .vowel(\"<a e i o a e i a o>/3\")\n    .vib(saw.slow(23).range(4, 9)).vibmod(tri.slow(13).range(0.4, 2.6))\n    .bpf(tri.slow(16).range(420, 3600).add(saw.slow(11).range(0, 900)))\n    .resonance(sine.slow(29).range(9, 19))\n    .shape(tri.slow(13).range(0.18, 0.62))\n    .distort(saw.slow(17).range(0.1, 0.7))\n    .pan(sine.slow(7).range(0.15, 0.85))\n    .off(0.01, x => x.add(note(0.12)).gain(0.5))\n    .sometimesBy(0.16, x => x.speed(-1))\n    .room(0.45).roomsize(0.7)\n    .delay(\"0.5:0.375:0.6\").orbit(2)\n    .gain(0.85)\n)\n",
+  "createdAt": "2026-06-16T19:38:09Z"
+}

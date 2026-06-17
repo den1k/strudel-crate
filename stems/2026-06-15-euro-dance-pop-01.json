@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-15-euro-dance-pop-01",
+  "title": "Hands-Up Halo",
+  "prompt": "euro dance pop",
+  "batch": "2026-06-15-euro-dance-pop",
+  "description": "A screaming bright supersaw lead in the mid/high register, gated by a stepped tremolo rate and pumped by a square-wave LFO so it stabs like a euphoric hands-up hook. Over 32 cycles a square-pumped filter env opens and closes, the detune widens, and the room/delay tail blooms, then the whole arc resets.",
+  "meta": {
+    "bpm": 128,
+    "genre": "supersaw lead",
+    "mood": "euphoric",
+    "key": "F minor",
+    "instruments": ["supersaw lead"],
+    "energy": 5
+  },
+  "code": "setcpm(128/4)\nstack(\n  note(\"<f4 f4 ab4 c5>*4\").s(\"supersaw\")\n    .unison(7).detune(sine.slow(23).range(0.18,0.5))\n    .tremolosync(\"<4 8 16 8>/8\").tremolodepth(0.85)\n    .gain(square.slow(2).range(0.5,1.05))\n    .lpf(square.slow(7).range(900,5200))\n    .lpenv(square.slow(16).range(2,7)).lpattack(0.01).lpdecay(0.12)\n    .resonance(sine.slow(13).range(10,18)).ftype(\"ladder\")\n    .shape(saw.slow(29).range(0.2,0.55)).distort(\"<0.3 0.5>/8\")\n    .pan(square.slow(11).range(0.3,0.7))\n    .room(sine.slow(32).range(0.25,0.6)).roomsize(4)\n    .delay(\"0.4:0.1875:0.6\").delayfb(0.55)\n    .gain(0.9)\n)\n",
+  "createdAt": "2026-06-15T20:26:40Z"
+}

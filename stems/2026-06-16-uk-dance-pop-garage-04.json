@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-16-uk-dance-pop-garage-04",
+  "title": "Skyline Screamer",
+  "prompt": "uk dance pop garage",
+  "batch": "2026-06-16-uk-dance-pop-garage",
+  "description": "A screaming euphoric supersaw topline lead in mid-high register: a five-voice detuned saw stack that climbs a slow resonant filter journey while its bit depth crumbles from 16 down to 5 over 32 cycles, panning and breathing through room and delay. The crush ramp and filter sweep pull apart so each pass arrives brighter, dirtier, and more anthemic.",
+  "meta": {
+    "bpm": 132,
+    "genre": "supersaw lead",
+    "mood": "euphoric, screaming, bright",
+    "key": "F minor",
+    "instruments": ["detuned supersaw lead"],
+    "energy": 5
+  },
+  "createdAt": "2026-06-16T19:23:48Z",
+  "code": "setcpm(132/4)\nstack(\n  note(\"<f3 f3 ab3 c4>*4\").s(\"supersaw\")\n    .unison(5).detune(saw.slow(29).range(0.18, 0.45))\n    .crush(saw.slow(32).range(16, 5))\n    .lpf(sine.slow(23).range(900, 6500))\n    .resonance(sine.slow(13).range(8, 18))\n    .lpenv(sine.slow(11).range(1.5, 4)).lpattack(0.02).lpdecay(0.14)\n    .ftype(\"ladder\")\n    .shape(0.28)\n    .pan(sine.slow(7).range(0.25, 0.75))\n    .room(sine.slow(16).range(0.3, 0.7)).roomsize(5)\n    .delay(\"0.4:0.1875:0.55\").orbit(2)\n    .gain(0.78)\n)"
+}

@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-16-crazy-vocals-with-effects-02",
+  "title": "Drunk Choir",
+  "prompt": "crazy vocals with effects",
+  "batch": "2026-06-16-crazy-vocals-with-effects",
+  "description": "A warbling sawtooth vocal that lurches every few cycles as its deep vibrato rate steps up, pulling the pitch off-center while the vowel slides through a/e/i/o and a stepped formant filter opens and closes. The whole thing reels and slurs like a drunk singer, smeared into a delay-only tail with no reverb.",
+  "meta": {
+    "bpm": 96,
+    "genre": "formant lead",
+    "mood": "liquid",
+    "key": "C minor",
+    "instruments": ["warbling formant vocal"],
+    "energy": 3
+  },
+  "code": "setcpm(96/4)\nstack(\n  note(\"<c4 [c4 d4] f4 eb4>/2\").s(\"sawtooth\")\n    .vib(\"<3 5 7 4>/8\").vibmod(\"<0.9 1.4 0.6 1.1>/8\")\n    .vowel(\"<a e i o>/3\")\n    .penv(\"<0 2 -3 1>/4\").pattack(0.18).pdecay(0.5)\n    .bpf(sine.slow(13).range(300, 1900)).resonance(\"<8 14 6 11>/8\")\n    .lpf(saw.slow(23).range(900, 3600))\n    .shape(\"<0.2 0.45 0.3>/7\")\n    .tremolosync(\"<2 4 3>/11\").tremolodepth(\"<0.3 0.6 0.4>/11\")\n    .sometimesBy(0.18, x => x.speed(\"<1 -1 0.5>\"))\n    .pan(sine.slow(29).range(0.2, 0.8))\n    .delay(\"0.45:0.375:0.66\").delayfeedback(\"<0.5 0.7 0.6>/16\")\n    .gain(0.85)\n)",
+  "createdAt": "2026-06-16T19:38:09Z"
+}

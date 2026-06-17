@@ -1,0 +1,18 @@
+{
+  "id": "2026-06-08-dirty-bass-02-v2",
+  "versionOf": "2026-06-08-dirty-bass-02",
+  "batch": "2026-06-08-dirty-bass",
+  "prompt": "dirty bass",
+  "title": "Corroded Sub v2",
+  "createdAt": "2026-06-15T18:24:54Z",
+  "description": "A corroded sawtooth sub-bass, the same grimy distorted/crushed voice, now reworked to be more upbeat: a bouncier syncopated octave-skip pattern, snappier punchier envelopes, brighter filter ceiling, and a faster livelier filter sweep with a perky upper-octave off-echo.",
+  "meta": {
+    "bpm": 132,
+    "genre": "dirty saw bass",
+    "mood": "energetic, grimy, bouncy",
+    "key": "C minor",
+    "instruments": ["corroded sawtooth bass"],
+    "energy": 4
+  },
+  "code": "setcpm(132/4)\nstack(\n  note(\"<c1 [c1 c2] [c1 eb1] [g1 g0]>*4\").s(\"sawtooth\")\n    .penv(\"<12 12 16 -3>/8\").pattack(0.001).pdecay(0.05)\n    .lpf(sine.slow(12).range(320, 3200)).resonance(sine.slow(9).range(8, 17)).ftype(\"ladder\")\n    .lpenv(saw.slow(8).range(3, 9)).lpattack(0.003).lpdecay(0.1)\n    .attack(0.002).decay(0.14).sustain(0.4).release(0.04)\n    .distort(saw.slow(12).range(0.3, 3.2))\n    .crush(saw.slow(24).range(16, 6))\n    .shape(sine.slow(7).range(0.25, 0.55))\n    .coarse(\"<1 1 2 4>/8\")\n    .off(1/8, x => x.add(note(12)).gain(0.3).pan(0.72).hpf(500))\n    .off(3/16, x => x.add(note(7)).gain(0.18).pan(0.3).hpf(700))\n    .room(0.1).gain(0.92)\n)"
+}

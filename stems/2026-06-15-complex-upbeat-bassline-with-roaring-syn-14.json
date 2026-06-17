@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-15-complex-upbeat-bassline-with-roaring-syn-14",
+  "title": "Squeal Ladder",
+  "prompt": "complex upbeat bassline with roaring synths",
+  "batch": "2026-06-15-complex-upbeat-bassline-with-roaring-syn",
+  "description": "A screaming 303-style acid lead built on a sawtooth driven through a resonant ladder filter with a fast lpenv squelch on every note. Over 16 cycles the resonance and filter-envelope depth climb while a slow LFO drags the cutoff up and a stepped ply gate chops the rhythm tighter, so the loop morphs from a round acid burble into a full-throated roar.",
+  "meta": {
+    "bpm": 130,
+    "genre": "acid lead",
+    "mood": "screaming",
+    "key": "C minor",
+    "instruments": ["acid ladder saw"],
+    "energy": 5
+  },
+  "code": "setcpm(130/4)\nstack(\n  note(\"<c2 c2 eb2 g2 c2 bb1 ab1 g2>*4\").s(\"sawtooth\")\n    .ply(\"<1 1 2 1 2 4>/8\")\n    .lpf(sine.slow(24).range(420, 3200))\n    .resonance(saw.slow(16).range(14, 22)).ftype(\"ladder\")\n    .lpenv(saw.slow(16).range(2.5, 6)).lpattack(0.005).lpdecay(\"<0.09 0.14 0.05>/4\")\n    .penv(\"<0 0 7 -5>/8\").pattack(0.001).pdecay(0.06)\n    .distort(sine.slow(32).range(0.6, 1.6))\n    .shape(0.4)\n    .attack(0.003).decay(0.16).sustain(0.55).release(0.05)\n    .off(0.005, x => x.add(note(0.12)).gain(0.3))\n    .pan(sine.slow(7).range(0.2, 0.8))\n    .delay(\"0.3:0.1875:0.45\").room(0.18)\n    .gain(0.9)\n)",
+  "createdAt": "2026-06-15T18:24:54Z"
+}

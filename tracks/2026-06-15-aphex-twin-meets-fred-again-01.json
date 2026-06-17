@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-15-aphex-twin-meets-fred-again-01",
+  "title": "Felt Letters",
+  "prompt": "aphex twin meets fred again",
+  "batch": "2026-06-15-aphex-twin-meets-fred-again",
+  "description": "A felt piano traces an aching chord progression over a swung LinnDrum breakbeat, ghost hats whispering underneath. It rises to a warm peak, falls into a hushed reverb-soaked valley, then climbs again before drifting out on delay and air.",
+  "meta": {
+    "bpm": 128,
+    "genre": "melodic breakbeat / emotional electronica",
+    "mood": "dreamier, melancholic, emotional",
+    "key": "C minor",
+    "instruments": ["LinnDrum kit", "felt piano", "sine sub bass", "triangle pad"],
+    "energy": 3
+  },
+  "code": "setcpm(128/4)\narrange(\n  [16, stack(\n    note(\"<[c3,eb3,g3] [ab2,c3,eb3] [bb2,d3,f3] [g2,bb2,d3]>/2\").s(\"piano\").room(0.55).gain(0.6).lpf(1400),\n    s(\"hh*8\").bank(\"LinnDrum\").gain(0.32).degradeBy(0.4).pan(sine.range(0.35,0.65)).cut(1)\n  )],\n  [24, stack(\n    s(\"bd ~ sd [bd ~]\").bank(\"LinnDrum\").gain(0.95).swingBy(0.16, 4),\n    s(\"hh*8\").bank(\"LinnDrum\").gain(0.4).degradeBy(0.3).pan(sine.range(0.3,0.7)).cut(1),\n    note(\"<[c3,eb3,g3] [ab2,c3,eb3] [bb2,d3,f3] [g2,bb2,d3]>/2\").s(\"piano\").room(0.5).gain(0.62).lpf(sine.slow(16).range(900,2400)),\n    note(\"<c2 ab1 bb1 g1>/2\").s(\"sine\").gain(0.6).lpf(220).attack(0.02).release(0.3)\n  )],\n  [32, stack(\n    s(\"bd ~ sd [bd bd]\").bank(\"LinnDrum\").gain(1.0).swingBy(0.16, 4),\n    s(\"hh*8\").bank(\"LinnDrum\").gain(0.45).degradeBy(0.2).pan(sine.range(0.3,0.7)).cut(1),\n    s(\"~ oh ~ ~\").bank(\"LinnDrum\").gain(0.34),\n    note(\"<[c3,eb3,g3] [ab2,c3,eb3] [bb2,d3,f3] [g2,bb2,d3]>/2\").s(\"piano\").room(0.4).gain(0.64).lpf(2600),\n    note(\"<eb4 g4 d4 bb3 c5 g4 f4 d4>/2\").s(\"piano\").room(0.45).delay(0.3).gain(0.5).lpf(3200),\n    note(\"<c2 ab1 bb1 g1>/2\").s(\"sine\").gain(0.62).lpf(260).attack(0.02).release(0.3)\n  )],\n  [20, stack(\n    note(\"<[c3,eb3,g3] [ab2,c3,eb3] [bb2,d3,f3] [g2,bb2,d3]>/2\").s(\"piano\").room(0.7).gain(0.6).lpf(1600).delay(\".4:.25:.5\"),\n    note(\"<eb5 d5 c5 bb4>/2\").s(\"triangle\").room(0.7).gain(0.42).attack(0.4).release(0.8).lpf(2000),\n    s(\"hh*4\").bank(\"LinnDrum\").gain(0.26).degradeBy(0.5).cut(1)\n  )],\n  [32, stack(\n    s(\"bd ~ sd [bd bd]\").bank(\"LinnDrum\").gain(1.0).swingBy(0.16, 4),\n    s(\"hh*8\").bank(\"LinnDrum\").gain(0.46).degradeBy(0.15).pan(sine.range(0.3,0.7)).cut(1),\n    s(\"~ oh ~ oh\").bank(\"LinnDrum\").gain(0.36),\n    s(\"~ ~ ~ cp\").bank(\"LinnDrum\").gain(0.4).room(0.3),\n    note(\"<[c3,eb3,g3] [ab2,c3,eb3] [bb2,d3,f3] [g2,bb2,d3]>/2\").s(\"piano\").room(0.4).gain(0.64).lpf(3000),\n    note(\"<eb4 g4 d4 bb3 c5 g4 f4 d4>/2\").s(\"piano\").room(0.45).delay(\".35:.1875:.5\").gain(0.54).lpf(3400),\n    note(\"<c2 ab1 bb1 g1>/2\").s(\"sine\").gain(0.64).lpf(300).attack(0.02).release(0.3)\n  )],\n  [16, stack(\n    note(\"<[c3,eb3,g3] [ab2,c3,eb3] [bb2,d3,f3] [g2,bb2,d3]>/2\").s(\"piano\").room(0.65).gain(0.58).lpf(1500).delay(\".5:.25:.6\"),\n    s(\"hh*8\").bank(\"LinnDrum\").gain(0.3).degradeBy(0.45).pan(sine.range(0.35,0.65)).cut(1),\n    note(\"<c2 g1>/4\").s(\"sine\").gain(0.5).lpf(200).attack(0.05).release(0.5)\n  )]\n)\n",
+  "createdAt": "2026-06-15T20:48:45Z"
+}

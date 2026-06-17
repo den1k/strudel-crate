@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-16-crazy-vocals-with-effects-09",
+  "title": "Sliced Tongues",
+  "prompt": "crazy vocals with effects",
+  "batch": "2026-06-16-crazy-vocals-with-effects",
+  "description": "A single pitched dirt hit is chopped into a granular vocal cloud, its grains stuttering forward and in reverse at stepped speeds. Over a 32-cycle pass the grain count, formant vowel, crush and a room+delay tail breathe so the cloud thickens, smears backwards, then thins again.",
+  "meta": {
+    "bpm": 120,
+    "genre": "sample-mangle vocal",
+    "mood": "hallucinatory",
+    "key": "atonal",
+    "instruments": ["chopped vocal cloud"],
+    "energy": 3
+  },
+  "code": "setcpm(120/4)\nstack(\n  s(\"east*2\")\n    .chop(\"<16 24 16 12>/2\")\n    .striate(\"<1 1 2 1>/4\")\n    .speed(\"<1 -1 0.5 -0.75 1 -1 1.5 -0.5>\")\n    .n(\"<0 1 0 2>/4\")\n    .vowel(\"<a e i o u a o e>/2\")\n    .crush(saw.slow(23).range(16, 6))\n    .shape(sine.slow(13).range(0.1, 0.5))\n    .bpf(perlin.range(500, 2400).slow(11))\n    .resonance(sine.slow(29).range(6, 14))\n    .pan(sine.slow(7).range(0.15, 0.85))\n    .gain(0.85)\n    .sometimesBy(0.2, x => x.speed(-2))\n    .room(sine.slow(16).range(0.3, 0.8))\n    .roomsize(sine.slow(17).range(3, 8))\n    .delay(\"0.4:0.1875:0.6\")\n)\n",
+  "createdAt": "2026-06-16T19:38:09Z"
+}

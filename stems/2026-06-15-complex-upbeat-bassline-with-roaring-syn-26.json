@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-15-complex-upbeat-bassline-with-roaring-syn-26",
+  "title": "Vowel Wraith",
+  "prompt": "complex upbeat bassline with roaring synths",
+  "batch": "2026-06-15-complex-upbeat-bassline-with-roaring-syn",
+  "description": "An alien formant lead in the mid-high register: a sawtooth voice morphs through cycling vowels with deep slow vibrato and a wandering stereo pan, while a band-pass sweep and FM grit roar underneath. Over 24 cycles the vowel set, vibrato depth, FM index and filter all drift on mutually prime clocks so the voice keeps shape-shifting before the loop repeats.",
+  "meta": {
+    "bpm": 128,
+    "genre": "formant lead",
+    "mood": "alien",
+    "key": "F minor",
+    "instruments": ["formant sawtooth lead"],
+    "energy": 4
+  },
+  "code": "setcpm(128/4)\nstack(\n  note(\"<f4 [f4 ab4] c5 <eb4 bb4>>/2\").s(\"sawtooth\")\n    .vowel(\"<a e i o u e>/3\")\n    .vib(\"<5 7 11>/8\").vibmod(sine.slow(17).range(0.3, 2.2))\n    .fm(sine.slow(13).range(1, 7)).fmh(\"<1 1.5 2>/4\")\n    .bpf(sine.slow(24).range(500, 4200)).resonance(16).ftype(\"ladder\")\n    .pan(sine.slow(7).range(0.12, 0.88))\n    .shape(saw.slow(31).range(0.2, 0.5))\n    .coarse(\"<1 1 2>/6\")\n    .sometimesBy(0.15, x => x.speed(-1))\n    .off(0.01, x => x.add(note(0.12)).gain(0.4))\n    .attack(0.01).decay(0.18).sustain(0.6).release(0.12)\n    .delay(\"0.4:0.375:0.6\").room(0.7).gain(0.8)\n)",
+  "createdAt": "2026-06-15T18:24:54Z"
+}

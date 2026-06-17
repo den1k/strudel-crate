@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-15-uk-dance-pop-140-bpm-rap-03",
+  "title": "Concrete Bloom",
+  "prompt": "uk dance pop, 140+ bpm, rap",
+  "batch": "2026-06-15-uk-dance-pop-140-bpm-rap",
+  "description": "A dark UK dance-pop cut that hits its peak early then peels itself apart bar by bar. Driving four-to-the-floor kicks frame stabbing sawtooth dub chords that snap and bloom while the harmony slides minor, leaving wide empty pockets where a rap would sit.",
+  "meta": {
+    "bpm": 145,
+    "genre": "uk garage / dance pop",
+    "mood": "dark, driving, deconstructed",
+    "key": "C minor",
+    "instruments": ["CasioRZ1 kit", "sawtooth dub stabs", "sawtooth sub bass"],
+    "energy": 4
+  },
+  "code": "setcpm(145/4)\narrange(\n  [16, stack(\n    s(\"bd*4\").bank(\"CasioRZ1\").gain(1.0),\n    note(\"~ <[c3,eb3,g3]> ~ <[ab2,c3,eb3]>\").s(\"sawtooth\").lpf(700).attack(0.01).decay(0.18).sustain(0.1).release(0.12).room(0.6).gain(0.45)\n  )],\n  [24, stack(\n    s(\"bd*4\").bank(\"CasioRZ1\").gain(1.05),\n    s(\"~ hh ~ hh\").bank(\"CasioRZ1\").gain(0.5).degradeBy(0.1),\n    note(\"~ <[c3,eb3,g3]> [~ <[c3,eb3,g3]>] <[ab2,c3,eb3]>\").s(\"sawtooth\").lpf(950).attack(0.005).decay(0.14).sustain(0.05).release(0.1).room(0.5).delay(\".4:.1875:.5\").gain(0.5)\n  )],\n  [32, stack(\n    s(\"bd*4\").bank(\"CasioRZ1\").gain(1.1),\n    s(\"~ cp ~ cp\").bank(\"CasioRZ1\").gain(0.6),\n    s(\"hh*8\").bank(\"CasioRZ1\").gain(0.45).degradeBy(0.15).pan(sine.range(0.35,0.65)),\n    note(\"~ [<[c3,eb3,g3]>!2] ~ [<[ab2,c3,eb3]> <[bb2,d3,f3]>]\").s(\"sawtooth\").lpf(1300).attack(0.004).decay(0.1).sustain(0.0).release(0.08).room(0.4).delay(\".4:.1875:.55\").gain(0.5),\n    note(\"c2 ~ c2 g1\").s(\"sawtooth\").lpf(500).attack(0.01).decay(0.3).sustain(0.4).release(0.15).gain(0.5)\n  )],\n  [16, stack(\n    s(\"bd*4\").bank(\"CasioRZ1\").gain(1.0).mask(\"<1 1 1 0>\"),\n    note(\"~ <[c3,eb3,g3]> ~ <[ab2,c3,eb3]>\").s(\"sawtooth\").lpf(800).attack(0.08).decay(0.4).sustain(0.5).release(0.6).room(0.8).delay(\".5:.25:.6\").gain(0.5)\n  )],\n  [24, stack(\n    s(\"bd*4\").bank(\"CasioRZ1\").gain(1.1).every(8, x => x.ply(2)),\n    s(\"~ cp ~ cp\").bank(\"CasioRZ1\").gain(0.6),\n    s(\"hh*8\").bank(\"CasioRZ1\").gain(0.5).degradeBy(0.2).pan(sine.range(0.3,0.7)),\n    note(\"[<[c3,eb3,g3]> ~]*2 [~ <[ab2,c3,eb3]>]*2\").s(\"sawtooth\").lpf(1600).attack(0.003).decay(0.09).sustain(0.0).release(0.07).shape(0.2).room(0.35).delay(\".4:.1875:.55\").gain(0.5).every(4, x => x.rev()),\n    note(\"c2 ~ eb2 g1\").s(\"sawtooth\").lpf(550).attack(0.01).decay(0.25).sustain(0.3).release(0.12).gain(0.5)\n  )],\n  [18, stack(\n    s(\"bd*2\").bank(\"CasioRZ1\").gain(0.95),\n    note(\"~ <[c3,eb3,g3]> ~ <[f2,ab2,c3]>\").s(\"sawtooth\").lpf(900).attack(0.05).decay(0.5).sustain(0.3).release(0.8).room(0.85).delay(\".5:.25:.65\").gain(0.45)\n  )],\n  [12, stack(\n    note(\"~ <[c3,eb3,g3]> ~ ~\").s(\"sawtooth\").lpf(650).attack(0.1).decay(0.6).sustain(0.2).release(1.0).room(0.9).delay(\".6:.375:.7\").gain(0.4)\n  )]\n)",
+  "createdAt": "2026-06-15T20:32:40Z"
+}

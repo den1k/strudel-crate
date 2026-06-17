@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-16-crazy-vocals-with-effects-07",
+  "title": "Glitched Syllables",
+  "prompt": "crazy vocals with effects",
+  "batch": "2026-06-16-crazy-vocals-with-effects",
+  "description": "A metallic FM vocal-chirp pluck that stutters out glitched syllables: short triangle plucks with a stepped FM index ratchet through euclid and ply patterns, while a pitch envelope snaps each chirp upward and a formant vowel sweep gives it a talking, alien-syllable character. The arc morphs over 32 cycles as the FM index, vowel, euclid density and filter all walk on offset clocks, then resolves into a clicky delay trail.",
+  "meta": {
+    "bpm": 132,
+    "genre": "designed fm percussion",
+    "mood": "glitchy, alien, nervous",
+    "key": "C minor",
+    "instruments": ["fm metallic vocal-chirp pluck"],
+    "energy": 4
+  },
+  "code": "setcpm(132/4)\nstack(\n  note(\"<c4 eb4 g4 bb4 f4 g4 ab4 eb4>*4\").s(\"triangle\")\n    .attack(0.001).decay(0.13).sustain(0).release(0.02)\n    .fm(\"<3 7 11 5 9 4 13 6>/8\").fmh(\"<1 1.5 0.5 2>/4\")\n    .ply(\"<1 2 1 3 1 2 4 2>/2\")\n    .euclid(\"<5 7 9 11 7 5 13 9>\", 16)\n    .penv(\"<12 18 7 24 9 15 5 20>/4\").pattack(0.001).pdecay(0.05)\n    .vowel(\"<a e i o u e i a>/3\")\n    .lpf(sine.range(900, 5200).slow(23)).resonance(saw.range(6, 16).slow(13)).ftype(\"ladder\")\n    .lpenv(perlin.range(2, 7).slow(11)).lpattack(0.002).lpdecay(0.06)\n    .crush(perlin.range(7, 14).slow(29))\n    .shape(0.3)\n    .sometimesBy(0.18, x => x.speed(-1))\n    .pan(saw.range(0.1, 0.9).slow(7))\n    .delay(\"0.45:0.1875:0.62\").delayfeedback(0.55).orbit(2)\n    .gain(0.92)\n)",
+  "createdAt": "2026-06-16T19:38:09Z"
+}

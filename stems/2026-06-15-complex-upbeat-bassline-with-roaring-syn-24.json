@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-15-complex-upbeat-bassline-with-roaring-syn-24",
+  "title": "Cavern Gale Bass",
+  "prompt": "complex upbeat bassline with roaring synths",
+  "batch": "2026-06-15-complex-upbeat-bassline-with-roaring-syn",
+  "description": "A roaring mid-register sawtooth bass blended with sculpted pink/brown noise, rhythmically gated by a stepping tremolo and swept by a cavernous band-pass. Over 32 cycles the noise blend, fm growl and filter sweep travel on prime clocks, so the wind-tunnel howl slowly opens and closes without ever quite repeating.",
+  "meta": {
+    "bpm": 132,
+    "genre": "noise bass",
+    "mood": "roaring, cavernous",
+    "key": "C minor",
+    "instruments": ["roaring noise sawtooth bass"],
+    "energy": 4
+  },
+  "code": "setcpm(132/4)\nstack(\n  note(\"<c2 c2 eb2 g1 c2 [bb1 g1] eb2 f2>*2\").s(\"sawtooth\")\n    .fm(sine.slow(19).range(1.5, 7)).fmh(\"<1 2 1.5 0.5>/4\")\n    .noise(sine.slow(23).range(0.05, 0.45))\n    .penv(\"<0 0 7 -4>/8\").pattack(0.002).pdecay(0.09)\n    .bpf(sine.slow(32).range(220, 2600)).resonance(16).ftype(\"ladder\")\n    .lpenv(2.5).lpattack(0.005).lpdecay(0.18)\n    .tremolosync(\"<4 8 4 16>/8\").tremolodepth(sine.slow(11).range(0.3, 0.85))\n    .shape(sine.slow(13).range(0.2, 0.5)).coarse(\"<1 1 2 1>/4\")\n    .attack(0.004).decay(0.22).sustain(0.55).release(0.07)\n    .pan(sine.slow(7).range(0.2, 0.8))\n    .off(1/8, x => x.add(note(12)).gain(0.3).vowel(\"<o u a>/3\"))\n    .room(sine.slow(29).range(0.25, 0.7)).delay(\"0.35:0.5:0.6\")\n    .gain(0.9)\n)\n",
+  "createdAt": "2026-06-15T18:24:54Z"
+}

@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-15-complex-upbeat-bassline-with-roaring-syn-27",
+  "title": "Throat Circuit",
+  "prompt": "complex upbeat bassline with roaring synths",
+  "batch": "2026-06-15-complex-upbeat-bassline-with-roaring-syn",
+  "description": "A vocal-ish growl bass that screams through cycling vowel formants over an FM core in the low-mid register. Over 32 cycles the FM index swells, the vowel sequence marches, and a crush/coarse degradation arc creeps in until the voice turns robotic and broken before resetting.",
+  "meta": {
+    "bpm": 140,
+    "genre": "formant fm bass",
+    "mood": "menacing",
+    "key": "C minor",
+    "instruments": ["formant fm growl bass"],
+    "energy": 5
+  },
+  "code": "setcpm(140/4)\nstack(\n  note(\"<c2 c2 eb2 g1>*4\").s(\"sawtooth\")\n    .fm(sine.slow(24).range(3, 13)).fmh(\"<1 2 1.5 0.5>/8\")\n    .vowel(\"<a e i o u a o e>/2\")\n    .penv(\"<0 0 7 -5>/8\").pattack(0.001).pdecay(0.07)\n    .vib(\"<5 7 11>/8\").vibmod(sine.slow(13).range(0.3, 1.8))\n    .bpf(sine.slow(32).range(350, 2600)).resonance(16).ftype(\"ladder\")\n    .lpenv(3).lpattack(0.004).lpdecay(0.14)\n    .crush(saw.slow(16).range(16, 5))\n    .coarse(\"<1 1 2 4 1 2 4 8>/4\")\n    .shape(sine.slow(20).range(0.2, 0.55))\n    .pan(sine.slow(7).range(0.2, 0.8))\n    .sometimesBy(0.12, x => x.speed(-1))\n    .attack(0.004).decay(0.18).sustain(0.55).release(0.06)\n    .off(1/8, x => x.add(note(12)).gain(0.25).vowel(\"e\"))\n    .delay(\"0.4:0.375:0.6\").room(0.3).gain(0.9)\n)",
+  "createdAt": "2026-06-15T18:24:54Z"
+}

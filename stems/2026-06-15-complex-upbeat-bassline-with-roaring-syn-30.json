@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-15-complex-upbeat-bassline-with-roaring-syn-30",
+  "title": "Striate Riot",
+  "prompt": "complex upbeat bassline with roaring synths",
+  "batch": "2026-06-15-complex-upbeat-bassline-with-roaring-syn",
+  "description": "One 'east' dirt hit shattered into a glitchy mid-register groove by striate interleaving, then driven into a roaring bassline with FM, ladder-filter squelch and rhythmic tremolo gating. Over 16 cycles the striate count, FM index, filter sweep and gate rate all travel on prime-ish clocks so the loop keeps mutating before it repeats.",
+  "meta": {
+    "bpm": 132,
+    "genre": "glitch sample bass",
+    "mood": "frenetic",
+    "key": "atonal",
+    "instruments": ["mangled east sample bass"],
+    "energy": 5
+  },
+  "code": "setcpm(132/4)\nstack(\n  s(\"east*4\").n(\"<0 2 1 3>/4\")\n    .striate(\"<4 6 8 6>/8\")\n    .speed(\"<1 1 -1 0.5>\").squiz(\"<0 0 1 2>/8\")\n    .fm(sine.slow(16).range(1, 9)).fmh(\"<1 2 1.5 0.5>/4\")\n    .lpf(sine.slow(24).range(300, 3200)).resonance(15).ftype(\"ladder\")\n    .lpenv(sine.slow(13).range(1, 5)).lpattack(0.005).lpdecay(0.12)\n    .crush(\"<16 8 6 12>/8\").shape(0.4).distort(\"<0 0.3>/8\")\n    .tremolosync(\"<2 4 8>/8\").tremolodepth(sine.slow(7).range(0.3, 0.9))\n    .pan(sine.slow(11).range(0.2, 0.8))\n    .sometimesBy(0.18, x => x.speed(-1))\n    .off(0.125, x => x.add(note(12)).gain(0.3))\n    .delay(\"0.4:0.1875:0.5\").room(0.18)\n    .gain(0.9)\n)",
+  "createdAt": "2026-06-15T18:24:54Z"
+}

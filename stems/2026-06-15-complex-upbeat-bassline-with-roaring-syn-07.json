@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-15-complex-upbeat-bassline-with-roaring-syn-07",
+  "title": "Knuckle Sub",
+  "prompt": "complex upbeat bassline with roaring synths",
+  "batch": "2026-06-15-complex-upbeat-bassline-with-roaring-syn",
+  "description": "A dry, clicky 808 sub built from a single sine voice: a sharp pitch-envelope knock cracks the attack while the body sits deep in the sub register. Over 16 cycles the penv depth, knock decay, and ladder filter sweep all travel on separate clocks, morphing the hit from a tight tick to a roaring drop and back.",
+  "meta": {
+    "bpm": 140,
+    "genre": "808 sub bass",
+    "mood": "punchy",
+    "key": "C minor",
+    "instruments": ["808 sine sub"],
+    "energy": 4
+  },
+  "code": "setcpm(140/4)\nstack(\n  note(\"<c1 c1 [eb1 c1] g0 c1 [g0 bb0] eb1 c1>*2\").s(\"sine\")\n    .penv(sine.slow(16).range(18, 36)).pattack(0.001).pdecay(perlin.slow(11).range(0.02, 0.09))\n    .lpf(sine.slow(24).range(280, 2600)).resonance(11).ftype(\"ladder\")\n    .lpenv(saw.slow(13).range(1.5, 5)).lpattack(0.004).lpdecay(0.12)\n    .attack(0.001).decay(0.18).sustain(0.55).release(0.05)\n    .shape(sine.slow(19).range(0.1, 0.4)).coarse(\"<1 1 2 1>/8\")\n    .off(1/16, x => x.add(note(12)).gain(0.22).pan(0.7).pdecay(0.03))\n    .room(0.08).gain(0.92)\n)",
+  "createdAt": "2026-06-15T18:24:54Z"
+}

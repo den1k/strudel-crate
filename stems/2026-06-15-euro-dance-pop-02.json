@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-15-euro-dance-pop-02",
+  "title": "Basement Floor Sub",
+  "prompt": "euro dance pop",
+  "batch": "2026-06-15-euro-dance-pop",
+  "description": "A dark, dry square sub bass for a euro-dance-pop floor: clicky and controlled up front, then it slowly degrades over a 32-cycle loop as a saw LFO bleeds the bit depth down and drags a resonant ladder filter shut. Rhythmic tremolo gating and a creeping pan keep the controlled low end alive and club-ready.",
+  "meta": {
+    "bpm": 128,
+    "genre": "subtractive sub bass",
+    "mood": "dark, dry, clubby",
+    "key": "C minor",
+    "instruments": ["square sub bass"],
+    "energy": 4
+  },
+  "code": "setcpm(128/4)\nstack(\n  note(\"<c1 c1 g0 c1 c1 eb1 g0 c1>*2\").s(\"square\")\n    .ftype(\"ladder\")\n    .lpf(saw.slow(32).range(620, 110))\n    .resonance(saw.slow(23).range(6, 14))\n    .lpenv(saw.slow(29).range(1.5, 4))\n    .lpattack(0.005).lpdecay(0.07)\n    .penv(7).pattack(0.001).pdecay(0.035)\n    .crush(saw.slow(32).range(16, 5))\n    .coarse(saw.slow(16).range(1, 5))\n    .tremolosync(\"<2 4 4 8>/4\").tremolodepth(saw.slow(13).range(0.1, 0.55))\n    .shape(saw.slow(11).range(0.1, 0.4))\n    .pan(tri.slow(7).range(0.35, 0.65))\n    .gain(0.95)\n)",
+  "createdAt": "2026-06-15T20:26:40Z"
+}

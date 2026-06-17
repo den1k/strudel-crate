@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-15-complex-upbeat-bassline-with-roaring-syn-20",
+  "title": "Anvil Tick",
+  "prompt": "complex upbeat bassline with roaring synths",
+  "batch": "2026-06-15-complex-upbeat-bassline-with-roaring-syn",
+  "description": "A single metallic percussion hit sculpted from an FM core with a sharp pitch-envelope knock, ringing in the mid register. Over 16 cycles the FM index, harmonicity steps and a resonant band-pass sweep travel on separate clocks so the strike slowly turns from a clean tick into a clanging anvil and back.",
+  "meta": {
+    "bpm": 124,
+    "genre": "fm metallic percussion",
+    "mood": "clanging",
+    "key": "atonal",
+    "instruments": ["fm metallic hit"],
+    "energy": 4
+  },
+  "code": "setcpm(124/4)\nstack(\n  note(\"<c4 ~ c4 [~ c4]>*2\").s(\"square\")\n    .fm(sine.slow(16).range(3, 13)).fmh(\"<2.41 3.17 5.13 1.71>/4\")\n    .penv(\"<28 22 34 18>/8\").pattack(0.001).pdecay(\"<0.04 0.06 0.03>/8\")\n    .attack(0.001).decay(0.11).sustain(0).release(0.05)\n    .bpf(sine.slow(24).range(900, 5200)).resonance(sine.slow(11).range(9, 19)).ftype(\"ladder\")\n    .lpenv(4).lpattack(0.002).lpdecay(0.08)\n    .crush(\"<16 12 8 10>/16\").shape(0.32)\n    .pan(sine.slow(7).range(0.3, 0.7))\n    .sometimesBy(0.18, x => x.speed(1.5))\n    .off(0.02, x => x.add(note(0.12)).gain(0.3))\n    .delay(\"0.3:0.1875:0.55\").room(0.28).orbit(2)\n    .gain(0.95)\n)\n",
+  "createdAt": "2026-06-15T18:24:54Z"
+}

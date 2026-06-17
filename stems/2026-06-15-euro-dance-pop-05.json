@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-15-euro-dance-pop-05",
+  "title": "Seasick Disco Pluck",
+  "prompt": "euro dance pop",
+  "batch": "2026-06-15-euro-dance-pop",
+  "description": "A bright triangle pluck bounces through a shifting euclid/ply grid, its pitch perpetually woozy from a deepening seasick vibrato while a penv click sharpens each hit. A rhythmic stereo delay smears the bounce into space, and the whole figure transposes through a slow four-chord arc.",
+  "meta": {
+    "bpm": 128,
+    "genre": "pluck lead",
+    "mood": "bouncy, woozy",
+    "key": "C minor",
+    "instruments": ["triangle pluck"],
+    "energy": 4
+  },
+  "code": "setcpm(128/4)\nstack(\n  note(\"<c3 eb3 g3 bb3>*4\".add(note(\"<0 0 3 -2>/16\")))\n    .s(\"triangle\")\n    .attack(0.001)\n    .decay(0.18)\n    .sustain(0)\n    .penv(\"<7 12 5 9>/8\").pattack(0.001).pdecay(0.06)\n    .vib(\"<3 5 7>/8\").vibmod(sine.slow(23).range(0.6, 1.4))\n    .euclidLegato(\"<5 7 5 3>/8\", 8)\n    .ply(\"<1 2 1 1>/4\")\n    .lpf(sine.slow(13).range(900, 4200)).resonance(8)\n    .pan(sine.slow(11).range(0.2, 0.8))\n    .delay(\"0.5:0.1875:0.62\").delayfeedback(0.55)\n    .shape(0.3)\n    .gain(0.85)\n)\n",
+  "createdAt": "2026-06-15T20:26:40Z"
+}

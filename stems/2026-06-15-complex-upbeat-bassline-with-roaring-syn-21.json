@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-15-complex-upbeat-bassline-with-roaring-syn-21",
+  "title": "Glass Splinter Clap",
+  "prompt": "complex upbeat bassline with roaring synths",
+  "batch": "2026-06-15-complex-upbeat-bassline-with-roaring-syn",
+  "description": "A single noise-sculpted clap hit, white noise snapping into pink through a high resonant band-pass with a fast filter-env tick, that broadens from clean clicks into a bit-crushed splintered shatter and back over a 32-cycle arc.",
+  "meta": {
+    "bpm": 138,
+    "genre": "noise percussion",
+    "mood": "brittle",
+    "key": "atonal",
+    "instruments": ["sculpted noise clap"],
+    "energy": 4
+  },
+  "code": "setcpm(138/4)\nstack(\n  s(\"white*2\").struct(\"x ~ [~ x] x ~ x [x ~ x]\")\n    .noise(sine.slow(24).range(0, 0.6))\n    .bpf(sine.slow(16).range(1800, 7200)).resonance(sine.slow(13).range(10, 22)).ftype(\"ladder\")\n    .lpenv(\"<6 9 4>/4\").lpattack(0.001).lpdecay(0.03)\n    .attack(0.001).decay(0.05).sustain(0).release(0.02)\n    .crush(saw.slow(32).range(16, 4)).coarse(\"<1 1 2 4>/8\")\n    .shape(0.3)\n    .hpf(900)\n    .pan(sine.slow(7).range(0.15, 0.85))\n    .sometimesBy(0.2, x => x.speed(-1))\n    .off(0.02, x => x.s(\"pink\").gain(0.35).crush(6).hpf(1400))\n    .room(sine.slow(19).range(0.1, 0.4)).delay(\"0.3:0.1875:0.5\")\n    .gain(0.9)\n)",
+  "createdAt": "2026-06-15T18:24:54Z"
+}
