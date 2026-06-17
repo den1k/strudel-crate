@@ -244,12 +244,14 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
 
   // --- rendering --------------------------------------------------------------
   // Present each Instant entity to the render code as { ...fields, id: slug }.
+  // InstaQL returns a link as a list, so unwrap the single author either way.
   function mapRow(row) {
+    const author = Array.isArray(row.author) ? row.author[0] : row.author;
     return {
       ...row,
       id: row.slug,
-      artistName: row.author?.artistName ?? null,
-      authorProfileId: row.author?.id ?? null,
+      artistName: author?.artistName ?? null,
+      authorProfileId: author?.id ?? null,
     };
   }
 
