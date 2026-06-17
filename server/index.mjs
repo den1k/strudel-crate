@@ -48,7 +48,7 @@ const jobStore = createJobStore({ jobsDir: join(repoRoot, 'data', 'jobs') });
 const runner = createRunner({ repoRoot, jobStore, adminDb });
 
 const progressFor = async (job) => {
-  if (job.status !== 'running') return undefined;
+  if (!adminDb || job.status !== 'running') return undefined;
   const count = (await itemSlugs(adminDb, job.collection)).size;
   return liveProduced(job, count);
 };

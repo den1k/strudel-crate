@@ -25,6 +25,7 @@ async function main() {
   if (!result.ok) { console.log(`FAIL ${track.id ?? file} — ${result.error}`); process.exit(1); }
 
   const authorProfileId = process.env.CRATE_AUTHOR_PROFILE_ID || null;
+  if (!authorProfileId) console.error(`WARN ${track.id} — no CRATE_AUTHOR_PROFILE_ID; saving unauthored`);
   const saved = await insertItem(adminDb, NAMESPACE, track, authorProfileId);
   if (!saved.ok) { console.log(`FAIL ${track.id} — ${saved.error}`); process.exit(1); }
 
