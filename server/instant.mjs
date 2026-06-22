@@ -46,6 +46,56 @@ export async function saveRating(adminDb, namespace, slug, { rating, notes, less
   };
 }
 
+// Set/clear the caller's rating for an item and maintain the denormalized
+// aggregate (ratingSum/ratingCount) on the item. `value` is 1-5 to set, or null
+// to clear. Computes the new aggregate from the currently-stored ratings plus
+// this caller's delta (the row is upserted/deleted in the same transact).
+// Returns { you, avg, count } or null when the slug doesn't exist.
+export async function setRating(adminDb, namespace, slug, profileId, value) {
+  const res = await adminDb.query({ [namespace]: { $: { where: { slug } } } });
+  const item = res[namespace][0];
+  if (!item) return null;
+
+  const found = await adminDb.query({
+    ratings: { $: { where: { namespace, slug, 'profile.id': profileId } } },
+  });
+  const existing = found.ratings[0];
+  const prev = existing ? (existing.value ?? 0) : 0;
+
+  let count = item.ratingCount ?? 0;
+  let sum = item.ratingSum ?? 0;
+  const txs = [];
+  const now = new Date().toISOString();
+
+  if (value == null) {
+    if (existing) {
+      sum -= prev;
+      count -= 1;
+      txs.push(adminDb.tx.ratings[existing.id].delete());
+    }
+  } else if (existing) {
+    sum += value - prev;
+    txs.push(adminDb.tx.ratings[existing.id].update({ value, updatedAt: now }));
+  } else {
+    sum += value;
+    count += 1;
+    txs.push(
+      adminDb.tx.ratings[id()]
+        .update({ namespace, slug, value, updatedAt: now })
+        .link({ profile: profileId }),
+    );
+  }
+
+  txs.push(adminDb.tx[namespace][item.id].update({ ratingSum: sum, ratingCount: count }));
+  await adminDb.transact(txs);
+
+  return {
+    you: value == null ? null : value,
+    avg: count ? Math.round((sum / count) * 10) / 10 : null,
+    count,
+  };
+}
+
 export async function itemSlugs(adminDb, namespace) {
   const res = await adminDb.query({ [namespace]: {} });
   return new Set(res[namespace].map((i) => i.slug));

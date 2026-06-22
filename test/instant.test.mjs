@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { fakeAdmin } from './fake-admin.mjs';
 import {
-  ensureProfile, getProfile, setArtistName, saveRating, itemSlugs, itemsBySlug, insertItem, recordPlay,
+  ensureProfile, getProfile, setArtistName, saveRating, itemSlugs, itemsBySlug, insertItem, recordPlay, setRating,
 } from '../server/instant.mjs';
 
 describe('ensureProfile', () => {
@@ -154,5 +154,69 @@ describe('getProfile', () => {
     const res = await getProfile(db, { id: 'u9', email: 'freshuser@gmail.com' });
     expect(res.artistName).toBe('freshuser');
     expect(res.id).toBeTruthy();
+  });
+});
+
+describe('setRating', () => {
+  const seed = () => fakeAdmin({
+    tracks: [{ id: 't1', slug: 'demo-01', ratingSum: 0, ratingCount: 0 }],
+    profiles: [{ id: 'p1' }, { id: 'p2' }],
+    ratings: [],
+  });
+
+  it('returns null for an unknown slug', async () => {
+    const db = seed();
+    expect(await setRating(db, 'tracks', 'nope', 'p1', 5)).toBe(null);
+  });
+
+  it('adds a first rating: count 0→1, sum=value', async () => {
+    const db = seed();
+    const out = await setRating(db, 'tracks', 'demo-01', 'p1', 4);
+    expect(out).toEqual({ you: 4, avg: 4, count: 1 });
+    const itemTx = db._txs.find((t) => t.ns === 'tracks');
+    expect(itemTx.update).toEqual({ ratingSum: 4, ratingCount: 1 });
+    const ratingTx = db._txs.find((t) => t.ns === 'ratings');
+    expect(ratingTx.update).toMatchObject({ namespace: 'tracks', slug: 'demo-01', value: 4 });
+    expect(ratingTx.link).toEqual({ profile: 'p1' });
+  });
+
+  it('changes an existing rating: sum adjusts, count unchanged', async () => {
+    const db = fakeAdmin({
+      tracks: [{ id: 't1', slug: 'demo-01', ratingSum: 4, ratingCount: 1 }],
+      profiles: [{ id: 'p1' }],
+      ratings: [{ id: 'r1', namespace: 'tracks', slug: 'demo-01', value: 4, profile: { id: 'p1' } }],
+    });
+    const out = await setRating(db, 'tracks', 'demo-01', 'p1', 2);
+    expect(out).toEqual({ you: 2, avg: 2, count: 1 });
+    const itemTx = db._txs.find((t) => t.ns === 'tracks');
+    expect(itemTx.update).toEqual({ ratingSum: 2, ratingCount: 1 });
+    const ratingTx = db._txs.find((t) => t.ns === 'ratings' && t.id === 'r1');
+    expect(ratingTx.update).toMatchObject({ value: 2 });
+  });
+
+  it('clears a rating: count 1→0, sum back to 0, row deleted', async () => {
+    const db = fakeAdmin({
+      tracks: [{ id: 't1', slug: 'demo-01', ratingSum: 4, ratingCount: 1 }],
+      profiles: [{ id: 'p1' }],
+      ratings: [{ id: 'r1', namespace: 'tracks', slug: 'demo-01', value: 4, profile: { id: 'p1' } }],
+    });
+    const out = await setRating(db, 'tracks', 'demo-01', 'p1', null);
+    expect(out).toEqual({ you: null, avg: null, count: 0 });
+    const itemTx = db._txs.find((t) => t.ns === 'tracks');
+    expect(itemTx.update).toEqual({ ratingSum: 0, ratingCount: 0 });
+    const ratingTx = db._txs.find((t) => t.ns === 'ratings' && t.id === 'r1');
+    expect(ratingTx.delete).toBe(true);
+  });
+
+  it('aggregates two distinct users', async () => {
+    const db = fakeAdmin({
+      tracks: [{ id: 't1', slug: 'demo-01', ratingSum: 5, ratingCount: 1 }],
+      profiles: [{ id: 'p1' }, { id: 'p2' }],
+      ratings: [{ id: 'r1', namespace: 'tracks', slug: 'demo-01', value: 5, profile: { id: 'p2' } }],
+    });
+    const out = await setRating(db, 'tracks', 'demo-01', 'p1', 4);
+    expect(out).toEqual({ you: 4, avg: 4.5, count: 2 });
+    const itemTx = db._txs.find((t) => t.ns === 'tracks');
+    expect(itemTx.update).toEqual({ ratingSum: 9, ratingCount: 2 });
   });
 });
