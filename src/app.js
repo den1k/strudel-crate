@@ -583,7 +583,7 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
             stopPlays();
             if (pid) {
               playsUnsub = db.subscribeQuery(
-                { plays: { $: { where: { 'profile.id': pid } } } },
+                { plays: { $: { where: { 'profile.id': pid, namespace } } } },
                 (r) => {
                   const map = {};
                   for (const p of r.data?.plays ?? []) map[p.slug] = p.count;
