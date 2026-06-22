@@ -31,15 +31,26 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
   const urlBatch = new URLSearchParams(location.search).get('batch');
   if (urlBatch) state.batch = urlBatch;
 
-  // --- Back/Forward state restoration (see list-state.js) -------------------
+  // --- list state restoration (see list-state.js) --------------------------
   // Take scroll control away from the browser: the list height is unknown at
   // load (Instant streams it in), so the browser's own restore would fire too
   // early and land at the top. We restore manually once the list has height.
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
-  // Only restore on a genuine Back/Forward nav — a fresh reload or new tab
-  // keeps the current default behavior (restored stays null).
+  // Restore on a genuine Back/Forward nav (browser back button) OR when we
+  // arrived here straight from a song page — the song page's "← back to crate"
+  // / "← back to stems" links and header nav are plain forward navigations, so
+  // they don't count as back_forward, but they're a "return to the list" intent
+  // all the same. A fresh reload or external entry restores nothing.
   const navType = performance.getEntriesByType('navigation')[0]?.type;
-  const restored = navType === 'back_forward' ? loadListState(namespace) : null;
+  const cameFromSong = (() => {
+    try {
+      const ref = document.referrer ? new URL(document.referrer) : null;
+      return !!ref && ref.origin === location.origin && /^\/song\//.test(ref.pathname);
+    } catch {
+      return false;
+    }
+  })();
+  const restored = navType === 'back_forward' || cameFromSong ? loadListState(namespace) : null;
   if (restored) {
     // A ?batch= deep-link still wins; otherwise honor the batch we left on.
     if (!urlBatch) state.batch = restored.batch;
