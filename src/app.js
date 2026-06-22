@@ -139,6 +139,8 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
   }
 
   // --- scrubber: rAF position loop + pointer seeking ------------------------
+  // The single-track /song page reimplements this loop in song.js's
+  // wirePlayback() — keep the two in sync when changing seek behavior.
   function paintSeek(fraction, elapsedSeconds) {
     fill.style.width = `${(fraction * 100).toFixed(2)}%`;
     elapsedEl.textContent = mmss(elapsedSeconds);
