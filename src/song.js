@@ -1,0 +1,302 @@
+// The dedicated single-song page at /song/<slug>. Reuses the shared Strudel
+// runtime (strudel-boot), the StrudelMirror editor (editor.js) and the pure
+// transport helpers (transport.js) so playback matches the list pages.
+import { getAudioContext } from '@strudel/webaudio';
+import { mountEditor, getEditor, cyclePosition, seekEditor } from './editor.js';
+import { bootStrudel } from './strudel-boot.js';
+import { exportSpec } from './export-spec.js';
+import { groupVersions } from './versions.js';
+import { mmss, hasTimeline, fractionToCycle, progressFraction, isFinished } from './transport.js';
+import { slugFromPath, songUrl } from './song-url.js';
+import { db } from './db.js';
+
+const $ = (sel, el = document) => el.querySelector(sel);
+const NAMESPACES = ['tracks', 'stems'];
+
+function renderEmpty(message) {
+  $('#song').innerHTML = `<p class="empty">${message}</p>`;
+}
+
+// Map an Instant row to the render shape ({ ...fields, id: slug, artistName }).
+// Mirrors app.js's mapRow; the slug is the identity editor.js/exportSpec use.
+function mapRow(row) {
+  const author = Array.isArray(row.author) ? row.author[0] : row.author;
+  return { ...row, id: row.slug, artistName: author?.artistName ?? null };
+}
+
+// Resolve a slug to { ns, item }. Tracks win over stems on a (rare) collision.
+async function resolveItem(slug) {
+  for (const ns of NAMESPACES) {
+    const res = await db.queryOnce({ [ns]: { author: {}, $: { where: { slug } } } });
+    const row = res.data?.[ns]?.[0];
+    if (row) return { ns, item: mapRow(row) };
+  }
+  return null;
+}
+
+// The version family for an item: rows in the same namespace whose slug or
+// versionOf equals the family root. Returns the matching family or null.
+async function fetchFamily(ns, item) {
+  const root = item.versionOf ?? item.id;
+  const res = await db.queryOnce({
+    [ns]: { $: { where: { or: [{ slug: root }, { versionOf: root }] } } },
+  });
+  const rows = (res.data?.[ns] ?? []).map((r) => ({ ...r, id: r.slug }));
+  return groupVersions(rows).find((f) => f.versions.some((v) => v.id === item.id)) ?? null;
+}
+
+async function shareSong(item) {
+  const url = location.origin + songUrl(item.id);
+  if (navigator.share) {
+    try { await navigator.share({ title: item.title, url }); } catch { /* user cancelled */ }
+    return;
+  }
+  try {
+    await navigator.clipboard.writeText(url);
+    showToast('Link copied');
+  } catch {
+    showToast('Copy failed');
+  }
+}
+
+let toastTimer = null;
+function showToast(message) {
+  let toast = $('.toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.className = 'toast';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = message;
+  toast.classList.add('on');
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove('on'), 1600);
+}
+
+function renderSong(item, ns, family, ready) {
+  document.title = `${item.title} — STRUDEL`;
+  const root = $('#song');
+  root.innerHTML = '';
+
+  const back = document.createElement('a');
+  back.className = 'song-back';
+  back.href = ns === 'stems' ? '/stems' : '/';
+  back.textContent = '← back to crate';
+  root.appendChild(back);
+
+  const head = document.createElement('div');
+  head.className = 'song-head';
+  const playBtn = document.createElement('button');
+  playBtn.className = 'play song-play';
+  playBtn.innerHTML = '▶';
+  playBtn.title = 'play';
+  const title = document.createElement('div');
+  title.className = 'song-title';
+  const h2 = document.createElement('h2');
+  h2.textContent = item.title;
+  title.appendChild(h2);
+  if (item.artistName) {
+    const by = document.createElement('span');
+    by.className = 'by';
+    by.textContent = `by ${item.artistName}`;
+    title.appendChild(by);
+  }
+  const share = document.createElement('button');
+  share.className = 'export song-share';
+  share.textContent = '⤴ share';
+  share.title = 'copy link to this song';
+  share.addEventListener('click', () => shareSong(item));
+  head.append(playBtn, title, share);
+  root.appendChild(head);
+
+  const meta = document.createElement('div');
+  meta.className = 'song-meta';
+  const m = item.meta ?? {};
+  const chipValues = [
+    m.genre,
+    m.bpm && `${m.bpm} bpm`,
+    m.key,
+    m.mood,
+    m.energy && '▮'.repeat(Math.min(m.energy, 5)) + '▯'.repeat(Math.max(0, 5 - m.energy)),
+    (m.instruments ?? []).join(' · ') || null,
+  ].filter(Boolean);
+  const chips = document.createElement('div');
+  chips.className = 'chips';
+  for (const v of chipValues) {
+    const c = document.createElement('span');
+    c.className = 'chip';
+    c.textContent = v;
+    chips.appendChild(c);
+  }
+  meta.appendChild(chips);
+  if (item.description) {
+    const d = document.createElement('p');
+    d.className = 'desc';
+    d.textContent = item.description;
+    meta.appendChild(d);
+  }
+  if (item.prompt) {
+    const p = document.createElement('p');
+    p.className = 'song-prompt';
+    p.textContent = `prompt: ${item.prompt}`;
+    meta.appendChild(p);
+  }
+  root.appendChild(meta);
+
+  const editorWrap = document.createElement('div');
+  editorWrap.className = 'song-editor';
+  editorWrap.innerHTML = `<p class="eval-error" hidden></p><div class="editor"></div>`;
+  root.appendChild(editorWrap);
+
+  if (family && family.versions.length > 1) {
+    const vers = document.createElement('div');
+    vers.className = 'song-versions';
+    const label = document.createElement('span');
+    label.className = 'song-versions-label';
+    label.textContent = 'versions';
+    vers.appendChild(label);
+    for (const v of family.versions) {
+      const a = document.createElement('a');
+      a.className = 'version' + (v.id === item.id ? ' on' : '');
+      a.href = songUrl(v.id);
+      a.textContent = `v${v.version}`;
+      a.title = `version ${v.version} — ${v.createdAt}`;
+      vers.appendChild(a);
+    }
+    root.appendChild(vers);
+  }
+
+  wirePlayback(item, playBtn, editorWrap, ready);
+}
+
+// Play/stop + seek for the page's single track. Mirrors app.js's scrubber but
+// against one editor (no multi-track switching).
+function wirePlayback(item, playBtn, editorWrap, ready) {
+  const rail = $('#seek-rail');
+  const fill = $('#seek-fill');
+  const elapsedEl = $('#elapsed');
+  const totalEl = $('#total');
+  const seekbar = $('#seekbar');
+  const stopBtn = $('#stop');
+  const nowPlaying = $('#now-playing');
+
+  let spec = null;
+  try { spec = exportSpec(item); } catch { spec = null; }
+  let rafId = null;
+  let scrubbing = false;
+
+  function paintSeek(fraction, elapsedSeconds) {
+    fill.style.width = `${(fraction * 100).toFixed(2)}%`;
+    elapsedEl.textContent = mmss(elapsedSeconds);
+    rail.setAttribute('aria-valuenow', Math.round(fraction * 100));
+  }
+
+  function showTransport(playing) {
+    const seekable = playing && hasTimeline(spec);
+    seekbar.hidden = !seekable;
+    if (seekable) totalEl.textContent = mmss(spec.seconds);
+    stopBtn.disabled = !playing;
+    nowPlaying.textContent = playing ? `NOW PLAYING — ${item.title}` : '';
+    playBtn.innerHTML = playing ? '<span class="eq"><i></i><i></i><i></i></span>' : '▶';
+    playBtn.title = playing ? 'stop' : 'play';
+  }
+
+  function startSeekLoop() {
+    if (rafId != null) return;
+    const tick = () => {
+      rafId = requestAnimationFrame(tick);
+      if (scrubbing || !hasTimeline(spec)) return;
+      const cycle = cyclePosition(item.id);
+      if (cycle == null) return;
+      if (isFinished(cycle, spec.cycles)) { stop(); return; }
+      paintSeek(progressFraction(cycle, spec.cycles), cycle / spec.cps);
+    };
+    rafId = requestAnimationFrame(tick);
+  }
+
+  function stopSeekLoop() {
+    if (rafId != null) cancelAnimationFrame(rafId);
+    rafId = null;
+    scrubbing = false;
+    paintSeek(0, 0);
+  }
+
+  const editor = mountEditor({
+    track: item,
+    root: $('.editor', editorWrap),
+    prebake: () => ready,
+    onToggle: (_id, started) => {
+      showTransport(started);
+      if (started) startSeekLoop();
+      else stopSeekLoop();
+    },
+    onError: (_id, err) => {
+      const msg = $('.eval-error', editorWrap);
+      msg.textContent = err ? `✖ ${err.message}` : '';
+      msg.hidden = !err;
+    },
+  });
+
+  async function play() {
+    showTransport(true);
+    await ready; // audio context unlocks via this click
+    await getAudioContext().resume(); // post-export contexts start suspended
+    editor.evaluate();
+    startSeekLoop();
+  }
+
+  function stop() {
+    getEditor(item.id)?.stop(); // onToggle clears UI; this covers not-yet-evaluated
+    stopSeekLoop();
+    showTransport(false);
+  }
+
+  playBtn.addEventListener('click', () => (stopBtn.disabled ? play() : stop()));
+  stopBtn.addEventListener('click', stop);
+
+  function seekToPointer(e) {
+    if (!hasTimeline(spec)) return;
+    const rect = rail.getBoundingClientRect();
+    const fraction = rect.width ? (e.clientX - rect.left) / rect.width : 0;
+    const clamped = Math.min(1, Math.max(0, fraction));
+    seekEditor(item.id, fractionToCycle(clamped, spec.cycles));
+    paintSeek(clamped, clamped * spec.seconds); // immediate feedback; loop paused while scrubbing
+  }
+
+  rail.addEventListener('pointerdown', (e) => {
+    if (!hasTimeline(spec)) return;
+    scrubbing = true;
+    rail.setPointerCapture(e.pointerId);
+    seekToPointer(e);
+  });
+  rail.addEventListener('pointermove', (e) => { if (scrubbing) seekToPointer(e); });
+  const endScrub = (e) => {
+    if (!scrubbing) return;
+    scrubbing = false;
+    try { rail.releasePointerCapture(e.pointerId); } catch { /* already released */ }
+  };
+  rail.addEventListener('pointerup', endScrub);
+  rail.addEventListener('pointercancel', endScrub);
+}
+
+async function main() {
+  if (!db) return renderEmpty('Instant not configured — set VITE_INSTANT_APP_ID');
+  const slug = slugFromPath(location.pathname);
+  if (!slug) return renderEmpty('no song specified');
+
+  const ready = bootStrudel();
+  ready.then(() => {
+    $('#status').textContent = '● samples loaded';
+    $('#status').classList.add('ready');
+  });
+
+  const found = await resolveItem(slug);
+  if (!found) return renderEmpty('song not found');
+  const family = await fetchFamily(found.ns, found.item);
+  renderSong(found.item, found.ns, family, ready);
+}
+
+main().catch((err) => {
+  console.error('song page failed', err);
+  renderEmpty('could not load this song');
+});

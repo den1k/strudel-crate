@@ -1,18 +1,14 @@
-import * as core from '@strudel/core';
-import * as mini from '@strudel/mini';
-import * as tonal from '@strudel/tonal';
-import * as webaudio from '@strudel/webaudio';
-import { initAudioOnFirstClick, registerSynthSounds, samples, getAudioContext } from '@strudel/webaudio';
+import { getAudioContext } from '@strudel/webaudio';
 import { mountEditor, getEditor, isStarted, cyclePosition, seekEditor } from './editor.js';
 import { nextPlayingId } from './playing-state.js';
 import { exportTrack, isExporting } from './export.js';
 import { groupVersions } from './versions.js';
-import banks from '../shared/sample-banks.json';
 import { exportSpec } from './export-spec.js';
 import { mmss, hasTimeline, fractionToCycle, progressFraction, isFinished } from './transport.js';
 import { db } from './db.js';
 import { onUser } from './auth.js';
-import { enableSilentSwitchPlayback } from './ios-audio.js';
+import { bootStrudel } from './strudel-boot.js';
+import { songUrl } from './song-url.js';
 
 const $ = (sel, el = document) => el.querySelector(sel);
 
@@ -33,25 +29,32 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
   const urlBatch = new URLSearchParams(location.search).get('batch');
   if (urlBatch) state.batch = urlBatch;
 
-  // --- strudel init: load the same banks the validator allowlists ---------
-  // NOT @strudel/web: its dist inlines private copies of core/webaudio, so
-  // sounds registered through it are invisible to editor.js's webaudioOutput
-  // (two sound registries — silent playback). evalScope mirrors
-  // scripts/strudel-env.mjs but with real audio instead of stubs, keeping the
-  // webapp on the exact module instances the editors play through.
-  initAudioOnFirstClick(); // resume the AudioContext on the first user gesture
-  enableSilentSwitchPlayback(); // iOS: play through the hardware silent switch
-  const ready = (async () => {
-    await core.evalScope(core, mini, tonal, webaudio);
-    await Promise.all([
-      registerSynthSounds(),
-      ...banks.map((b) =>
-        b.shorthand
-          ? samples(b.shorthand)
-          : samples(b.json, b.base, { prebake: b.prebake, tag: b.tag }),
-      ),
-    ]);
-  })();
+  let toastTimer = null;
+  function showToast(message) {
+    let toast = document.querySelector('.toast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.className = 'toast';
+      document.body.appendChild(toast);
+    }
+    toast.textContent = message;
+    toast.classList.add('on');
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('on'), 1600);
+  }
+
+  async function shareTrack(track) {
+    const url = location.origin + songUrl(track.id);
+    if (navigator.share) {
+      try { await navigator.share({ title: track.title, url }); } catch { /* cancelled */ }
+      return;
+    }
+    try { await navigator.clipboard.writeText(url); showToast('Link copied'); }
+    catch { showToast('Copy failed'); }
+  }
+
+  // --- strudel init: one shared runtime for every page (see strudel-boot.js) -
+  const ready = bootStrudel();
   ready.then(() => {
     state.samplesReady = true;
     renderTransport();
@@ -136,6 +139,8 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
   }
 
   // --- scrubber: rAF position loop + pointer seeking ------------------------
+  // The single-track /song page reimplements this loop in song.js's
+  // wirePlayback() — keep the two in sync when changing seek behavior.
   function paintSeek(fraction, elapsedSeconds) {
     fill.style.width = `${(fraction * 100).toFixed(2)}%`;
     elapsedEl.textContent = mmss(elapsedSeconds);
@@ -374,6 +379,12 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
         });
         exportRow.appendChild(btn);
       }
+      const shareBtn = document.createElement('button');
+      shareBtn.className = 'export share';
+      shareBtn.textContent = '⤴ share';
+      shareBtn.title = 'copy link to this song';
+      shareBtn.addEventListener('click', () => shareTrack(track));
+      exportRow.appendChild(shareBtn);
       meta.appendChild(exportRow);
 
       const rate = document.createElement('div');

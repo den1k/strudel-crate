@@ -418,3 +418,35 @@ body {
   padding: 9px; cursor: pointer;
 }
 .profile-signout:hover { color: var(--hot); border-color: var(--hot); }
+
+/* --- /song/<slug> page ---------------------------------------------------- */
+#song { max-width: 900px; margin: 0 auto; padding: 24px 20px 96px; }
+.song-back { color: var(--dim); text-decoration: none; font-size: 12px; }
+.song-back:hover { color: var(--acid); }
+.song-head { display: flex; align-items: center; gap: 16px; margin: 20px 0 8px; }
+.song-play { width: 52px; height: 52px; font-size: 22px; flex: none; }
+.song-title { min-width: 0; flex: 1; }
+.song-title h2 { font-family: var(--display); font-weight: 700; font-size: 26px; line-height: 1.1; }
+.song-title .by { color: var(--dim); font-size: 12px; }
+.song-share { flex: none; }
+.song-meta { margin: 4px 0 16px; }
+.song-meta .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.song-meta .desc { color: var(--dim); font-size: 13px; margin-top: 10px; max-width: 70ch; }
+.song-prompt { color: var(--dim); font-size: 12px; margin-top: 8px; font-style: italic; max-width: 70ch; }
+.song-editor { margin: 8px 0 20px; }
+.song-editor .eval-error { color: var(--hot); font-size: 12px; margin: 0 0 6px; }
+.song-versions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.song-versions-label { color: var(--dim); font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; }
+.song-versions .version {
+  color: var(--dim); text-decoration: none; font-size: 12px; padding: 3px 8px;
+  border: 1px solid var(--line); font-family: var(--mono);
+}
+.song-versions .version:hover { color: var(--acid); border-color: var(--acid); }
+.song-versions .version.on { background: var(--acid); color: var(--bg); border-color: var(--acid); }
+.toast {
+  position: fixed; bottom: 84px; left: 50%; transform: translateX(-50%) translateY(8px);
+  background: var(--acid); color: var(--bg); font-family: var(--mono); font-size: 12px;
+  font-weight: 600; padding: 8px 16px; border-radius: 2px; pointer-events: none;
+  opacity: 0; transition: opacity 0.18s, transform 0.18s; z-index: 50;
+}
+.toast.on { opacity: 1; transform: translateX(-50%) translateY(0); }

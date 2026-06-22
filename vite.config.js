@@ -14,11 +14,21 @@ const rewriteStems = (server) => {
   });
 };
 
+// /song/<slug> is the per-song page; any path under /song/ serves song.html
+// (song.js reads the slug from location.pathname).
+const rewriteSong = (server) => {
+  server.middlewares.use((req, _res, next) => {
+    if (req.url?.startsWith('/song/')) req.url = '/song.html';
+    next();
+  });
+};
+
 export default defineConfig({
   plugins: [
     wasm(),
     topLevelAwait(),
     { name: 'stems-route', configureServer: rewriteStems, configurePreviewServer: rewriteStems },
+    { name: 'song-route', configureServer: rewriteSong, configurePreviewServer: rewriteSong },
   ],
   build: {
     target: 'esnext',
@@ -26,6 +36,7 @@ export default defineConfig({
       input: {
         main: page('./index.html'),
         stems: page('./stems.html'),
+        song: page('./song.html'),
         exportRender: page('./export-render.html'),
       },
     },
