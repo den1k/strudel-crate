@@ -18,6 +18,7 @@ const itemFields = {
   rating: i.number().optional(), // 1-5 or absent
   notes: i.string().optional(), // per-item notes
   lesson: i.string().optional(), // cross-batch lesson
+  playCount: i.number().optional(), // total plays across everyone; absent ⇒ 0
 };
 
 const _schema = i.schema({
@@ -31,6 +32,12 @@ const _schema = i.schema({
     }),
     tracks: i.entity({ ...itemFields }),
     stems: i.entity({ ...itemFields }),
+    plays: i.entity({
+      namespace: i.string(),       // 'tracks' | 'stems'
+      slug: i.string().indexed(),  // which version was played
+      count: i.number(),           // this profile's play count for this item
+      lastPlayedAt: i.string(),    // ISO 8601
+    }),
   },
   links: {
     tracksAuthor: {
@@ -40,6 +47,10 @@ const _schema = i.schema({
     stemsAuthor: {
       forward: { on: 'stems', has: 'one', label: 'author' },
       reverse: { on: 'profiles', has: 'many', label: 'stems' },
+    },
+    playsProfile: {
+      forward: { on: 'plays', has: 'one', label: 'profile', onDelete: 'cascade' },
+      reverse: { on: 'profiles', has: 'many', label: 'plays' },
     },
     userProfile: {
       forward: { on: 'profiles', has: 'one', label: 'user', onDelete: 'cascade' },
