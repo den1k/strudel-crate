@@ -32,6 +32,27 @@ function collectionRoutes(app, name, adminDb, requireUser, resolveUser, playLimi
     res.json(out);
   }));
 
+  app.put(`/api/${name}/:id/notes`, requireUser, wrap(async (req, res) => {
+    const { id } = req.params;
+    if (!ID_RE.test(id)) return res.status(400).json({ error: 'invalid id' });
+    const { notes, lesson } = req.body ?? {};
+    if (notes != null && typeof notes !== 'string') return res.status(400).json({ error: 'notes must be a string' });
+    if (lesson != null && typeof lesson !== 'string') return res.status(400).json({ error: 'lesson must be a string' });
+
+    const exists = (await adminDb.query({ [name]: { $: { where: { slug: id } } } }))[name][0];
+    if (!exists) return res.status(404).json({ error: 'not found' });
+    const owner = await itemOwnerProfileId(adminDb, name, id);
+    const callerProfile = await ensureProfile(adminDb, req.user);
+    const email = req.user?.email?.toLowerCase();
+    const isOwner = owner != null && owner === callerProfile;
+    const isAdminOnUnowned = owner == null && email && allowedEmails.includes(email);
+    if (!isOwner && !isAdminOnUnowned) return res.status(403).json({ error: 'not your song' });
+
+    const out = await setNotes(adminDb, name, id, { notes, lesson });
+    if (!out) return res.status(404).json({ error: 'not found' });
+    res.json(out);
+  }));
+
   // Public, token-aware: anyone's play bumps the total; a signed-in allowlisted
   // user also gets a per-user record. id = slug.
   app.post(`/api/${name}/:id/play`, resolveUser, wrap(async (req, res) => {

@@ -18,7 +18,7 @@ beforeEach(() => {
       { id: 't2', slug: 'rated-01', ratingSum: 5, ratingCount: 1, notes: '', lesson: '', author: [{ id: 'p9', user: [{ id: 'u9' }] }] },
     ],
     stems: [{ id: 's1', slug: 'stem-01', ratingSum: 0, ratingCount: 0, notes: '', lesson: '', author: [{ id: 'p1', user: [{ id: 'u1' }] }] }],
-    profiles: [{ id: 'p1', user: [{ id: 'u1' }] }],
+    profiles: [{ id: 'p1', artistName: 'kalavox', user: { id: 'u1' } }],
     ratings: [],
     plays: [],
   });
@@ -158,6 +158,37 @@ describe('jobs API', () => {
   it('GET /api/jobs/:id returns 404 for missing job', async () => {
     const res = await request(jobApp).get('/api/jobs/does-not-exist');
     expect(res.status).toBe(404);
+  });
+});
+
+describe('notes API', () => {
+  const asUser = (user, emails = ['kalavox@gmail.com']) =>
+    createApp({ adminDb, namespaces: ['tracks', 'stems'],
+      requireAuth, allowedEmails: emails,
+      requireUser: (req, _res, next) => { req.user = user; next(); } });
+
+  it('owner can write notes + lesson', async () => {
+    const a = asUser({ id: 'u1', email: 'kalavox@gmail.com' });
+    const res = await request(a).put('/api/tracks/demo-01/notes').send({ notes: 'tight', lesson: 'more swing' });
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ notes: 'tight', lesson: 'more swing' });
+  });
+  it('non-owner is forbidden', async () => {
+    const a = asUser({ id: 'u9', email: 'stranger@example.com' });
+    // u9 maps to a different profile; seed it so ensureProfile finds it
+    adminDb._store.profiles.push({ id: 'p9', user: { id: 'u9' } });
+    const res = await request(a).put('/api/tracks/demo-01/notes').send({ notes: 'mine now' });
+    expect(res.status).toBe(403);
+  });
+  it('404s unknown id', async () => {
+    const a = asUser({ id: 'u1', email: 'kalavox@gmail.com' });
+    const res = await request(a).put('/api/tracks/missing/notes').send({ notes: 'x' });
+    expect(res.status).toBe(404);
+  });
+  it('rejects non-string notes', async () => {
+    const a = asUser({ id: 'u1', email: 'kalavox@gmail.com' });
+    const res = await request(a).put('/api/tracks/demo-01/notes').send({ notes: 42 });
+    expect(res.status).toBe(400);
   });
 });
 
