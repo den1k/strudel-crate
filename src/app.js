@@ -314,7 +314,11 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
       const meta = document.createElement('div');
       meta.className = 'meta';
       meta.innerHTML = `<h3></h3><span class="id"></span><span class="plays"></span><p class="desc"></p><div class="chips"></div>`;
-      $('h3', meta).textContent = track.title;
+      const titleLink = document.createElement('a');
+      titleLink.className = 'title-link';
+      titleLink.href = songUrl(track.id);
+      titleLink.textContent = track.title;
+      $('h3', meta).appendChild(titleLink);
       $('.id', meta).textContent = track.id;
       const playsEl = $('.plays', meta);
       const total = track.playCount ?? 0;
