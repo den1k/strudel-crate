@@ -27,11 +27,23 @@ const userListeners = new Set();
 export function onUser(cb) { cb(currentUser); userListeners.add(cb); return () => userListeners.delete(cb); }
 function setUser(u) { currentUser = u; for (const cb of userListeners) cb(u); }
 
+// Chip/label text: prefer the artist name, fall back to the email local-part.
+export function displayName(user, artistName) {
+  const n = (artistName || '').trim();
+  if (n) return n;
+  if (user?.email) return user.email.split('@')[0];
+  return 'artist';
+}
+
 export function setupAuth() {
   if (!db) return; // Instant not configured — leave the app open
-  const btn = mountButton();
-  const modal = mountModal(db);
-  const profile = mountProfile();
+  const cluster = mountUserCluster();
+  const signInModal = mountModal(db);
+  // profileModal is added in Task 4; until then chip clicks are a no-op.
+  let openProfile = () => {};
+
+  cluster.signInBtn.onclick = () => signInModal.open();
+  cluster.chip.onclick = () => openProfile();
 
   // The generate panel triggers the auth-gated /api/jobs route, so it stays
   // hidden until a user is signed in.
@@ -44,62 +56,39 @@ export function setupAuth() {
     setUser(user);
     if (gen) gen.hidden = !user;
     if (user) {
-      btn.textContent = 'sign out';
-      btn.title = user.email;
-      btn.onclick = () => db.auth.signOut();
-      modal.close();
-      profile.show();
+      signInModal.close();
+      cluster.setSignedIn(displayName(user, null));
     } else {
-      btn.textContent = 'sign in';
-      btn.title = 'sign in to generate & rate';
-      btn.onclick = () => modal.open();
-      profile.hide();
+      cluster.setSignedOut();
     }
   });
 }
 
-function mountButton() {
-  const nav = document.querySelector('.nav');
-  const btn = document.createElement('button');
-  btn.className = 'auth-btn';
-  btn.type = 'button';
-  btn.textContent = 'sign in';
-  nav?.appendChild(btn);
-  return btn;
-}
+function mountUserCluster() {
+  const host = document.querySelector('.user');
+  const signInBtn = document.createElement('button');
+  signInBtn.className = 'auth-btn';
+  signInBtn.type = 'button';
+  signInBtn.textContent = 'sign in';
+  signInBtn.title = 'sign in to generate & rate';
 
-function mountProfile() {
-  const nav = document.querySelector('.nav');
-  const wrap = document.createElement('form');
-  wrap.className = 'profile-edit';
-  wrap.hidden = true;
-  wrap.innerHTML = `<input type="text" name="artist" placeholder="artist name" maxlength="60" />`;
-  nav?.appendChild(wrap);
-  const input = wrap.elements.artist;
+  const chip = document.createElement('button');
+  chip.className = 'user-chip';
+  chip.type = 'button';
+  chip.hidden = true;
+  chip.innerHTML =
+    '<span class="user-chip-name"></span><span class="user-chip-caret" aria-hidden="true">▾</span>';
 
-  async function load() {
-    try {
-      const res = await fetch('/api/profile');
-      if (res.ok) { const p = await res.json(); input.value = p.artistName ?? ''; }
-    } catch { /* ignore */ }
-  }
-  async function save() {
-    const artistName = input.value.trim();
-    if (!artistName) return;
-    try {
-      const res = await fetch('/api/profile', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ artistName }),
-      });
-      input.classList.toggle('saved', res.ok);
-      setTimeout(() => input.classList.remove('saved'), 600);
-    } catch { /* ignore */ }
-  }
-  wrap.addEventListener('submit', (e) => { e.preventDefault(); save(); input.blur(); });
-  input.addEventListener('blur', save);
+  host?.append(signInBtn, chip);
+  const nameEl = chip.querySelector('.user-chip-name');
 
-  return { show: () => { wrap.hidden = false; load(); }, hide: () => { wrap.hidden = true; } };
+  return {
+    signInBtn,
+    chip,
+    setName: (text) => { nameEl.textContent = text; },
+    setSignedIn: (text) => { signInBtn.hidden = true; chip.hidden = false; nameEl.textContent = text; },
+    setSignedOut: () => { chip.hidden = true; signInBtn.hidden = false; },
+  };
 }
 
 function mountModal(db) {
