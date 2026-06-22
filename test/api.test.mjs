@@ -8,65 +8,45 @@ import { createApp } from '../server/app.mjs';
 import { createJobStore } from '../server/jobs.mjs';
 
 const requireAuth = (req, _res, next) => { req.user = { id: 'u1', email: 'kalavox@gmail.com' }; next(); };
+const requireUser = (req, _res, next) => { req.user = { id: 'u1', email: 'kalavox@gmail.com' }; next(); };
 
 let app, adminDb;
 beforeEach(() => {
   adminDb = fakeAdmin({
     tracks: [
-      { id: 't1', slug: 'demo-01', rating: null, notes: '', lesson: '' },
-      { id: 't2', slug: 'rated-01', rating: 5, notes: '', lesson: '' },
+      { id: 't1', slug: 'demo-01', ratingSum: 0, ratingCount: 0, notes: '', lesson: '', author: [{ id: 'p1', user: [{ id: 'u1' }] }] },
+      { id: 't2', slug: 'rated-01', ratingSum: 5, ratingCount: 1, notes: '', lesson: '', author: [{ id: 'p9', user: [{ id: 'u9' }] }] },
     ],
-    stems: [{ id: 's1', slug: 'stem-01', rating: null, notes: '', lesson: '' }],
-    profiles: [],
+    stems: [{ id: 's1', slug: 'stem-01', ratingSum: 0, ratingCount: 0, notes: '', lesson: '', author: [{ id: 'p1', user: [{ id: 'u1' }] }] }],
+    profiles: [{ id: 'p1', user: [{ id: 'u1' }] }],
+    ratings: [],
     plays: [],
   });
-  app = createApp({ adminDb, namespaces: ['tracks', 'stems'], requireAuth });
+  app = createApp({ adminDb, namespaces: ['tracks', 'stems'], requireAuth, requireUser, allowedEmails: ['kalavox@gmail.com'] });
 });
 
 describe('rating API', () => {
-  it('PUT /api/tracks/:id/rating persists a rating', async () => {
-    const res = await request(app).put('/api/tracks/demo-01/rating').send({ rating: 5, notes: 'banger' });
+  it('PUT /api/tracks/:id/rating records the caller rating + aggregate', async () => {
+    const res = await request(app).put('/api/tracks/demo-01/rating').send({ value: 4 });
     expect(res.status).toBe(200);
-    expect(res.body.rating).toBe(5);
-    expect(res.body.notes).toBe('banger');
+    expect(res.body).toEqual({ you: 4, avg: 4, count: 1 });
   });
-
-  it('PUT /api/tracks/:id/rating 404s for an unknown id', async () => {
-    const res = await request(app).put('/api/tracks/missing/rating').send({ rating: 5 });
+  it('clears with value null', async () => {
+    const res = await request(app).put('/api/tracks/demo-01/rating').send({ value: null });
+    expect(res.status).toBe(200);
+    expect(res.body.count).toBe(0);
+  });
+  it('404s an unknown id', async () => {
+    const res = await request(app).put('/api/tracks/missing/rating').send({ value: 5 });
     expect(res.status).toBe(404);
   });
-
-  it('PUT /api/tracks/:id/rating rejects an out-of-range rating', async () => {
-    const res = await request(app).put('/api/tracks/demo-01/rating').send({ rating: 9 });
+  it('rejects out-of-range', async () => {
+    const res = await request(app).put('/api/tracks/demo-01/rating').send({ value: 9 });
     expect(res.status).toBe(400);
   });
-
-  it('rejects ids with path characters', async () => {
-    const res = await request(app).put('/api/tracks/..%2Fevil/rating').send({ rating: 3 });
+  it('rejects path-char ids', async () => {
+    const res = await request(app).put('/api/tracks/..%2Fevil/rating').send({ value: 3 });
     expect(res.status).toBe(400);
-  });
-
-  it('rejects a non-string lesson', async () => {
-    const res = await request(app).put('/api/tracks/demo-01/rating').send({ lesson: 42 });
-    expect(res.status).toBe(400);
-  });
-
-  it('saves and echoes lesson', async () => {
-    const res = await request(app).put('/api/tracks/demo-01/rating').send({ rating: 3, notes: 'n', lesson: 'less reverb' });
-    expect(res.status).toBe(200);
-    expect(res.body).toMatchObject({ rating: 3, notes: 'n', lesson: 'less reverb' });
-  });
-
-  it('PUT /api/stems/:id/rating persists a stem rating', async () => {
-    const res = await request(app).put('/api/stems/stem-01/rating').send({ rating: 4 });
-    expect(res.status).toBe(200);
-    expect(res.body.rating).toBe(4);
-  });
-
-  it('PUT /api/tracks/:id/rating clears the rating when sent null', async () => {
-    const res = await request(app).put('/api/tracks/rated-01/rating').send({ rating: null });
-    expect(res.status).toBe(200);
-    expect(res.body.rating).toBeNull();
   });
 });
 

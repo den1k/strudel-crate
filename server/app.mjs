@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
 import express from 'express';
 import { collectionFor } from './runner.mjs';
-import { saveRating, getProfile, setArtistName, recordPlay } from './instant.mjs';
+import { setRating, setNotes, itemOwnerProfileId, ensureProfile, getProfile, setArtistName, recordPlay } from './instant.mjs';
 import { createPlayLimiter } from './rate-limit.mjs';
 
 const ID_RE = /^[A-Za-z0-9_-]+$/; // rating files are written as <id>.json — no path chars
@@ -18,19 +18,18 @@ const wrap = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).cat
 
 // One rating route per collection at /api/<name>/:id/rating (id = slug).
 // Listing is retired — the client reads Instant directly.
-function collectionRoutes(app, name, adminDb, requireAuth, resolveUser, playLimiter) {
-  app.put(`/api/${name}/:id/rating`, requireAuth, wrap(async (req, res) => {
+function collectionRoutes(app, name, adminDb, requireUser, resolveUser, playLimiter, allowedEmails) {
+  app.put(`/api/${name}/:id/rating`, requireUser, wrap(async (req, res) => {
     const { id } = req.params;
     if (!ID_RE.test(id)) return res.status(400).json({ error: 'invalid id' });
-    const { rating, notes, lesson } = req.body ?? {};
-    if (rating != null && !(Number.isInteger(rating) && rating >= 1 && rating <= 5)) {
-      return res.status(400).json({ error: 'rating must be an integer 1-5' });
+    const { value } = req.body ?? {};
+    if (value != null && !(Number.isInteger(value) && value >= 1 && value <= 5)) {
+      return res.status(400).json({ error: 'value must be an integer 1-5 or null' });
     }
-    if (notes != null && typeof notes !== 'string') return res.status(400).json({ error: 'notes must be a string' });
-    if (lesson != null && typeof lesson !== 'string') return res.status(400).json({ error: 'lesson must be a string' });
-    const saved = await saveRating(adminDb, name, id, { rating, notes, lesson });
-    if (!saved) return res.status(404).json({ error: 'not found' });
-    res.json(saved);
+    const profileId = await ensureProfile(adminDb, req.user);
+    const out = await setRating(adminDb, name, id, profileId, value ?? null);
+    if (!out) return res.status(404).json({ error: 'not found' });
+    res.json(out);
   }));
 
   // Public, token-aware: anyone's play bumps the total; a signed-in allowlisted
@@ -124,12 +123,14 @@ export function createApp(opts = {}) {
   // production passes a middleware that verifies an Instant token + allowlist.
   const requireAuth = opts.requireAuth ?? ((_req, _res, next) => next());
   const resolveUser = opts.resolveUser ?? ((_req, _res, next) => next());
+  const requireUser = opts.requireUser ?? ((_req, _res, next) => next());
+  const allowedEmails = opts.allowedEmails ?? [];
   const playLimiter = opts.playLimiter ?? createPlayLimiter();
   const adminDb = opts.adminDb;
   const namespaces = opts.namespaces ?? ['tracks', 'stems'];
 
   if (adminDb) {
-    for (const name of namespaces) collectionRoutes(app, name, adminDb, requireAuth, resolveUser, playLimiter);
+    for (const name of namespaces) collectionRoutes(app, name, adminDb, requireUser, resolveUser, playLimiter, allowedEmails);
     profileRoutes(app, adminDb, requireAuth);
   }
 

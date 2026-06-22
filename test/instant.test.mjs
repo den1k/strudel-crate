@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { fakeAdmin } from './fake-admin.mjs';
 import {
-  ensureProfile, getProfile, setArtistName, saveRating, itemSlugs, itemsBySlug, insertItem, recordPlay, setRating,
+  ensureProfile, getProfile, setArtistName, itemSlugs, itemsBySlug, insertItem, recordPlay, setRating,
   setNotes, itemOwnerProfileId,
 } from '../server/instant.mjs';
 
@@ -32,26 +32,6 @@ describe('setArtistName', () => {
   });
 });
 
-describe('saveRating', () => {
-  it('patches rating/notes/lesson on the matching slug', async () => {
-    const db = fakeAdmin({ tracks: [{ id: 't1', slug: 's-01', rating: null, notes: '', lesson: '' }] });
-    const res = await saveRating(db, 'tracks', 's-01', { rating: 4, notes: 'nice' });
-    expect(res).toEqual({ rating: 4, notes: 'nice', lesson: '' });
-    expect(db._txs[0]).toMatchObject({ ns: 'tracks', id: 't1', update: { rating: 4, notes: 'nice' } });
-    expect(db._txs[0].update).not.toHaveProperty('lesson');
-  });
-
-  it('returns null for an unknown slug', async () => {
-    const db = fakeAdmin({ tracks: [] });
-    expect(await saveRating(db, 'tracks', 'nope', { rating: 1 })).toBeNull();
-  });
-
-  it('clears a rating when rating is explicitly null', async () => {
-    const db = fakeAdmin({ tracks: [{ id: 't1', slug: 's-01', rating: 5 }] });
-    const res = await saveRating(db, 'tracks', 's-01', { rating: null });
-    expect(res.rating).toBeNull();
-  });
-});
 
 describe('itemSlugs / itemsBySlug', () => {
   it('itemSlugs returns a set of slugs', async () => {

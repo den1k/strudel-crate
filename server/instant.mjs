@@ -28,24 +28,6 @@ export async function setArtistName(adminDb, user, artistName) {
   return { id: profileId, artistName };
 }
 
-// Patch shared rating fields on the item with the given slug. Returns the merged
-// {rating, notes, lesson} or null if no item matches.
-export async function saveRating(adminDb, namespace, slug, { rating, notes, lesson }) {
-  const res = await adminDb.query({ [namespace]: { $: { where: { slug } } } });
-  const item = res[namespace][0];
-  if (!item) return null;
-  const patch = {};
-  if (rating !== undefined) patch.rating = rating; // null clears
-  if (notes !== undefined) patch.notes = notes ?? '';
-  if (lesson !== undefined) patch.lesson = lesson ?? '';
-  await adminDb.transact(adminDb.tx[namespace][item.id].update(patch));
-  return {
-    rating: 'rating' in patch ? patch.rating : (item.rating ?? null),
-    notes: 'notes' in patch ? patch.notes : (item.notes ?? ''),
-    lesson: 'lesson' in patch ? patch.lesson : (item.lesson ?? ''),
-  };
-}
-
 // Set/clear the caller's rating for an item and maintain the denormalized
 // aggregate (ratingSum/ratingCount) on the item. `value` is 1-5 to set, or null
 // to clear. Computes the new aggregate from the currently-stored ratings plus
