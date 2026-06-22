@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { fakeAdmin } from './fake-admin.mjs';
 import {
   ensureProfile, getProfile, setArtistName, saveRating, itemSlugs, itemsBySlug, insertItem, recordPlay, setRating,
+  setNotes, itemOwnerProfileId,
 } from '../server/instant.mjs';
 
 describe('ensureProfile', () => {
@@ -218,5 +219,34 @@ describe('setRating', () => {
     expect(out).toEqual({ you: 4, avg: 4.5, count: 2 });
     const itemTx = db._txs.find((t) => t.ns === 'tracks');
     expect(itemTx.update).toEqual({ ratingSum: 9, ratingCount: 2 });
+  });
+});
+
+describe('itemOwnerProfileId', () => {
+  it('unwraps the has-one author list', async () => {
+    const db = fakeAdmin({ tracks: [{ id: 't1', slug: 'demo-01', author: [{ id: 'p1' }] }] });
+    expect(await itemOwnerProfileId(db, 'tracks', 'demo-01')).toBe('p1');
+  });
+  it('returns null when unowned', async () => {
+    const db = fakeAdmin({ tracks: [{ id: 't1', slug: 'demo-01' }] });
+    expect(await itemOwnerProfileId(db, 'tracks', 'demo-01')).toBe(null);
+  });
+  it('returns null for a missing item', async () => {
+    const db = fakeAdmin({ tracks: [] });
+    expect(await itemOwnerProfileId(db, 'tracks', 'nope')).toBe(null);
+  });
+});
+
+describe('setNotes', () => {
+  it('patches only the provided keys and echoes merged values', async () => {
+    const db = fakeAdmin({ tracks: [{ id: 't1', slug: 'demo-01', notes: 'old', lesson: 'keep' }] });
+    const out = await setNotes(db, 'tracks', 'demo-01', { notes: 'new' });
+    expect(out).toEqual({ notes: 'new', lesson: 'keep' });
+    const tx = db._txs.find((t) => t.ns === 'tracks');
+    expect(tx.update).toEqual({ notes: 'new' });
+  });
+  it('returns null for a missing item', async () => {
+    const db = fakeAdmin({ tracks: [] });
+    expect(await setNotes(db, 'tracks', 'nope', { notes: 'x' })).toBe(null);
   });
 });

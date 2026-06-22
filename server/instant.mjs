@@ -96,6 +96,31 @@ export async function setRating(adminDb, namespace, slug, profileId, value) {
   };
 }
 
+// The linked author's profile id (has-one comes back as a single-element list),
+// or null when the item is unowned or missing.
+export async function itemOwnerProfileId(adminDb, namespace, slug) {
+  const res = await adminDb.query({ [namespace]: { author: {}, $: { where: { slug } } } });
+  const item = res[namespace][0];
+  return item?.author?.[0]?.id ?? null;
+}
+
+// Patch notes/lesson on the item (only the keys present in `patch`). Returns the
+// merged { notes, lesson } or null when the slug doesn't exist. Caller is
+// responsible for the owner check.
+export async function setNotes(adminDb, namespace, slug, patch) {
+  const res = await adminDb.query({ [namespace]: { $: { where: { slug } } } });
+  const item = res[namespace][0];
+  if (!item) return null;
+  const update = {};
+  if (patch.notes !== undefined) update.notes = patch.notes ?? '';
+  if (patch.lesson !== undefined) update.lesson = patch.lesson ?? '';
+  await adminDb.transact(adminDb.tx[namespace][item.id].update(update));
+  return {
+    notes: 'notes' in update ? update.notes : (item.notes ?? ''),
+    lesson: 'lesson' in update ? update.lesson : (item.lesson ?? ''),
+  };
+}
+
 export async function itemSlugs(adminDb, namespace) {
   const res = await adminDb.query({ [namespace]: {} });
   return new Set(res[namespace].map((i) => i.slug));
