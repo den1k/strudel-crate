@@ -9,11 +9,12 @@ import { db } from './db.js';
 import { onUser } from './auth.js';
 import { bootStrudel } from './strudel-boot.js';
 import { songUrl } from './song-url.js';
+import { aggregateAvg, isTopAggregate, myRatingOf } from './ratings.js';
 
 const $ = (sel, el = document) => el.querySelector(sel);
 
 export async function initApp({ namespace, emptyHint, splitStems = false }) {
-  const state = { tracks: [], playingId: null, playingSpec: null, samplesReady: false, batch: 'all', filter: 'all', playsBySlug: {} };
+  const state = { tracks: [], playingId: null, playingSpec: null, samplesReady: false, batch: 'all', filter: 'all', playsBySlug: {}, myRatings: {} };
   let playTimer = null; // pending "count this play" timer (fires after 4s of playback)
   let myProfileId = null;
 
@@ -222,22 +223,17 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
   }
 
   // --- ratings --------------------------------------------------------------
-  async function putRating(track, patch) {
-    const body = {
-      rating: 'rating' in patch ? patch.rating : track.rating,
-      notes: 'notes' in patch ? patch.notes : track.notes,
-      lesson: 'lesson' in patch ? patch.lesson : track.lesson,
-    };
+  async function putRating(track, value) {
     const res = await fetch(`/api/${namespace}/${track.id}/rating`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
+      body: JSON.stringify({ value }),
     });
     if (!res.ok) throw new Error(`save failed: ${res.status}`);
-    const saved = await res.json();
-    track.rating = saved.rating;
-    track.notes = saved.notes;
-    track.lesson = saved.lesson;
+    const saved = await res.json(); // { you, avg, count }
+    state.myRatings = { ...state.myRatings, [track.id]: saved.you };
+    track.ratingSum = saved.count ? Math.round(saved.avg * saved.count) : 0;
+    track.ratingCount = saved.count;
   }
 
   const debounce = (fn, ms) => {
@@ -281,8 +277,8 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
     return groupVersions(state.tracks).filter((fam) => {
       const t = fam.latest;
       if (state.batch !== 'all' && t.batch !== state.batch) return false;
-      if (state.filter === 'unrated') return t.rating == null;
-      if (state.filter === 'top') return (t.rating ?? 0) >= 4;
+      if (state.filter === 'unrated') return myRatingOf(state, t.id) == null;
+      if (state.filter === 'top') return isTopAggregate(t);
       if (state.filter === 'mine') return myProfileId != null && t.authorProfileId === myProfileId;
       return true;
     });
@@ -439,24 +435,28 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
 
       const rate = document.createElement('div');
       rate.className = 'rate';
+      const mine = myRatingOf(state, track.id);
+      const signedIn = !!myProfileId;
       for (let n = 1; n <= 5; n++) {
         const b = document.createElement('button');
-        b.className = 'block' + (track.rating != null && n <= track.rating ? ' on' : '');
-        b.title = `${n}/5`;
+        b.className = 'block' + (mine != null && n <= mine ? ' on' : '');
+        b.title = signedIn ? `${n}/5` : 'sign in to rate';
+        b.disabled = !signedIn;
         b.addEventListener('click', async () => {
+          const cur = myRatingOf(state, track.id);
           try {
-            await putRating(track, { rating: track.rating === n ? null : n });
-          } catch (err) {
-            console.error(err);
-            flashError(card);
-            return;
-          }
-          rate.querySelectorAll('.block').forEach((el, i) =>
-            el.classList.toggle('on', track.rating != null && i < track.rating),
-          );
+            await putRating(track, cur === n ? null : n);
+          } catch (err) { console.error(err); flashError(card); return; }
+          renderTracks();
         });
         rate.appendChild(b);
       }
+      const badge = document.createElement('span');
+      badge.className = 'agg';
+      const avg = aggregateAvg(track);
+      badge.textContent = avg != null ? `★ ${avg} · ${track.ratingCount}` : 'unrated';
+      badge.title = avg != null ? `${track.ratingCount} rating(s)` : 'no ratings yet';
+      rate.appendChild(badge);
 
       const autosaveArea = (className, placeholder, value, field) => {
         const ta = document.createElement('textarea');
@@ -465,7 +465,15 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
         ta.value = value ?? '';
         const save = debounce(async () => {
           try {
-            await putRating(track, { [field]: ta.value });
+            const res = await fetch(`/api/${namespace}/${track.id}/notes`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ [field]: ta.value }),
+            });
+            if (!res.ok) throw new Error(`save failed: ${res.status}`);
+            const saved = await res.json();
+            track.notes = saved.notes;
+            track.lesson = saved.lesson;
             ta.classList.add('saved');
             setTimeout(() => ta.classList.remove('saved'), 600);
           } catch (err) {
@@ -606,11 +614,14 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
   const mineBtn = document.querySelector('.seg button[data-filter="mine"]');
   let profileUnsub = null;
   let playsUnsub = null;
+  let ratingsUnsub = null;
   const stopPlays = () => { if (playsUnsub) { playsUnsub(); playsUnsub = null; } state.playsBySlug = {}; };
+  const stopRatings = () => { if (ratingsUnsub) { ratingsUnsub(); ratingsUnsub = null; } state.myRatings = {}; };
   onUser((user) => {
     if (mineBtn) mineBtn.hidden = !user;
     if (profileUnsub) { profileUnsub(); profileUnsub = null; }
     stopPlays();
+    stopRatings();
     myProfileId = null;
     if (user && db) {
       profileUnsub = db.subscribeQuery(
@@ -620,6 +631,7 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
           if (pid !== myProfileId) {
             myProfileId = pid;
             stopPlays();
+            stopRatings();
             if (pid) {
               playsUnsub = db.subscribeQuery(
                 { plays: { $: { where: { 'profile.id': pid, namespace } } } },
@@ -627,6 +639,15 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
                   const map = {};
                   for (const p of r.data?.plays ?? []) map[p.slug] = p.count;
                   state.playsBySlug = map;
+                  renderTracks();
+                },
+              );
+              ratingsUnsub = db.subscribeQuery(
+                { ratings: { $: { where: { 'profile.id': pid, namespace } } } },
+                (r) => {
+                  const map = {};
+                  for (const rr of r.data?.ratings ?? []) map[rr.slug] = rr.value;
+                  state.myRatings = map;
                   renderTracks();
                 },
               );
