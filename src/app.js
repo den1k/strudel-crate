@@ -10,13 +10,22 @@ import { onUser } from './auth.js';
 import { bootStrudel } from './strudel-boot.js';
 import { songUrl } from './song-url.js';
 import { aggregateAvg, isTopAggregate, myRatingOf } from './ratings.js';
+import { readViewParams, buildSearch } from './view-url.js';
+import { saveListState, loadListState } from './list-state.js';
 
 const $ = (sel, el = document) => el.querySelector(sel);
 
 export async function initApp({ namespace, emptyHint, splitStems = false }) {
-  const state = { tracks: [], playingId: null, playingSpec: null, samplesReady: false, batch: 'all', filter: 'all', playsBySlug: {}, myRatings: {} };
+  // cuedId/cuedSpec: a song primed in the footer transport (from a ?play= link)
+  // but not yet started — the footer button shows ▶ PLAY and one click starts it.
+  // pausedCycle: where a paused song will resume from (null = a fresh cue starts
+  // at 0). cuedId/cuedSpec hold the song loaded in the footer (cued or paused).
+  const state = { tracks: [], playingId: null, playingSpec: null, cuedId: null, cuedSpec: null, pausedCycle: null, samplesReady: false, batch: 'all', filter: 'all', user: null, playsBySlug: {}, myRatings: {} };
   let playTimer = null; // pending "count this play" timer (fires after 4s of playback)
   let myProfileId = null;
+  // The auth-gated "mine" button — a one-click shortcut into the author axis.
+  // Resolved up front so the filter wiring and renderUserFilter() can use it.
+  const mineBtn = document.querySelector('.seg button[data-filter="mine"]');
 
   // scrubber DOM + loop state (elements exist in the footer of both pages)
   const seekbar = $('#seekbar');
@@ -28,8 +37,48 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
   let scrubbing = false;
 
   const collection = namespace; // 'tracks' | 'stems'
-  const urlBatch = new URLSearchParams(location.search).get('batch');
-  if (urlBatch) state.batch = urlBatch;
+  // The URL is the authoritative source of view state (see view-url.js). Each
+  // field is null when its param is absent; we apply the non-null ones below.
+  const urlView = readViewParams(location.search);
+  if (urlView.batch) state.batch = urlView.batch;
+  if (urlView.filter) state.filter = urlView.filter;
+  if (urlView.user) state.user = urlView.user;
+  // The play param cues a song after first content (see applyRows); it is read
+  // only from the URL, never from the sessionStorage restore.
+  const cueEntityId = urlView.play;
+
+  // --- list state restoration (see list-state.js) --------------------------
+  // Take scroll control away from the browser: the list height is unknown at
+  // load (Instant streams it in), so the browser's own restore would fire too
+  // early and land at the top. We restore manually once the list has height.
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+  // Restore on a genuine Back/Forward nav (browser back button) OR when we
+  // arrived here straight from a song page — the song page's "← back to crate"
+  // / "← back to stems" links and header nav are plain forward navigations, so
+  // they don't count as back_forward, but they're a "return to the list" intent
+  // all the same. A fresh reload or external entry restores nothing.
+  const navType = performance.getEntriesByType('navigation')[0]?.type;
+  const cameFromSong = (() => {
+    try {
+      const ref = document.referrer ? new URL(document.referrer) : null;
+      return !!ref && ref.origin === location.origin && /^\/song\//.test(ref.pathname);
+    } catch {
+      return false;
+    }
+  })();
+  const restored = navType === 'back_forward' || cameFromSong ? loadListState(namespace) : null;
+  if (restored) {
+    // Precedence per axis: URL param wins, else honor what we left on. (Going
+    // Back to a list page replays its ?query via replaceState, so the URL
+    // usually already carries the left-on view; the restore covers older
+    // snapshots and the bare-path case.)
+    if (!urlView.batch) state.batch = restored.batch;
+    if (!urlView.filter) state.filter = restored.filter;
+    if (!urlView.user) state.user = restored.user ?? null;
+  }
+  // One-shot: restore scroll only on the first render that produced content,
+  // so later live Instant pushes never yank the user's scroll (set below).
+  let pendingScrollRestore = !!restored;
 
   let toastTimer = null;
   function showToast(message) {
@@ -136,7 +185,7 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
       card.classList.toggle('playing', playing);
       const btn = $('.play', card);
       btn.innerHTML = playing ? '<span class="eq"><i></i><i></i><i></i></span>' : '▶';
-      btn.title = playing ? 'stop' : 'play';
+      btn.title = playing ? 'pause' : 'play';
     }
   }
 
@@ -185,6 +234,13 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
   // --- playback (one StrudelMirror per track; solo mode keeps it exclusive) --
   async function play(track) {
     clearTimeout(playTimer);
+    // Resuming a paused song? grab its resume point before clearing the cue.
+    const resumeCycle = state.cuedId === track.id ? state.pausedCycle : null;
+    // Starting playback consumes any cued/paused song (incl. this one).
+    state.cuedId = null;
+    state.cuedSpec = null;
+    state.pausedCycle = null;
+    document.querySelector('.track.cued')?.classList.remove('cued');
     state.playingId = track.id;
     // exportSpec assumes track.meta.bpm; a stem without it throws → no timeline
     state.playingSpec = (() => {
@@ -196,6 +252,7 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
     })();
     updatePlayingUi();
     renderTransport();
+    syncUrl(); // surface the now-playing song in the address bar
     await ready; // audio context unlocks via this click
     if (state.playingId !== track.id) return; // user moved on while samples loaded
     await getAudioContext().resume(); // post-export contexts start suspended
@@ -203,6 +260,8 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
     // explicitly when they want to watch the code (keeps cards compact)
     const editor = ensureEditor(track);
     editor.evaluate();
+    // Resume from where we paused (re-anchor the freshly-started scheduler).
+    if (resumeCycle != null && resumeCycle > 0) seekEditor(track.id, resumeCycle);
     startSeekLoop();
     // Count a play only once it has survived 4s of continuous playback.
     playTimer = setTimeout(() => {
@@ -212,14 +271,44 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
     }, 4000);
   }
 
+  // Pause: silence the audio but keep the song loaded in the footer at its
+  // current position, so ▶ PLAY resumes from where it left off (see play()).
+  function pause() {
+    clearTimeout(playTimer);
+    const id = state.playingId;
+    if (!id) return;
+    // Capture position + spec and arm the cued state BEFORE stop(): stopping the
+    // editor synchronously fires its onToggle, which nulls state.playingSpec, so
+    // we must read it first (else the paused footer loses its seek rail).
+    const cycle = cyclePosition(id);
+    state.cuedId = id;
+    state.cuedSpec = state.playingSpec;
+    state.pausedCycle = Number.isFinite(cycle) ? cycle : 0;
+    getEditor(id)?.stop();
+    state.playingId = null;
+    state.playingSpec = null;
+    stopSeekLoop();
+    updatePlayingUi();
+    document.querySelector(`#tracks .track[data-id="${CSS.escape(id)}"]`)?.classList.add('cued');
+    renderTransport();
+    syncUrl(); // the song stays loaded, so ?play= is kept (resolved via cuedId)
+  }
+
+  // Full stop → idle: clear playing AND any cued/paused song (used at the
+  // natural end of an arrangement). pause() is what the transport buttons call.
   function stop() {
     clearTimeout(playTimer);
     getEditor(state.playingId)?.stop(); // onToggle clears state; next line covers the not-yet-evaluated case
     state.playingId = null;
     state.playingSpec = null;
+    state.cuedId = null;
+    state.cuedSpec = null;
+    state.pausedCycle = null;
+    document.querySelector('.track.cued')?.classList.remove('cued');
     stopSeekLoop();
     updatePlayingUi();
     renderTransport();
+    syncUrl(); // drop the ?play= param now that nothing is loaded
   }
 
   // --- notes ---------------------------------------------------------------
@@ -284,15 +373,33 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
     };
   }
 
+  // Mirror the current view state into the address bar so it's copyable (see
+  // view-url.js). The `play` param is the entity id of the loaded song — the one
+  // playing, or paused/cued in the footer — resolved from its slug via
+  // state.tracks. replaceState (never pushState) so filtering and play/pause
+  // don't spam Back history. Called on every view-state change.
+  function syncUrl() {
+    const loadedId = state.playingId ?? state.cuedId;
+    const loaded = state.tracks.find((t) => t.id === loadedId);
+    const search = buildSearch({
+      batch: state.batch,
+      filter: state.filter,
+      user: state.user,
+      play: loaded?.entityId ?? null,
+    });
+    history.replaceState(null, '', location.pathname + search);
+  }
+
   // Group into version families, then filter by the LATEST version's props so a
-  // whole family shows/hides as a unit (all versions share a batch).
+  // whole family shows/hides as a unit (all versions share a batch). The rating
+  // axis (state.filter) and the author axis (state.user) compose with AND.
   function visibleFamilies() {
     return groupVersions(state.tracks).filter((fam) => {
       const t = fam.latest;
       if (state.batch !== 'all' && t.batch !== state.batch) return false;
+      if (state.user && t.authorProfileId !== state.user) return false;
       if (state.filter === 'unrated') return myRatingOf(state, t.id) == null;
       if (state.filter === 'top') return isTopAggregate(t);
-      if (state.filter === 'mine') return myProfileId != null && t.authorProfileId === myProfileId;
       return true;
     });
   }
@@ -301,6 +408,9 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
   // renderTracks() (e.g. when a play/rating bumps a row) doesn't snap the card
   // back to the latest version. Keyed by family root id → selected version id.
   const selectedByFamily = new Map();
+  // Rehydrate the per-family version choices so restored cards mount on the
+  // version the user had selected (trackCard falls back to latest if gone).
+  if (restored) for (const [fam, ver] of restored.selectedByFamily) selectedByFamily.set(fam, ver);
 
   // Tap-away closes any open plays breakdown (mobile). The plays element's own
   // click calls stopPropagation, so tapping it never reaches this handler.
@@ -330,9 +440,9 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
         track.id === state.playingId
           ? '<span class="eq"><i></i><i></i><i></i></span>'
           : '▶';
-      playBtn.title = track.id === state.playingId ? 'stop' : 'play';
+      playBtn.title = track.id === state.playingId ? 'pause' : 'play';
       playBtn.addEventListener('click', () =>
-        track.id === state.playingId ? stop() : play(track),
+        track.id === state.playingId ? pause() : play(track),
       );
 
       const meta = document.createElement('div');
@@ -570,11 +680,38 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
     $('#status').textContent = state.samplesReady ? '● samples loaded' : '◌ warming up samples…';
     $('#status').classList.toggle('ready', state.samplesReady);
     const playing = state.tracks.find((t) => t.id === state.playingId);
-    $('#now-playing').textContent = playing ? `NOW PLAYING — ${playing.title}` : '';
-    $('#stop').disabled = !playing;
-    const showSeek = !!playing && hasTimeline(state.playingSpec);
+    // When nothing is playing, a cued song (from a ?play= link) is shown "ready".
+    const cued = !playing && state.cuedId ? state.tracks.find((t) => t.id === state.cuedId) : null;
+    const current = playing ?? cued;
+    const spec = playing ? state.playingSpec : cued ? state.cuedSpec : null;
+    $('#now-playing').textContent = playing
+      ? `NOW PLAYING — ${playing.title}`
+      : cued
+        ? `${state.pausedCycle != null ? 'PAUSED' : 'READY'} — ${cued.title}`
+        : '';
+    // The footer button is a play/pause toggle: ❚❚ PAUSE while a song plays,
+    // ▶ PLAY when one is cued/paused, and disabled when nothing is loaded.
+    const btn = $('#stop');
+    btn.textContent = playing ? '❚❚ PAUSE' : '▶ PLAY';
+    btn.disabled = !current;
+    btn.classList.toggle('is-play', !!cued);
+    const showSeek = !!current && hasTimeline(spec);
     seekbar.hidden = !showSeek;
-    if (showSeek) totalEl.textContent = mmss(state.playingSpec.seconds);
+    if (showSeek) {
+      totalEl.textContent = mmss(spec.seconds);
+      // Park the rail when not playing: at the resume point if paused, else 0.
+      if (!playing) {
+        const cyc = state.pausedCycle ?? 0;
+        paintSeek(progressFraction(cyc, spec.cycles), spec.cps ? cyc / spec.cps : 0);
+      }
+    }
+  }
+
+  // Footer play/pause toggle: pause what's playing, else start the cued song.
+  function transportToggle() {
+    if (state.playingId) { pause(); return; }
+    const cued = state.cuedId && state.tracks.find((t) => t.id === state.cuedId);
+    if (cued) play(cued);
   }
 
   function renderBatchFilter() {
@@ -589,8 +726,41 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
     if (state.batch !== 'all') select.value = state.batch;
   }
 
+  // Build the author dropdown from the authors present in state.tracks
+  // (profileId → artistName). Names come from the public profiles data on each
+  // row, so labels render for logged-out viewers too. The signed-in user's own
+  // entry is suffixed "(you)" and sorted to the top; the rest sort by name.
+  function renderUserFilter() {
+    const select = $('#user-filter');
+    if (!select) return;
+    const byId = new Map();
+    for (const t of state.tracks) {
+      if (t.authorProfileId && t.artistName) byId.set(t.authorProfileId, t.artistName);
+    }
+    const authors = [...byId.entries()]
+      .map(([id, name]) => ({ id, name, you: id === myProfileId }))
+      .sort((a, b) => (a.you === b.you ? a.name.localeCompare(b.name) : a.you ? -1 : 1));
+    select.length = 1; // keep the "all artists" option, drop previously-added ones
+    for (const a of authors) {
+      const opt = document.createElement('option');
+      opt.value = a.id;
+      opt.textContent = a.you ? `${a.name} (you)` : a.name;
+      select.appendChild(opt);
+    }
+    // Reflect state.user (falls back to "all" when the author isn't present).
+    select.value = state.user && byId.has(state.user) ? state.user : 'all';
+  }
+
+  // Keep the dropdown and the auth-gated "mine" button reflecting state.user:
+  // mine is "on" only when the author axis is the signed-in user's own profile.
+  function syncUserControls() {
+    const select = $('#user-filter');
+    if (select) select.value = state.user && [...select.options].some((o) => o.value === state.user) ? state.user : 'all';
+    if (mineBtn) mineBtn.classList.toggle('on', state.user != null && state.user === myProfileId);
+  }
+
   // --- boot --------------------------------------------------------------
-  $('#stop').addEventListener('click', stop);
+  $('#stop').addEventListener('click', transportToggle);
   rail.addEventListener('pointerdown', (e) => {
     if (!hasTimeline(state.playingSpec)) return;
     scrubbing = true;
@@ -615,23 +785,116 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
   rail.addEventListener('pointercancel', endScrub);
   $('#batch-filter').addEventListener('change', (e) => {
     state.batch = e.target.value;
+    syncUrl();
     renderTracks();
   });
-  document.querySelectorAll('.seg button').forEach((btn) =>
+  // Author axis via the dropdown. Selecting "all artists" clears it; either way
+  // the "mine" button is re-synced (it's just a shortcut into the same axis).
+  $('#user-filter')?.addEventListener('change', (e) => {
+    state.user = e.target.value === 'all' ? null : e.target.value;
+    syncUserControls();
+    syncUrl();
+    renderTracks();
+  });
+  // Rating segment: mutually-exclusive all/unrated/top. The "mine" button lives
+  // in the same .seg group but drives the AUTHOR axis, so it's excluded here.
+  document.querySelectorAll('.seg button[data-filter]:not([data-filter="mine"])').forEach((btn) =>
     btn.addEventListener('click', () => {
-      document.querySelectorAll('.seg button').forEach((b) => b.classList.remove('on'));
+      document.querySelectorAll('.seg button[data-filter]:not([data-filter="mine"])').forEach((b) => b.classList.remove('on'));
       btn.classList.add('on');
       state.filter = btn.dataset.filter;
+      syncUrl();
       renderTracks();
     }),
   );
+  // "mine" → author axis shortcut: toggle the signed-in user's own profile on/off.
+  mineBtn?.addEventListener('click', () => {
+    if (myProfileId == null) return; // shouldn't fire (hidden when logged out)
+    state.user = state.user === myProfileId ? null : myProfileId;
+    syncUserControls();
+    syncUrl();
+    renderTracks();
+  });
+  // Reflect a restored rating filter on the segment controls (the batch <select>
+  // is handled by renderBatchFilter(), the author axis by renderUserFilter()).
+  if (restored) {
+    document.querySelectorAll('.seg button[data-filter]:not([data-filter="mine"])').forEach((b) =>
+      b.classList.toggle('on', b.dataset.filter === state.filter),
+    );
+  }
+  // Write the load-time state (URL ∪ restore ∪ defaults) back so the address bar
+  // is canonical from the first paint — but preserve any ?play= cue param until
+  // it's consumed (syncUrl resolves play from state.playingId, which is null now).
+  if (!cueEntityId) syncUrl();
+
+  // Snapshot on leave. pagehide (not beforeunload, which iOS ignores) fires
+  // reliably on iOS Safari Back, including into bfcache — the iOS-correct hook.
+  window.addEventListener('pagehide', () => {
+    saveListState(namespace, {
+      batch: state.batch,
+      filter: state.filter,
+      user: state.user,
+      selectedByFamily: [...selectedByFamily.entries()],
+      scrollY: window.scrollY,
+    });
+  });
+
+  // Cue-on-load: when the URL carries ?play=<entityId>, land the recipient on
+  // that song — select its version within the family, scroll its card into view,
+  // and ring it with .cued. No autoplay (browsers block it without a gesture);
+  // one click on the card's ▶ starts it. Runs once on first content; if the
+  // target is missing or filtered out of view, it's silently skipped.
+  let pendingCue = !!cueEntityId;
+
+  // Pick the cued version inside its family *before* the render so the card
+  // mounts on the right version. Must run before renderTracks(). Returns the
+  // row (entity-shaped, with .id === slug) when found & visible, else null.
+  function resolveCue() {
+    const row = state.tracks.find((t) => t.entityId === cueEntityId);
+    if (!row) return null;
+    const fam = groupVersions(state.tracks).find((f) =>
+      f.versions.some((v) => v.entityId === cueEntityId),
+    );
+    if (!fam) return null;
+    selectedByFamily.set(fam.family, row.id);
+    // Honor the active filters: only cue when the family is actually visible.
+    return visibleFamilies().some((f) => f.family === fam.family) ? row : null;
+  }
 
   // --- live data from Instant ------------------------------------------------
   function applyRows(rows) {
     state.tracks = rows.map(mapRow);
+    // Select the cued version before rendering so its card mounts correctly.
+    let cuedRow = null;
+    if (pendingCue) cuedRow = resolveCue();
     renderBatchFilter();
+    renderUserFilter();
     renderTracks();
     renderTransport();
+    // First render with content: run the cue (if any) or the scroll restore.
+    // The cue wins — when a ?play= target exists, its scroll must not fight the
+    // saved scrollY — so we only restore scroll when there's no pending cue.
+    if (pendingCue && cuedRow) {
+      pendingCue = false;
+      pendingScrollRestore = false; // cue scroll wins over saved scrollY
+      // Prime the song in the footer transport, ready to play (no autoplay).
+      state.cuedId = cuedRow.id;
+      state.cuedSpec = (() => { try { return exportSpec(cuedRow); } catch { return null; } })();
+      renderTransport();
+      const card = document.querySelector(`#tracks .track[data-id="${CSS.escape(cuedRow.id)}"]`);
+      if (card) {
+        card.classList.add('cued');
+        requestAnimationFrame(() => card.scrollIntoView({ block: 'center' }));
+      }
+    } else if (pendingCue && visibleFamilies().length > 0) {
+      // Target wasn't found / is filtered out: give up cueing silently, and let
+      // the normal scroll restore (if any) proceed below.
+      pendingCue = false;
+    }
+    if (pendingScrollRestore && visibleFamilies().length > 0) {
+      pendingScrollRestore = false;
+      requestAnimationFrame(() => window.scrollTo(0, restored.scrollY));
+    }
   }
 
   if (!db) {
@@ -649,9 +912,9 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
     );
   }
 
-  // Track the signed-in user → reveal "mine", resolve their profile id, and
-  // subscribe to their plays (slug → count) for the per-user counters + dots.
-  const mineBtn = document.querySelector('.seg button[data-filter="mine"]');
+  // Track the signed-in user → reveal "mine", resolve their profile id (for the
+  // author-axis shortcut, the "(you)" dropdown label, and per-user play
+  // counters), and subscribe to their plays (slug → count) for counters + dots.
   let profileUnsub = null;
   let playsUnsub = null;
   let ratingsUnsub = null;
@@ -663,6 +926,7 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
     stopPlays();
     stopRatings();
     myProfileId = null;
+    syncUserControls(); // signed out: hide mine, drop its .on
     if (user && db) {
       profileUnsub = db.subscribeQuery(
         { profiles: { $: { where: { 'user.id': user.id } } } },
@@ -692,12 +956,13 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
                 },
               );
             }
+            // myProfileId affects the dropdown's "(you)" label/sort + mine's .on.
+            renderUserFilter();
+            syncUserControls();
           }
-          if (state.filter === 'mine') renderTracks();
         },
       );
     }
-    if (state.filter === 'mine') renderTracks();
   });
 
   const { mountJobsUI } = await import('./jobs-ui.js');
