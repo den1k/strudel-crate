@@ -108,6 +108,11 @@ body {
   border: 1px solid var(--line); padding: 2px 8px;
   background: var(--bg); white-space: nowrap;
 }
+.plays { display: block; margin-top: 4px; font-size: 11px; color: var(--dim); font-family: var(--mono); }
+.unplayed-dot {
+  display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--acid); margin-right: 6px; vertical-align: middle;
+}
 .exports { display: flex; gap: 6px; margin-top: 8px; }
 .export {
   background: transparent; color: var(--dim);
