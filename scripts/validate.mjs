@@ -4,8 +4,9 @@
 // trusted agent-generated Strudel code (reviewed via the webapp), not untrusted user input.
 import { fileURLToPath } from 'node:url';
 import { evaluate } from '@strudel/transpiler';
+import * as webaudio from '@strudel/webaudio';
 import { Pattern } from '@strudel/core';
-import { initStrudelEnv } from './strudel-env.mjs';
+import { initStrudelEnv, loadedSoundNames, resetLoadedSounds } from './strudel-env.mjs';
 import { checkSounds, loadKnownSounds } from './check-sounds.mjs';
 
 const QUERY_CYCLES = 8; // events must appear early — intros may not open with silence
@@ -13,11 +14,40 @@ const QUERY_CYCLES = 8; // events must appear early — intros may not open with
 // 512 cycles > 6 minutes at 180 BPM (6 × 180 / 4 = 270 bars), with headroom.
 const SOUND_SCAN_CYCLES = 512;
 
+// Matches whole top-level `samples(...)` statements so we can run them ahead of
+// pattern evaluation (the transpiler's eager evaluation can't reconcile an async
+// samples() load that returns a promise mid-expression). One per line.
+const SAMPLES_STMT = /^\s*(samples\s*\([\s\S]*?\))\s*;?\s*$/gm;
+
+// Run every `samples(...)` call the code declares against the REAL webaudio
+// loader, so the bank's sounds become resolvable. Returns the code with those
+// statements stripped (the remaining expression is the pattern to evaluate).
+// `samples` is the only identifier in scope — no other code is executed here.
+async function loadDeclaredSamples(code) {
+  const calls = [];
+  const stripped = code.replace(SAMPLES_STMT, (_, call) => { calls.push(call); return ''; });
+  for (const call of calls) {
+    // eslint-disable-next-line no-new-func
+    const run = new Function('samples', `return ${call};`);
+    await run(webaudio.samples);
+  }
+  return { stripped: stripped.trim(), loaded: calls.length > 0 };
+}
+
 export async function validateCode(code) {
   await initStrudelEnv();
+  // Each track is validated against the base set ∪ ONLY its own samples() loads.
+  resetLoadedSounds();
+  let toEvaluate = code;
+  try {
+    const { stripped } = await loadDeclaredSamples(code);
+    toEvaluate = stripped;
+  } catch (err) {
+    return { ok: false, error: `samples() load failed: ${err.message}` };
+  }
   let pattern;
   try {
-    ({ pattern } = await evaluate(code));
+    ({ pattern } = await evaluate(toEvaluate));
   } catch (err) {
     return { ok: false, error: `evaluation failed: ${err.message}` };
   }
@@ -39,9 +69,14 @@ export async function validateCode(code) {
   } catch (err) {
     return { ok: false, error: `pattern query failed: ${err.message}` };
   }
-  const unknown = checkSounds(allHaps, await loadKnownSounds());
+  // Effective sound set = base palette (always-available prebake) ∪ whatever
+  // THIS track loaded via its own samples() calls. The base set is a floor, not
+  // a ceiling: a track is free to bring its own banks.
+  const effective = new Set(await loadKnownSounds());
+  for (const name of loadedSoundNames()) effective.add(name);
+  const unknown = checkSounds(allHaps, effective);
   if (unknown.length > 0) {
-    return { ok: false, error: `unknown sounds (not loaded by the webapp): ${unknown.join(', ')} — see scripts/sounds.json for valid names` };
+    return { ok: false, error: `unknown sounds (not in the base palette or any bank you loaded): ${unknown.join(', ')} — load a bank with samples('github:user/repo') or see scripts/sounds.json for the base palette` };
   }
   return { ok: true, events: haps.length };
 }
