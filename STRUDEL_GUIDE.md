@@ -41,13 +41,17 @@ the validator (`node scripts/validate.mjs tracks/<id>.json`) enforces most of it
 
 ## Code rules (hard requirements)
 
-1. **Shape:** optional `setcpm(<bpm>/4)` on the first line, then ONE final expression:
-   `stack(...)` for a loop-based sketch, or `arrange(...)` of stack sections for a
-   full track. Nothing else. No `$:` labels, no variable assignments, no `samples()`
-   (the sample banks are already preloaded — reference their sounds by name, see the
-   palette below), no `await`, no visual functions (`.pianoroll()`, `.scope()`, `.punchcard()`, …).
+1. **Shape:** optional `samples(...)` loads first (one per line — see "Loading sounds"
+   below), then optional `setcpm(<bpm>/4)`, then ONE final expression: `stack(...)` for a
+   loop-based sketch, or `arrange(...)` of stack sections for a full track. Nothing else.
+   No `$:` labels, no variable assignments, no `await`, no visual functions
+   (`.pianoroll()`, `.scope()`, `.punchcard()`, …).
 2. **Double quotes** for all pattern strings (they become mini-notation). Never single quotes.
-3. **Sounds:** only names listed in `scripts/sounds.json`. The validator rejects anything else. The check covers the entire arrangement, including late sections.
+3. **Sounds:** every sound you reference must resolve — either it is in the **base palette**
+   (`scripts/sounds.json`, always available) OR you loaded a bank that provides it via a
+   `samples(...)` call in your code. The validator executes your `samples()` loads, then
+   checks every referenced sound against base ∪ what you loaded, across the WHOLE
+   arrangement (including late sections). A sound that resolves nowhere fails.
 4. **Tempo:** `setcpm(130/4)` = 130 BPM with 4 beats per cycle. Without it, tempo is ~120bpm.
 5. Keep per-layer `.gain()` between 0.3 and 1.2.
 6. **The first 8 cycles must produce sound** — the validator queries cycles 0-8; an
@@ -58,27 +62,79 @@ the validator (`node scripts/validate.mjs tracks/<id>.json`) enforces most of it
    the seed unchanged, and do NOT collapse into a `sawtooth` + `sine.slow` sweep + reverb
    default. The seed is your start; the constraints keep you different from your siblings.
 
-## Sound palette
+## Sounds: a map of the territory, not a fence
+
+The sound universe is **open**. The lists below are a **base palette** — always loaded,
+zero setup, a good starting point — but they are *not* a limit. If the vibe wants a sound
+the base palette doesn't have (a particular vinyl drum break, a granular pad, a wavetable
+lead, an unusual percussion kit), **load a bank that has it** and use it. Range comes from
+reaching past the base palette, not from cleverly recombining the same eight drums.
+
+### Loading sounds (`samples()`)
+
+Any bank that exposes a `strudel.json` manifest can be loaded by name at the TOP of your
+code, one call per line, before the pattern expression:
+
+```
+samples('github:eddyflux/crate')   // → crate_bd, crate_sd, crate_hh, crate_djembe, …
+samples('github:tidalcycles/dirt-samples')
+setcpm(140/4)
+stack( s("crate_bd*4"), s("crate_djembe(3,8)") )
+```
+
+- **GitHub shorthand:** `samples('github:user/repo')` resolves to that repo's
+  `strudel.json` on the `main` branch. The repo's sound names are then usable in `s(...)`.
+- **Direct URL:** `samples('https://host/path/strudel.json')` for any host that serves a
+  manifest.
+- **How to know a bank's sound names:** the manifest's top-level keys (minus `_base`) ARE
+  the sound names. The validator runs your `samples()` loads and tells you exactly which
+  references didn't resolve, so iterate: load a bank, reference a name, run the validator.
+- Loaded sounds are **vendored on save** — once a track validates, its banks are cached
+  locally and playback prefers the cache, so an upstream repo vanishing never breaks it.
+
+Some community banks to mine for character (load with the shorthand above): `eddyflux/crate`
+(lo-fi/hip-hop kit), `tidalcycles/dirt-samples` (the classic Tidal library: `breaks165`,
+`amencutup`, `gabba`, `jvbass`, hundreds more), `switchangel/pad` (`swpad` lush pads),
+`yaxu/clean-breaks` (full drum breaks to chop). Treat these as examples — go find what fits.
+
+### Base palette (always available, no `samples()` needed)
 
 - **Synths** (use with `note(...)` or `n(...).scale(...)`): `sine`, `square`, `triangle`,
   `sawtooth`, `supersaw`; noise: `white`, `pink`, `brown`.
 - **Drums** (use with `s(...)` + `.bank(...)`): `bd` kick, `sd` snare, `hh` closed hat,
   `oh` open hat, `cp` clap, `rim` rimshot, `lt mt ht` toms, `cr` crash, `rd` ride.
-  Banks (pick ONE per track for coherence): `RolandTR808`, `RolandTR909`, `RolandTR707`,
-  `RolandTR606`, `LinnDrum`, `AkaiLinn`, `OberheimDMX`, `CasioRZ1`.
-  The validator checks `<Bank>_<sound>` combos against `scripts/sounds.json`.
-- **Sampled instruments:** `piano` (velvety felt piano). Classic dirt-samples without a
-  bank: `casio`, `jvbass`, `arpy`, `space`, `numbers`, `insect`, `wind`, `crow`, `metal`,
-  `jazz`, `east` — check `scripts/sounds.json` when in doubt; many have multiple variants
-  selectable with `.n(2)`.
-- **Vocal & pad samples** (for vocal-led / intimate styles): lush pad `swpad` (variants
-  via `.n(0..4)`); choppable
-  vocal/break phrases `think`, `useme`, `sesame`, `apache`; spoken vocals `numbers`,
-  `alphabet`, `breath`. Treat a vocal as an instrument: `.chop(8)` slices it into a
-  rhythm, `.slice(8, "0 2 4 6")` rearranges slices, `.speed("<1 1.5 0.5>")` pitches it,
+  Prebaked banks (pick ONE per track for coherence): `RolandTR808`, `RolandTR909`,
+  `RolandTR707`, `RolandTR606`, `LinnDrum`, `AkaiLinn`, `OberheimDMX`, `CasioRZ1`.
+- **Sampled instruments:** `piano` (velvety felt piano), the VCSL acoustic library, and
+  classic dirt-samples without a bank: `casio`, `jvbass`, `arpy`, `space`, `numbers`,
+  `insect`, `wind`, `crow`, `metal`, `jazz`, `east` — many have variants via `.n(2)`.
+- **Vocal & pad samples:** lush pad `swpad` (`.n(0..4)`); choppable vocal/break phrases
+  `think`, `useme`, `sesame`, `apache`; spoken vocals `numbers`, `alphabet`, `breath`.
+  Treat a vocal as an instrument: `.chop(8)` slices it into a rhythm,
+  `.slice(8, "0 2 4 6")` rearranges slices, `.speed("<1 1.5 0.5>")` pitches it,
   `.begin(0.25).end(0.5)` grabs a phrase. **Sidechain/pump** a pad under the kick with a
   gain LFO: `.gain(saw.slow(2).range(0.25, 1))`.
-- **Do NOT use** `gm_*` soundfonts (not loaded by the webapp).
+- `gm_*` soundfonts are NOT loaded by the webapp — don't reference them.
+
+### Synthesis vocabulary (original timbres, zero samples)
+
+These are verified against the installed `@strudel` build — they all render audio. Reach
+for synthesis when you want a sound nobody else has:
+
+- **FM synthesis:** `.fm(index)` sets the modulation amount; `.fmh(ratio)` sets the
+  modulator:carrier frequency ratio. Bell/electric-piano/metallic tones:
+  `note("c3").s("sine").fm(4).fmh(2)`. Animate it: `.fm(sine.slow(8).range(1, 8))`.
+- **Vowel / formant ("robot vocal"):** `.vowel("a")` (or `"e i o u"`), patternable:
+  `note("c3").s("sawtooth").vowel("<a e i o>")` — a synth pad sung through vowel formants.
+- **Vibrato:** `.vib(rate)` adds pitch vibrato; `.vibmod(depth)` sets its depth in
+  semitones: `note("c4").s("triangle").vib(6).vibmod(0.4)`.
+- **Wavetable:** load a wavetable bank (e.g. `samples('github:Bubobubobubobubo/Dough-Waveforms')`),
+  then play `wt_*` sounds with `s("wt_...")`; sweep the table with `.wt(...)`.
+- **Dirt / waveshaping:** `.crush(n)` bitcrush · `.shape(amt)` waveshaper distortion ·
+  `.coarse(n)` sample-rate crush · `.distort(amt)` · `.phaser(rate)`.
+
+(If a synthesis call doesn't resolve to audio, the validator's "no events"/"unknown sounds"
+errors will catch it — verify, don't guess.)
 
 ## Mini-notation cheatsheet
 
@@ -221,7 +277,11 @@ arsenal above are yours to combine in unexpected ways.
 
 ## Common validator failures
 
-- `unknown sounds: X` → X isn't in `scripts/sounds.json`; grep it for alternatives.
+- `unknown sounds: X` → X resolves nowhere: it's not in the base palette
+  (`scripts/sounds.json`) and no bank you loaded provides it. Either `samples('github:…')`
+  a bank that has it, or pick a name that does resolve.
+- `samples() load failed: ...` → a bank URL/shorthand didn't fetch a valid `strudel.json`
+  (typo'd repo, wrong branch, or no manifest at that path).
 - `evaluation failed: ...` → usually unbalanced `[ ] < > ( )` in mini-notation, or a
   typo'd function name.
 - `did not evaluate to a Pattern` → code doesn't end with the `stack(...)`/`arrange(...)` expression.
