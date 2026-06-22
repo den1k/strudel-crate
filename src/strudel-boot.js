@@ -17,14 +17,15 @@ import { installCacheAwareSamples, warmSampleCacheIndex } from './sample-cache-c
 export function bootStrudel() {
   initAudioOnFirstClick(); // resume the AudioContext on the first user gesture
   enableSilentSwitchPlayback(); // iOS: play through the hardware silent switch
-  // Make the global samples() (used by tracks that self-declare banks) prefer
-  // the local vendored cache. Must run BEFORE evalScope, which snapshots the
-  // current webaudio.samples reference onto globalThis. The cache index is
-  // fetched lazily and never awaited here — boot is unaffected.
-  installCacheAwareSamples(webaudio);
+  // Lazily warm the vendored-sample cache index — never awaited, boot unaffected.
   warmSampleCacheIndex();
   return (async () => {
     await core.evalScope(core, mini, tonal, webaudio);
+    // evalScope copies webaudio's exports onto globalThis; wrap the now-global
+    // samples() so tracks that self-declare a vendored bank prefer the local
+    // cache. Must run AFTER evalScope (globalThis.samples now exists) and must
+    // NOT target the frozen webaudio module (assigning onto it throws).
+    installCacheAwareSamples(globalThis);
     await Promise.all([
       registerSynthSounds(),
       ...banks.map((b) =>

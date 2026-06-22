@@ -35,11 +35,16 @@ export function cachedManifestUrl(source) {
   return cacheIndex.has(slug) ? `/sample-cache/banks/${slug}/strudel.json` : null;
 }
 
-// Wrap webaudio's samples() so a single-string source prefers the local cache.
+// Wrap the global samples() so a single-string source prefers the local cache.
+// IMPORTANT: `target` must be a WRITABLE carrier of `samples` — i.e. globalThis
+// AFTER core.evalScope copies webaudio's exports onto it. The `@strudel/webaudio`
+// ES module namespace is frozen; assigning onto it throws and aborts boot.
 // Multi-arg forms (explicit base, inline maps) pass straight through unchanged.
-export function installCacheAwareSamples(webaudio) {
-  const original = webaudio.samples;
-  webaudio.samples = function cacheAwareSamples(source, ...rest) {
+// Returns the original function, or null if the carrier has no samples() yet.
+export function installCacheAwareSamples(target = globalThis) {
+  const original = target && target.samples;
+  if (typeof original !== 'function') return null;
+  target.samples = function cacheAwareSamples(source, ...rest) {
     if (rest.length === 0 && typeof source === 'string') {
       const local = cachedManifestUrl(source);
       if (local) return original.call(this, local);

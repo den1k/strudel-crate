@@ -41,6 +41,22 @@ describe('cache-aware samples()', () => {
     expect(original).toHaveBeenCalledWith('github:not/cached');
   });
 
+  it('targets a writable carrier, never the frozen webaudio module (regression)', () => {
+    // The real bug: @strudel/webaudio is a frozen ES module namespace, so
+    // assigning onto it threw and aborted initApp. The contract is to wrap a
+    // WRITABLE carrier (globalThis after evalScope), not the module.
+    const frozenModule = Object.freeze({ samples: vi.fn() });
+    expect(() => installCacheAwareSamples(frozenModule)).toThrow();
+
+    const carrier = { samples: vi.fn() };
+    expect(() => installCacheAwareSamples(carrier)).not.toThrow();
+    expect(carrier.samples.name).toBe('cacheAwareSamples');
+  });
+
+  it('no-ops (returns null) when the carrier has no samples() yet', () => {
+    expect(installCacheAwareSamples({})).toBeNull();
+  });
+
   it('passes multi-arg samples() forms through untouched', () => {
     const original = vi.fn();
     const webaudio = { samples: original };
