@@ -12,6 +12,10 @@ data/jobs/
 # generation agents' scratch dir; save scripts delete files on success
 staging/
 
+# bespoke per-batch kit artifacts written by Stage 1 (generate-tracks); keep the
+# dir, ignore the generated palettes (regenerated fresh every batch)
+palettes/*.json
+
 # git worktrees for isolated Claude sessions
 .claude/worktrees/
 # vendored sample banks (cache-on-save); re-fetchable, large binaries

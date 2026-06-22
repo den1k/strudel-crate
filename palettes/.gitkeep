@@ -1,0 +1,3 @@
+# Bespoke per-batch kit palettes land here (palettes/<batch>.json), written by
+# Stage 1 of the generate-tracks skill. They are generated artifacts (gitignored);
+# this file keeps the directory present.
