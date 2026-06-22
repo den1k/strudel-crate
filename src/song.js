@@ -183,6 +183,16 @@ function renderSong(item, ns, family, ready) {
     p.textContent = `prompt: ${item.prompt}`;
     meta.appendChild(p);
   }
+  if (item.notes) {
+    const label = document.createElement('span');
+    label.className = 'creator-notes-label';
+    label.textContent = "creator's notes";
+    meta.appendChild(label);
+    const notes = document.createElement('p');
+    notes.className = 'creator-notes';
+    notes.textContent = item.notes;
+    meta.appendChild(notes);
+  }
   root.appendChild(meta);
 
   const editorWrap = document.createElement('div');

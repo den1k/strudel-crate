@@ -222,6 +222,19 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
     renderTransport();
   }
 
+  // --- notes ---------------------------------------------------------------
+  async function putNotes(track, patch) {
+    const res = await fetch(`/api/${namespace}/${track.id}/notes`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(patch),
+    });
+    if (!res.ok) throw new Error(`save failed: ${res.status}`);
+    const saved = await res.json();
+    track.notes = saved.notes;
+    track.lesson = saved.lesson;
+  }
+
   // --- ratings --------------------------------------------------------------
   async function putRating(track, value) {
     const res = await fetch(`/api/${namespace}/${track.id}/rating`, {
@@ -465,15 +478,7 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
         ta.value = value ?? '';
         const save = debounce(async () => {
           try {
-            const res = await fetch(`/api/${namespace}/${track.id}/notes`, {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ [field]: ta.value }),
-            });
-            if (!res.ok) throw new Error(`save failed: ${res.status}`);
-            const saved = await res.json();
-            track.notes = saved.notes;
-            track.lesson = saved.lesson;
+            await putNotes(track, { [field]: ta.value });
             ta.classList.add('saved');
             setTimeout(() => ta.classList.remove('saved'), 600);
           } catch (err) {
@@ -485,12 +490,17 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
         return ta;
       };
 
+      const ownerId = track.author?.[0]?.id ?? null;
+      const isOwner = myProfileId != null && ownerId === myProfileId;
+
       const feedback = document.createElement('div');
       feedback.className = 'feedback';
-      feedback.append(
-        autosaveArea('notes', 'notes — what works, what to change… (this track only)', track.notes, 'notes'),
-        autosaveArea('notes lesson', 'lesson for future tracks — applies to every new batch…', track.lesson, 'lesson'),
-      );
+      if (isOwner) {
+        feedback.append(
+          autosaveArea('notes', 'notes — what works, what to change… (this track only)', track.notes, 'notes'),
+          autosaveArea('notes lesson', 'lesson for future tracks — applies to every new batch…', track.lesson, 'lesson'),
+        );
+      }
 
       const code = codeSection(track);
 
