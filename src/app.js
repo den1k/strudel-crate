@@ -17,7 +17,9 @@ const $ = (sel, el = document) => el.querySelector(sel);
 export async function initApp({ namespace, emptyHint, splitStems = false }) {
   // cuedId/cuedSpec: a song primed in the footer transport (from a ?play= link)
   // but not yet started — the footer button shows ▶ PLAY and one click starts it.
-  const state = { tracks: [], playingId: null, playingSpec: null, cuedId: null, cuedSpec: null, samplesReady: false, batch: 'all', filter: 'all', user: null, playsBySlug: {} };
+  // pausedCycle: where a paused song will resume from (null = a fresh cue starts
+  // at 0). cuedId/cuedSpec hold the song loaded in the footer (cued or paused).
+  const state = { tracks: [], playingId: null, playingSpec: null, cuedId: null, cuedSpec: null, pausedCycle: null, samplesReady: false, batch: 'all', filter: 'all', user: null, playsBySlug: {} };
   let playTimer = null; // pending "count this play" timer (fires after 4s of playback)
   let myProfileId = null;
   // The auth-gated "mine" button — a one-click shortcut into the author axis.
@@ -182,7 +184,7 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
       card.classList.toggle('playing', playing);
       const btn = $('.play', card);
       btn.innerHTML = playing ? '<span class="eq"><i></i><i></i><i></i></span>' : '▶';
-      btn.title = playing ? 'stop' : 'play';
+      btn.title = playing ? 'pause' : 'play';
     }
   }
 
@@ -231,9 +233,12 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
   // --- playback (one StrudelMirror per track; solo mode keeps it exclusive) --
   async function play(track) {
     clearTimeout(playTimer);
-    // Starting playback consumes any cued/ready song (incl. this one).
+    // Resuming a paused song? grab its resume point before clearing the cue.
+    const resumeCycle = state.cuedId === track.id ? state.pausedCycle : null;
+    // Starting playback consumes any cued/paused song (incl. this one).
     state.cuedId = null;
     state.cuedSpec = null;
+    state.pausedCycle = null;
     document.querySelector('.track.cued')?.classList.remove('cued');
     state.playingId = track.id;
     // exportSpec assumes track.meta.bpm; a stem without it throws → no timeline
@@ -254,6 +259,8 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
     // explicitly when they want to watch the code (keeps cards compact)
     const editor = ensureEditor(track);
     editor.evaluate();
+    // Resume from where we paused (re-anchor the freshly-started scheduler).
+    if (resumeCycle != null && resumeCycle > 0) seekEditor(track.id, resumeCycle);
     startSeekLoop();
     // Count a play only once it has survived 4s of continuous playback.
     playTimer = setTimeout(() => {
@@ -263,15 +270,41 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
     }, 4000);
   }
 
+  // Pause: silence the audio but keep the song loaded in the footer at its
+  // current position, so ▶ PLAY resumes from where it left off (see play()).
+  function pause() {
+    clearTimeout(playTimer);
+    const id = state.playingId;
+    if (!id) return;
+    const cycle = cyclePosition(id);
+    getEditor(id)?.stop();
+    state.cuedId = id;
+    state.cuedSpec = state.playingSpec;
+    state.pausedCycle = Number.isFinite(cycle) ? cycle : 0;
+    state.playingId = null;
+    state.playingSpec = null;
+    stopSeekLoop();
+    updatePlayingUi();
+    document.querySelector(`#tracks .track[data-id="${CSS.escape(id)}"]`)?.classList.add('cued');
+    renderTransport();
+    syncUrl(); // the song stays loaded, so ?play= is kept (resolved via cuedId)
+  }
+
+  // Full stop → idle: clear playing AND any cued/paused song (used at the
+  // natural end of an arrangement). pause() is what the transport buttons call.
   function stop() {
     clearTimeout(playTimer);
     getEditor(state.playingId)?.stop(); // onToggle clears state; next line covers the not-yet-evaluated case
     state.playingId = null;
     state.playingSpec = null;
+    state.cuedId = null;
+    state.cuedSpec = null;
+    state.pausedCycle = null;
+    document.querySelector('.track.cued')?.classList.remove('cued');
     stopSeekLoop();
     updatePlayingUi();
     renderTransport();
-    syncUrl(); // drop the ?play= param now that nothing is playing
+    syncUrl(); // drop the ?play= param now that nothing is loaded
   }
 
   // --- ratings --------------------------------------------------------------
@@ -329,16 +362,18 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
   }
 
   // Mirror the current view state into the address bar so it's copyable (see
-  // view-url.js). The `play` param is the entity id, resolved from the playing
-  // slug via state.tracks. replaceState (never pushState) so filtering and
-  // play/stop don't spam Back history. Called on every view-state change.
+  // view-url.js). The `play` param is the entity id of the loaded song — the one
+  // playing, or paused/cued in the footer — resolved from its slug via
+  // state.tracks. replaceState (never pushState) so filtering and play/pause
+  // don't spam Back history. Called on every view-state change.
   function syncUrl() {
-    const playing = state.tracks.find((t) => t.id === state.playingId);
+    const loadedId = state.playingId ?? state.cuedId;
+    const loaded = state.tracks.find((t) => t.id === loadedId);
     const search = buildSearch({
       batch: state.batch,
       filter: state.filter,
       user: state.user,
-      play: playing?.entityId ?? null,
+      play: loaded?.entityId ?? null,
     });
     history.replaceState(null, '', location.pathname + search);
   }
@@ -393,9 +428,9 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
         track.id === state.playingId
           ? '<span class="eq"><i></i><i></i><i></i></span>'
           : '▶';
-      playBtn.title = track.id === state.playingId ? 'stop' : 'play';
+      playBtn.title = track.id === state.playingId ? 'pause' : 'play';
       playBtn.addEventListener('click', () =>
-        track.id === state.playingId ? stop() : play(track),
+        track.id === state.playingId ? pause() : play(track),
       );
 
       const meta = document.createElement('div');
@@ -601,25 +636,29 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
     $('#now-playing').textContent = playing
       ? `NOW PLAYING — ${playing.title}`
       : cued
-        ? `READY — ${cued.title}`
+        ? `${state.pausedCycle != null ? 'PAUSED' : 'READY'} — ${cued.title}`
         : '';
-    // The footer button is a play/stop toggle: ▶ PLAY when a song is cued,
-    // ■ STOP while one is playing, and disabled when nothing is loaded.
+    // The footer button is a play/pause toggle: ❚❚ PAUSE while a song plays,
+    // ▶ PLAY when one is cued/paused, and disabled when nothing is loaded.
     const btn = $('#stop');
-    btn.textContent = playing ? '■ STOP' : '▶ PLAY';
+    btn.textContent = playing ? '❚❚ PAUSE' : '▶ PLAY';
     btn.disabled = !current;
     btn.classList.toggle('is-play', !!cued);
     const showSeek = !!current && hasTimeline(spec);
     seekbar.hidden = !showSeek;
     if (showSeek) {
       totalEl.textContent = mmss(spec.seconds);
-      if (!playing) paintSeek(0, 0); // cued: show the rail parked at the start
+      // Park the rail when not playing: at the resume point if paused, else 0.
+      if (!playing) {
+        const cyc = state.pausedCycle ?? 0;
+        paintSeek(progressFraction(cyc, spec.cycles), spec.cps ? cyc / spec.cps : 0);
+      }
     }
   }
 
-  // Footer play/stop toggle: stop what's playing, else start the cued song.
+  // Footer play/pause toggle: pause what's playing, else start the cued song.
   function transportToggle() {
-    if (state.playingId) { stop(); return; }
+    if (state.playingId) { pause(); return; }
     const cued = state.cuedId && state.tracks.find((t) => t.id === state.cuedId);
     if (cued) play(cued);
   }
