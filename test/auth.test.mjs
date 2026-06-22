@@ -1,6 +1,6 @@
 // test/auth.test.mjs — exercises the real token+allowlist gate, not a stub.
 import { describe, it, expect } from 'vitest';
-import { buildRequireAuth, buildResolveUser } from '../server/auth.mjs';
+import { buildRequireAuth, buildResolveUser, buildRequireUser } from '../server/auth.mjs';
 
 const mkRes = () => {
   const res = {};
@@ -128,5 +128,31 @@ describe('buildResolveUser', () => {
     const { nexted } = await run(mw, req);
     expect(nexted).toBe(true);
     expect(req.user).toBeUndefined();
+  });
+});
+
+describe('buildRequireUser', () => {
+  it('returns undefined when adminDb is missing', () => {
+    expect(buildRequireUser({ adminDb: null })).toBeUndefined();
+  });
+  it('401s with no Authorization header', async () => {
+    const mw = buildRequireUser({ adminDb: fakeAdmin(async () => ({})) });
+    const { res, nexted } = await run(mw, { headers: {} });
+    expect(nexted).toBe(false);
+    expect(res.statusCode).toBe(401);
+  });
+  it('attaches req.user for ANY valid token (no allowlist)', async () => {
+    const user = { id: 'u9', email: 'stranger@example.com' };
+    const mw = buildRequireUser({ adminDb: fakeAdmin(async () => user) });
+    const req = { headers: { authorization: 'Bearer good' } };
+    const { nexted } = await run(mw, req);
+    expect(nexted).toBe(true);
+    expect(req.user).toEqual(user);
+  });
+  it('401s on an invalid token', async () => {
+    const mw = buildRequireUser({ adminDb: fakeAdmin(async () => { throw new Error('bad'); }) });
+    const { res, nexted } = await run(mw, { headers: { authorization: 'Bearer bad' } });
+    expect(nexted).toBe(false);
+    expect(res.statusCode).toBe(401);
   });
 });
