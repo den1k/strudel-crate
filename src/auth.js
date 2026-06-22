@@ -6,6 +6,7 @@
 // changes. The server verifies the token AND an email allowlist — client-side
 // gating alone is bypassable, so the server is the real gate.
 import { db } from './db.js';
+import { familyCount } from './versions.js';
 
 let token = null; // signed-in user's refresh token, or null when signed out
 
@@ -39,11 +40,11 @@ export function setupAuth() {
   if (!db) return; // Instant not configured — leave the app open
   const cluster = mountUserCluster();
   const signInModal = mountModal(db);
-  // profileModal is added in Task 4; until then chip clicks are a no-op.
-  let openProfile = () => {};
+  const profileModal = mountProfileModal(db);
 
   cluster.signInBtn.onclick = () => signInModal.open();
-  cluster.chip.onclick = () => openProfile();
+  cluster.chip.onclick = () =>
+    profileModal.open(currentUser, (name) => cluster.setName(displayName(currentUser, name)));
 
   // The generate panel triggers the auth-gated /api/jobs route, so it stays
   // hidden until a user is signed in.
@@ -59,6 +60,7 @@ export function setupAuth() {
       signInModal.close();
       cluster.setSignedIn(displayName(user, null));
     } else {
+      profileModal.close();
       cluster.setSignedOut();
     }
   });
@@ -153,4 +155,101 @@ function mountModal(db) {
   };
 
   return { open, close };
+}
+
+function mountProfileModal(db) {
+  const el = document.createElement('div');
+  el.className = 'auth-modal profile-modal';
+  el.hidden = true;
+  el.innerHTML = `
+    <div class="auth-card">
+      <button class="auth-x" type="button" aria-label="close">×</button>
+      <h2>profile</h2>
+      <form class="profile-name">
+        <input type="text" name="artist" placeholder="artist name" maxlength="60" autocomplete="off" />
+        <button type="submit">save</button>
+      </form>
+      <p class="profile-saved" role="status" hidden>saved ✓</p>
+      <p class="profile-email"></p>
+      <p class="profile-stats">…</p>
+      <button class="profile-signout" type="button">sign out</button>
+    </div>`;
+  document.body.appendChild(el);
+
+  const form = el.querySelector('.profile-name');
+  const input = form.elements.artist;
+  const savedEl = el.querySelector('.profile-saved');
+  const emailEl = el.querySelector('.profile-email');
+  const statsEl = el.querySelector('.profile-stats');
+  const signOutBtn = el.querySelector('.profile-signout');
+  let onNameChange = () => {};
+
+  const close = () => { el.hidden = true; savedEl.hidden = true; };
+  el.querySelector('.auth-x').onclick = close;
+  el.onclick = (e) => { if (e.target === el) close(); };
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !el.hidden) close(); });
+
+  signOutBtn.onclick = () => { db.auth.signOut(); close(); };
+
+  form.onsubmit = async (e) => {
+    e.preventDefault();
+    const artistName = input.value.trim();
+    if (!artistName) return;
+    try {
+      const res = await fetch('/api/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ artistName }),
+      });
+      if (res.ok) {
+        savedEl.hidden = false;
+        setTimeout(() => { savedEl.hidden = true; }, 1200);
+        onNameChange(artistName);
+      }
+    } catch { /* ignore */ }
+  };
+
+  async function loadProfile() {
+    let profileId = null;
+    try {
+      const res = await fetch('/api/profile');
+      if (res.ok) {
+        const p = await res.json();
+        input.value = p.artistName ?? '';
+        profileId = p.id ?? null;
+      }
+    } catch { /* ignore */ }
+    return profileId;
+  }
+
+  async function loadStats(profileId) {
+    statsEl.hidden = false;
+    statsEl.textContent = '…';
+    if (!profileId) { statsEl.hidden = true; return; }
+    try {
+      const { data } = await db.queryOnce({
+        tracks: { $: { where: { 'author.id': profileId } } },
+        stems: { $: { where: { 'author.id': profileId } } },
+      });
+      const nTracks = familyCount(data?.tracks ?? []);
+      const nStems = familyCount(data?.stems ?? []);
+      statsEl.textContent =
+        `${nTracks} ${nTracks === 1 ? 'track' : 'tracks'} · ${nStems} ${nStems === 1 ? 'stem' : 'stems'}`;
+    } catch {
+      statsEl.hidden = true;
+    }
+  }
+
+  return {
+    open: async (user, cb) => {
+      onNameChange = cb || (() => {});
+      emailEl.textContent = user?.email ?? '';
+      statsEl.textContent = '…';
+      el.hidden = false;
+      const profileId = await loadProfile();
+      input.focus();
+      await loadStats(profileId);
+    },
+    close,
+  };
 }
