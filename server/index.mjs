@@ -3,7 +3,7 @@ import { dirname, join } from 'node:path';
 import { existsSync } from 'node:fs';
 import { init as initAdmin } from '@instantdb/admin';
 import { createApp } from './app.mjs';
-import { buildRequireAuth } from './auth.mjs';
+import { buildRequireAuth, buildResolveUser } from './auth.mjs';
 import { createJobStore } from './jobs.mjs';
 import { createRunner, liveProduced } from './runner.mjs';
 import { itemSlugs } from './instant.mjs';
@@ -24,6 +24,7 @@ const adminDb = INSTANT_APP_ID && INSTANT_ADMIN_TOKEN
 if (!adminDb) console.warn('[crate] Instant admin not configured — writes will fail');
 
 const requireAuth = buildRequireAuth({ adminDb, allowedEmails });
+const resolveUser = buildResolveUser({ adminDb, allowedEmails });
 const jobStore = createJobStore({ jobsDir: join(repoRoot, 'data', 'jobs') });
 const runner = createRunner({ repoRoot, jobStore, adminDb });
 
@@ -36,7 +37,7 @@ const progressFor = async (job) => {
 const app = createApp({
   adminDb,
   namespaces: ['tracks', 'stems'],
-  jobStore, runner, progressFor, requireAuth,
+  jobStore, runner, progressFor, requireAuth, resolveUser,
   distDir: existsSync(distDir) ? distDir : undefined,
 });
 

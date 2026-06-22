@@ -4,13 +4,10 @@
 // nested 'user.id' where, and { slug: { $in: [...] } }.
 function matchWhere(row, where) {
   return Object.entries(where).every(([key, cond]) => {
-    let val;
-    if (key.includes('.')) {
-      if (key === 'user.id') val = row.user?.id;
-      else throw new Error(`fake-admin: unsupported nested where key '${key}' — extend matchWhere`);
-    } else {
-      val = row[key];
-    }
+    // Resolve dotted keys (e.g. 'user.id', 'profile.id') by walking the row.
+    const val = key.includes('.')
+      ? key.split('.').reduce((o, k) => o?.[k], row)
+      : row[key];
     if (cond && typeof cond === 'object' && Array.isArray(cond.$in)) return cond.$in.includes(val);
     return val === cond;
   });

@@ -18,6 +18,7 @@ beforeEach(() => {
     ],
     stems: [{ id: 's1', slug: 'stem-01', rating: null, notes: '', lesson: '' }],
     profiles: [],
+    plays: [],
   });
   app = createApp({ adminDb, namespaces: ['tracks', 'stems'], requireAuth });
 });
@@ -177,5 +178,38 @@ describe('jobs API', () => {
   it('GET /api/jobs/:id returns 404 for missing job', async () => {
     const res = await request(jobApp).get('/api/jobs/does-not-exist');
     expect(res.status).toBe(404);
+  });
+});
+
+describe('play API', () => {
+  it('POST /api/tracks/:id/play (anonymous) bumps the total only', async () => {
+    const res = await request(app).post('/api/tracks/demo-01/play');
+    expect(res.status).toBe(200);
+    expect(res.body.playCount).toBe(1);
+    expect(res.body.you).toBeUndefined();
+  });
+
+  it('404s for an unknown slug', async () => {
+    const res = await request(app).post('/api/tracks/missing/play');
+    expect(res.status).toBe(404);
+  });
+
+  it('rejects ids with path characters', async () => {
+    const res = await request(app).post('/api/tracks/..%2Fevil/play');
+    expect(res.status).toBe(400);
+  });
+
+  it('records a per-user play when signed in', async () => {
+    const resolveUser = (req, _res, next) => { req.user = { id: 'u1', email: 'kalavox@gmail.com' }; next(); };
+    const db2 = fakeAdmin({
+      tracks: [{ id: 't1', slug: 'demo-01', playCount: 0 }],
+      profiles: [{ id: 'p1', user: { id: 'u1' } }],
+      plays: [],
+    });
+    const signedApp = createApp({ adminDb: db2, namespaces: ['tracks', 'stems'], requireAuth, resolveUser });
+    const res = await request(signedApp).post('/api/tracks/demo-01/play');
+    expect(res.status).toBe(200);
+    expect(res.body).toMatchObject({ playCount: 1, you: 1 });
+    expect(db2._txs.some((o) => o.ns === 'plays')).toBe(true);
   });
 });

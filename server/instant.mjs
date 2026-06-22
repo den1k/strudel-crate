@@ -64,6 +64,41 @@ export async function queryItems(adminDb, namespace) {
   return res[namespace];
 }
 
+// Record a play of <namespace>/<slug>. Always bumps the item's total playCount
+// (read-modify-write — under concurrent plays an increment can be lost; accepted
+// at this scale). When `user` is given, upserts that user's per-item plays
+// record. Returns { playCount, you } or null when the slug doesn't exist.
+export async function recordPlay(adminDb, namespace, slug, user) {
+  const res = await adminDb.query({ [namespace]: { $: { where: { slug } } } });
+  const item = res[namespace][0];
+  if (!item) return null;
+  const playCount = (item.playCount ?? 0) + 1;
+  await adminDb.transact(adminDb.tx[namespace][item.id].update({ playCount }));
+
+  let you;
+  if (user) {
+    const profileId = await ensureProfile(adminDb, user);
+    const found = await adminDb.query({
+      plays: { $: { where: { namespace, slug, 'profile.id': profileId } } },
+    });
+    const existing = found.plays[0];
+    const now = new Date().toISOString();
+    if (existing) {
+      you = (existing.count ?? 0) + 1;
+      await adminDb.transact(adminDb.tx.plays[existing.id].update({ count: you, lastPlayedAt: now }));
+    } else {
+      you = 1;
+      const playId = id();
+      await adminDb.transact(
+        adminDb.tx.plays[playId]
+          .update({ namespace, slug, count: 1, lastPlayedAt: now })
+          .link({ profile: profileId }),
+      );
+    }
+  }
+  return { playCount, you };
+}
+
 // Insert a validated track/stem object. `track.id` becomes `slug`. Rejects a
 // duplicate slug. Links author when a profile id is given.
 export async function insertItem(adminDb, namespace, track, authorProfileId) {

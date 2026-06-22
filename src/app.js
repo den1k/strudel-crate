@@ -13,7 +13,8 @@ import { songUrl } from './song-url.js';
 const $ = (sel, el = document) => el.querySelector(sel);
 
 export async function initApp({ namespace, emptyHint, splitStems = false }) {
-  const state = { tracks: [], playingId: null, playingSpec: null, samplesReady: false, batch: 'all', filter: 'all' };
+  const state = { tracks: [], playingId: null, playingSpec: null, samplesReady: false, batch: 'all', filter: 'all', playsBySlug: {} };
+  let playTimer = null; // pending "count this play" timer (fires after 4s of playback)
   let myProfileId = null;
 
   // scrubber DOM + loop state (elements exist in the footer of both pages)
@@ -182,6 +183,7 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
 
   // --- playback (one StrudelMirror per track; solo mode keeps it exclusive) --
   async function play(track) {
+    clearTimeout(playTimer);
     state.playingId = track.id;
     // exportSpec assumes track.meta.bpm; a stem without it throws → no timeline
     state.playingSpec = (() => {
@@ -201,9 +203,16 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
     const editor = ensureEditor(track);
     editor.evaluate();
     startSeekLoop();
+    // Count a play only once it has survived 4s of continuous playback.
+    playTimer = setTimeout(() => {
+      if (state.playingId === track.id && isStarted(track.id)) {
+        fetch(`/api/${namespace}/${track.id}/play`, { method: 'POST' }).catch(() => {});
+      }
+    }, 4000);
   }
 
   function stop() {
+    clearTimeout(playTimer);
     getEditor(state.playingId)?.stop(); // onToggle clears state; next line covers the not-yet-evaluated case
     state.playingId = null;
     state.playingSpec = null;
@@ -304,9 +313,22 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
 
       const meta = document.createElement('div');
       meta.className = 'meta';
-      meta.innerHTML = `<h3></h3><span class="id"></span><p class="desc"></p><div class="chips"></div>`;
+      meta.innerHTML = `<h3></h3><span class="id"></span><span class="plays"></span><p class="desc"></p><div class="chips"></div>`;
       $('h3', meta).textContent = track.title;
       $('.id', meta).textContent = track.id;
+      const playsEl = $('.plays', meta);
+      const total = track.playCount ?? 0;
+      playsEl.textContent = `▶ ${total} ${total === 1 ? 'play' : 'plays'}`;
+      if (myProfileId != null) {
+        const you = state.playsBySlug[track.id] ?? 0; // track.id === slug
+        playsEl.title = `you: ${you}`;
+        if (!(you > 0)) {
+          const dot = document.createElement('span');
+          dot.className = 'unplayed-dot';
+          dot.title = "you haven't played this yet";
+          $('h3', meta).prepend(dot);
+        }
+      }
       $('.desc', meta).textContent = track.description ?? '';
       if (track.artistName) {
         const by = document.createElement('span');
@@ -551,17 +573,39 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
     );
   }
 
-  // Track the signed-in user → reveal "mine" and resolve their profile id.
+  // Track the signed-in user → reveal "mine", resolve their profile id, and
+  // subscribe to their plays (slug → count) for the per-user counters + dots.
   const mineBtn = document.querySelector('.seg button[data-filter="mine"]');
   let profileUnsub = null;
+  let playsUnsub = null;
+  const stopPlays = () => { if (playsUnsub) { playsUnsub(); playsUnsub = null; } state.playsBySlug = {}; };
   onUser((user) => {
     if (mineBtn) mineBtn.hidden = !user;
     if (profileUnsub) { profileUnsub(); profileUnsub = null; }
+    stopPlays();
     myProfileId = null;
     if (user && db) {
       profileUnsub = db.subscribeQuery(
         { profiles: { $: { where: { 'user.id': user.id } } } },
-        (res) => { myProfileId = res.data?.profiles?.[0]?.id ?? null; if (state.filter === 'mine') renderTracks(); },
+        (res) => {
+          const pid = res.data?.profiles?.[0]?.id ?? null;
+          if (pid !== myProfileId) {
+            myProfileId = pid;
+            stopPlays();
+            if (pid) {
+              playsUnsub = db.subscribeQuery(
+                { plays: { $: { where: { 'profile.id': pid, namespace } } } },
+                (r) => {
+                  const map = {};
+                  for (const p of r.data?.plays ?? []) map[p.slug] = p.count;
+                  state.playsBySlug = map;
+                  renderTracks();
+                },
+              );
+            }
+          }
+          if (state.filter === 'mine') renderTracks();
+        },
       );
     }
     if (state.filter === 'mine') renderTracks();

@@ -16,6 +16,14 @@ const rules = {
   profiles: {
     allow: { view: 'true', create: 'false', update: 'false', delete: 'false' },
   },
+  plays: {
+    allow: {
+      view: "auth.id != null && auth.id in data.ref('profile.user.id')",
+      create: 'false',
+      update: 'false',
+      delete: 'false',
+    },
+  },
 };
 
 export default rules;

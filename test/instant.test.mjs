@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { fakeAdmin } from './fake-admin.mjs';
 import {
-  ensureProfile, getProfile, setArtistName, saveRating, itemSlugs, itemsBySlug, insertItem,
+  ensureProfile, getProfile, setArtistName, saveRating, itemSlugs, itemsBySlug, insertItem, recordPlay,
 } from '../server/instant.mjs';
 
 describe('ensureProfile', () => {
@@ -93,6 +93,53 @@ describe('insertItem', () => {
     const db = fakeAdmin({ tracks: [] });
     await insertItem(db, 'tracks', { ...track, id: '2026-06-16-x-01-v2', versionOf: '2026-06-16-x-01' }, 'p1');
     expect(db._txs[0].update.versionOf).toBe('2026-06-16-x-01');
+  });
+});
+
+describe('recordPlay', () => {
+  it('bumps the total and treats absent playCount as 0 (anonymous)', async () => {
+    const db = fakeAdmin({ tracks: [{ id: 't1', slug: 's-01' }] });
+    const res = await recordPlay(db, 'tracks', 's-01', undefined);
+    expect(res).toEqual({ playCount: 1, you: undefined });
+    expect(db._txs[0]).toMatchObject({ ns: 'tracks', id: 't1', update: { playCount: 1 } });
+    expect(db._txs.some((o) => o.ns === 'plays')).toBe(false);
+  });
+
+  it('increments an existing total (anonymous)', async () => {
+    const db = fakeAdmin({ stems: [{ id: 's1', slug: 'st-01', playCount: 4 }] });
+    const res = await recordPlay(db, 'stems', 'st-01', undefined);
+    expect(res.playCount).toBe(5);
+    expect(db._txs[0]).toMatchObject({ ns: 'stems', id: 's1', update: { playCount: 5 } });
+  });
+
+  it('returns null for an unknown slug', async () => {
+    const db = fakeAdmin({ tracks: [] });
+    expect(await recordPlay(db, 'tracks', 'nope', undefined)).toBeNull();
+  });
+
+  it('creates a per-user plays record (count 1) when none exists', async () => {
+    const db = fakeAdmin({
+      tracks: [{ id: 't1', slug: 's-01', playCount: 0 }],
+      profiles: [{ id: 'p1', user: { id: 'u1' } }],
+      plays: [],
+    });
+    const res = await recordPlay(db, 'tracks', 's-01', { id: 'u1', email: 'kalavox@gmail.com' });
+    expect(res).toMatchObject({ playCount: 1, you: 1 });
+    const playOp = db._txs.find((o) => o.ns === 'plays');
+    expect(playOp.update).toMatchObject({ namespace: 'tracks', slug: 's-01', count: 1 });
+    expect(playOp.link).toEqual({ profile: 'p1' });
+  });
+
+  it('increments an existing per-user plays record', async () => {
+    const db = fakeAdmin({
+      tracks: [{ id: 't1', slug: 's-01', playCount: 5 }],
+      profiles: [{ id: 'p1', user: { id: 'u1' } }],
+      plays: [{ id: 'pl1', namespace: 'tracks', slug: 's-01', count: 3, profile: { id: 'p1' } }],
+    });
+    const res = await recordPlay(db, 'tracks', 's-01', { id: 'u1', email: 'kalavox@gmail.com' });
+    expect(res.you).toBe(4);
+    const playOp = db._txs.find((o) => o.ns === 'plays' && o.id === 'pl1');
+    expect(playOp.update).toMatchObject({ count: 4 });
   });
 });
 
