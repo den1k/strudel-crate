@@ -55,15 +55,17 @@ Open/close: same pattern as the auth modal — click-X, click-backdrop, and
 
 ### 3. Stats computation
 
-No server changes. When the modal opens for a signed-in user, run a one-off
-client Instant query against both namespaces filtered by the author's profile,
-and count **version-families** (matching what the "mine" filter shows, not raw
-version rows):
+No server changes. The modal already calls `GET /api/profile`, which returns the
+profile `id`. Reuse that id to run a one-off client Instant query against both
+namespaces filtered by `author.id` (single-hop relation filter, definitely
+supported — avoids a riskier two-hop `author.user.id` filter), and count
+**version-families** (matching what the "mine" filter shows, not raw version
+rows):
 
 ```js
 db.queryOnce({
-  tracks: { $: { where: { 'author.user.id': user.id } } },
-  stems:  { $: { where: { 'author.user.id': user.id } } },
+  tracks: { $: { where: { 'author.id': profileId } } },
+  stems:  { $: { where: { 'author.id': profileId } } },
 })
 ```
 
