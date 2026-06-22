@@ -8,6 +8,7 @@ import { mmss, hasTimeline, fractionToCycle, progressFraction, isFinished } from
 import { db } from './db.js';
 import { onUser } from './auth.js';
 import { bootStrudel } from './strudel-boot.js';
+import { songUrl } from './song-url.js';
 
 const $ = (sel, el = document) => el.querySelector(sel);
 
@@ -27,6 +28,30 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
   const collection = namespace; // 'tracks' | 'stems'
   const urlBatch = new URLSearchParams(location.search).get('batch');
   if (urlBatch) state.batch = urlBatch;
+
+  let toastTimer = null;
+  function showToast(message) {
+    let toast = document.querySelector('.toast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.className = 'toast';
+      document.body.appendChild(toast);
+    }
+    toast.textContent = message;
+    toast.classList.add('on');
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('on'), 1600);
+  }
+
+  async function shareTrack(track) {
+    const url = location.origin + songUrl(track.id);
+    if (navigator.share) {
+      try { await navigator.share({ title: track.title, url }); } catch { /* cancelled */ }
+      return;
+    }
+    try { await navigator.clipboard.writeText(url); showToast('Link copied'); }
+    catch { showToast('Copy failed'); }
+  }
 
   // --- strudel init: one shared runtime for every page (see strudel-boot.js) -
   const ready = bootStrudel();
@@ -352,6 +377,12 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
         });
         exportRow.appendChild(btn);
       }
+      const shareBtn = document.createElement('button');
+      shareBtn.className = 'export share';
+      shareBtn.textContent = '⤴ share';
+      shareBtn.title = 'copy link to this song';
+      shareBtn.addEventListener('click', () => shareTrack(track));
+      exportRow.appendChild(shareBtn);
       meta.appendChild(exportRow);
 
       const rate = document.createElement('div');
