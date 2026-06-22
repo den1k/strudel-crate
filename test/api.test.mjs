@@ -212,4 +212,10 @@ describe('play API', () => {
     expect(res.body).toMatchObject({ playCount: 1, you: 1 });
     expect(db2._txs.some((o) => o.ns === 'plays')).toBe(true);
   });
+
+  it('returns 429 when the play limiter denies the request', async () => {
+    const limited = createApp({ adminDb, namespaces: ['tracks', 'stems'], requireAuth, playLimiter: () => false });
+    const res = await request(limited).post('/api/tracks/demo-01/play');
+    expect(res.status).toBe(429);
+  });
 });

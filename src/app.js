@@ -287,10 +287,24 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
     });
   }
 
+  // Remembers which version the user switched a family to, so a full
+  // renderTracks() (e.g. when a play/rating bumps a row) doesn't snap the card
+  // back to the latest version. Keyed by family root id → selected version id.
+  const selectedByFamily = new Map();
+
+  // Tap-away closes any open plays breakdown (mobile). The plays element's own
+  // click calls stopPropagation, so tapping it never reaches this handler.
+  document.addEventListener('click', () => {
+    for (const el of document.querySelectorAll('.plays.open')) el.classList.remove('open');
+  });
+
   function trackCard(family) {
     const card = document.createElement('article');
     card.className = 'track';
-    let active = family.latest; // spec: default to the latest version
+    // Default to the latest version, but honor a prior in-session selection
+    // (falling back to latest if that version no longer exists).
+    const chosen = family.versions.find((v) => v.id === selectedByFamily.get(family.family));
+    let active = chosen ?? family.latest;
 
     mountBody();
     return card;
@@ -322,16 +336,24 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
       $('.id', meta).textContent = track.id;
       const playsEl = $('.plays', meta);
       const total = track.playCount ?? 0;
-      playsEl.textContent = `▶ ${total} ${total === 1 ? 'play' : 'plays'}`;
+      const totalLabel = `▶ ${total} ${total === 1 ? 'play' : 'plays'}`;
       if (myProfileId != null) {
         const you = state.playsBySlug[track.id] ?? 0; // track.id === slug
-        playsEl.title = `you: ${you}`;
+        const others = Math.max(0, total - you); // everyone else: other users + anons
+        // Hover (desktop) / tap (mobile) swaps the total for a you-vs-others breakdown.
+        playsEl.classList.add('has-breakdown');
+        playsEl.innerHTML = '<span class="plays-total"></span><span class="plays-breakdown"></span>';
+        $('.plays-total', playsEl).textContent = totalLabel;
+        $('.plays-breakdown', playsEl).textContent = `you ${you} · others ${others}`;
+        playsEl.addEventListener('click', (e) => { e.stopPropagation(); playsEl.classList.toggle('open'); });
         if (!(you > 0)) {
           const dot = document.createElement('span');
           dot.className = 'unplayed-dot';
           dot.title = "you haven't played this yet";
           $('h3', meta).prepend(dot);
         }
+      } else {
+        playsEl.textContent = totalLabel;
       }
       $('.desc', meta).textContent = track.description ?? '';
       if (track.artistName) {
@@ -367,6 +389,7 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
           b.title = `version ${v.version} — ${v.createdAt}`;
           b.addEventListener('click', () => {
             if (v.id === active.id) return;
+            selectedByFamily.set(family.family, v.id);
             active = v;
             mountBody();
           });

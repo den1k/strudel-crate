@@ -111,6 +111,12 @@ body {
   background: var(--bg); white-space: nowrap;
 }
 .plays { display: block; margin-top: 4px; font-size: 11px; color: var(--dim); font-family: var(--mono); }
+.plays.has-breakdown { cursor: pointer; }
+.plays.has-breakdown:hover .plays-total,
+.plays.has-breakdown.open .plays-total { display: none; }
+.plays-breakdown { display: none; }
+.plays.has-breakdown:hover .plays-breakdown,
+.plays.has-breakdown.open .plays-breakdown { display: inline; color: var(--acid); }
 .unplayed-dot {
   display: inline-block; width: 6px; height: 6px; border-radius: 50%;
   background: var(--acid); margin-right: 6px; vertical-align: middle;
