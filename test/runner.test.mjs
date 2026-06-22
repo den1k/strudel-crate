@@ -30,6 +30,10 @@ describe('buildArgv', () => {
     const argv = buildArgv({ type: 'revise-from-notes', prompt: 'stems' });
     expect(argv[1]).toBe('/revise-from-notes stems');
   });
+  it('strips embedded double quotes so they cannot break the arg boundary', () => {
+    const argv = buildArgv({ type: 'generate-tracks', prompt: 'dark "techno" vibes', count: 3 });
+    expect(argv[1]).toBe('/generate-tracks "dark techno vibes" 3');
+  });
 });
 
 describe('diffNew', () => {
@@ -176,6 +180,21 @@ describe2('createRunner worker', () => {
     children[0].emit('close', 1);
     await until(async () => (await jobStore.get('j1')).status === 'failed');
     expect2((await jobStore.get('j1')).status).toBe('failed');
+  });
+
+  it2('captures child stderr in the failure error for debuggability', async () => {
+    const { spawn, children } = fakeSpawnFactory();
+    const admin = fakeAdmin({ profiles: [], stems: [], tracks: [] });
+    const runner = createRunner({ repoRoot, jobStore, adminDb: admin, spawn, now: ticks });
+    await jobStore.write(baseJob('j1'));
+    await runner.enqueue(baseJob('j1'));
+    await until(() => children.length === 1);
+    children[0].stderr.emit('data', 'Error: permission prompt timed out\n');
+    children[0].emit('close', 1);
+    await until(async () => (await jobStore.get('j1')).status === 'failed');
+    const failed = await jobStore.get('j1');
+    expect2(failed.error).toContain('claude exited 1');
+    expect2(failed.error).toContain('permission prompt timed out');
   });
 
   it2('runs jobs one at a time (single slot)', async () => {

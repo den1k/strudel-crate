@@ -68,6 +68,9 @@ function jobRoutes(app, jobStore, runner, progressFor, requireAuth) {
       if (typeof prompt !== 'string' || !prompt.trim() || prompt.length > 500) {
         return res.status(400).json({ error: 'prompt required (1-500 chars)' });
       }
+      // The prompt is wrapped in double quotes when handed to `claude -p`; a quote
+      // in the text would break the slash-command argument boundary. Reject it here.
+      if (prompt.includes('"')) return res.status(400).json({ error: 'prompt may not contain double quotes' });
       const n = Math.min(30, Math.max(1, Math.floor(Number(count) || 30)));
       job = { ...base, prompt: prompt.trim(), count: n, collection: collectionFor(type) };
     }

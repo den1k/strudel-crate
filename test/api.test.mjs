@@ -125,6 +125,12 @@ describe('jobs API', () => {
     expect(res.status).toBe(400);
   });
 
+  it('rejects a generate prompt containing a double quote', async () => {
+    const res = await request(jobApp).post('/api/jobs').send({ type: 'generate-tracks', prompt: 'dark "techno"', count: 4 });
+    expect(res.status).toBe(400);
+    expect(enqueued).toHaveLength(0);
+  });
+
   it('accepts revise-from-notes with a collection prompt', async () => {
     const res = await request(jobApp).post('/api/jobs').send({ type: 'revise-from-notes', prompt: 'stems' });
     expect(res.status).toBe(201);

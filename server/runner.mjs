@@ -30,9 +30,14 @@ const ALLOWED_TOOLS = [
 ].join(',');
 
 export function buildArgv(job) {
+  // The generate prompt is wrapped in double quotes to group it as one slash-command
+  // argument; a quote inside the user's text would break that boundary. The API
+  // rejects quotes up front — strip here too as a defensive fallback so no job can
+  // ever produce a malformed command line.
+  const safePrompt = String(job.prompt ?? '').replace(/"/g, '');
   const prompt = job.type === 'revise-from-notes'
-    ? `/revise-from-notes ${job.prompt}`
-    : `/${job.type} "${job.prompt}" ${job.count}`;
+    ? `/revise-from-notes ${safePrompt}`
+    : `/${job.type} "${safePrompt}" ${job.count}`;
   return ['-p', prompt, '--output-format', 'json', '--allowedTools', ALLOWED_TOOLS];
 }
 
@@ -82,14 +87,16 @@ export function createRunner({
   function runClaude(job, authorProfileId) {
     return new Promise((resolve) => {
       let out = '';
+      let err = '';
       let resolved = false;
       const settle = (result) => { if (!resolved) { resolved = true; resolve(result); } };
       const env = { ...process.env };
       if (authorProfileId) env.CRATE_AUTHOR_PROFILE_ID = authorProfileId;
       const child = spawn('claude', buildArgv(job), { cwd: repoRoot, env });
       child.stdout?.on('data', (d) => { out += d; });
-      child.on('error', () => settle({ code: -1, out }));
-      child.on('close', (code) => settle({ code: code ?? -1, out }));
+      child.stderr?.on('data', (d) => { err += d; });
+      child.on('error', (e) => settle({ code: -1, out, err: err || String(e?.message ?? e) }));
+      child.on('close', (code) => settle({ code: code ?? -1, out, err }));
     });
   }
 
@@ -103,13 +110,17 @@ export function createRunner({
         : null;
       const before = await itemSlugs(adminDb, ns);
       await jobStore.update(id, { status: 'running', startedAt: now(), baselineCount: before.size });
-      const { code, out } = await runClaude(job, authorProfileId);
+      const { code, out, err } = await runClaude(job, authorProfileId);
       const after = await itemSlugs(adminDb, ns);
       const newItems = diffNew(before, after);
       const newRows = await itemsBySlug(adminDb, ns, newItems);
       const patch = { finishedAt: now(), newItems, batch: majorityBatch(newRows) };
       if (code === 0) { patch.status = 'done'; patch.summary = parseSummary(out); }
-      else { patch.status = 'failed'; patch.error = `claude exited ${code}`; }
+      else {
+        patch.status = 'failed';
+        const tail = (err ?? '').trim().slice(-500);
+        patch.error = tail ? `claude exited ${code}: ${tail}` : `claude exited ${code}`;
+      }
       await jobStore.update(id, patch);
     } catch (err) {
       await jobStore.update(id, { status: 'failed', finishedAt: now(), error: String(err?.message ?? err) });
