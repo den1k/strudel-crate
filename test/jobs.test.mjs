@@ -63,7 +63,7 @@ describe('createJobStore', () => {
 
   it('exposes the allowed type set', () => {
     expect([...store.TYPES].sort()).toEqual(
-      ['generate-stems', 'generate-tracks', 'revise-from-notes'],
+      ['generate-stems', 'generate-tracks', 'remix', 'revise-from-notes'],
     );
   });
 });

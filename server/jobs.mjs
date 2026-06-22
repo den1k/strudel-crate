@@ -4,7 +4,7 @@ import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 export const JOB_TYPES = new Set([
-  'generate-stems', 'generate-tracks', 'revise-from-notes',
+  'generate-stems', 'generate-tracks', 'revise-from-notes', 'remix',
 ]);
 
 export function createJobStore({ jobsDir }) {

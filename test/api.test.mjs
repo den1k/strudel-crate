@@ -161,6 +161,43 @@ describe('jobs API', () => {
   });
 });
 
+describe('remix jobs', () => {
+  let jobApp, runner, store;
+  beforeEach(async () => {
+    store = createJobStore({ jobsDir: await mkdtemp(join(tmpdir(), 'jobs-')) });
+    runner = { enqueue: async () => {} };
+    jobApp = createApp({
+      adminDb, namespaces: ['tracks', 'stems'], requireAuth, requireUser,
+      allowedEmails: ['kalavox@gmail.com'], jobStore: store, runner,
+    });
+  });
+
+  it('enqueues a remix job for an existing source', async () => {
+    const res = await request(jobApp).post('/api/jobs')
+      .send({ type: 'remix', namespace: 'tracks', slug: 'demo-01', instructions: 'make it darker' });
+    expect(res.status).toBe(201);
+    expect(res.body.type).toBe('remix');
+    expect(res.body.sourceSlug).toBe('demo-01');
+    expect(res.body.collection).toBe('tracks');
+    expect(res.body.prompt).toBe('make it darker');
+  });
+  it('400s an unknown source slug', async () => {
+    const res = await request(jobApp).post('/api/jobs')
+      .send({ type: 'remix', namespace: 'tracks', slug: 'nope', instructions: 'x' });
+    expect(res.status).toBe(400);
+  });
+  it('400s a bad namespace', async () => {
+    const res = await request(jobApp).post('/api/jobs')
+      .send({ type: 'remix', namespace: 'songs', slug: 'demo-01', instructions: 'x' });
+    expect(res.status).toBe(400);
+  });
+  it('400s instructions containing a double quote', async () => {
+    const res = await request(jobApp).post('/api/jobs')
+      .send({ type: 'remix', namespace: 'tracks', slug: 'demo-01', instructions: 'say "hi"' });
+    expect(res.status).toBe(400);
+  });
+});
+
 describe('notes API', () => {
   const asUser = (user, emails = ['kalavox@gmail.com']) =>
     createApp({ adminDb, namespaces: ['tracks', 'stems'],

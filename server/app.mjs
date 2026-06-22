@@ -80,7 +80,7 @@ function profileRoutes(app, adminDb, requireAuth) {
 }
 
 // `requireAuth` gates job creation (it triggers Claude Code); reads stay public.
-function jobRoutes(app, jobStore, runner, progressFor, requireAuth) {
+function jobRoutes(app, jobStore, runner, progressFor, requireAuth, adminDb) {
   app.post('/api/jobs', requireAuth, wrap(async (req, res) => {
     const { type, prompt, count } = req.body ?? {};
     if (!jobStore.TYPES.has(type)) return res.status(400).json({ error: 'invalid type' });
@@ -97,7 +97,20 @@ function jobRoutes(app, jobStore, runner, progressFor, requireAuth) {
     };
 
     let job;
-    if (type === 'revise-from-notes') {
+    if (type === 'remix') {
+      const { namespace, slug, instructions } = req.body ?? {};
+      if (namespace !== 'tracks' && namespace !== 'stems') {
+        return res.status(400).json({ error: 'namespace must be tracks or stems' });
+      }
+      if (!ID_RE.test(String(slug ?? ''))) return res.status(400).json({ error: 'invalid slug' });
+      if (typeof instructions !== 'string' || !instructions.trim() || instructions.length > 500) {
+        return res.status(400).json({ error: 'instructions required (1-500 chars)' });
+      }
+      if (instructions.includes('"')) return res.status(400).json({ error: 'instructions may not contain double quotes' });
+      const exists = adminDb && (await adminDb.query({ [namespace]: { $: { where: { slug } } } }))[namespace][0];
+      if (!exists) return res.status(400).json({ error: 'source not found' });
+      job = { ...base, type: 'remix', prompt: instructions.trim(), count: null, collection: namespace, sourceSlug: slug };
+    } else if (type === 'revise-from-notes') {
       if (prompt !== 'stems' && prompt !== 'tracks') {
         return res.status(400).json({ error: 'collection must be stems or tracks' });
       }
@@ -155,7 +168,7 @@ export function createApp(opts = {}) {
     profileRoutes(app, adminDb, requireAuth);
   }
 
-  if (opts.jobStore && opts.runner) jobRoutes(app, opts.jobStore, opts.runner, opts.progressFor, requireAuth);
+  if (opts.jobStore && opts.runner) jobRoutes(app, opts.jobStore, opts.runner, opts.progressFor, requireAuth, adminDb);
 
   // Production: serve the built SPA (dev uses Vite). Defined AFTER the API so
   // /api/* always wins; the /stems clean URL mirrors vite.config.js's rewrite.
