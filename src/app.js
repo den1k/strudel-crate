@@ -378,7 +378,9 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
         from.className = 'remix-from';
         from.href = songUrl(src ? src.entityId : track.remixOf);
         from.textContent = `remixed from ${track.remixOf}`;
-        meta.querySelector('h3').after(from);
+        // Insert after the artist "by" line when it exists, so DOM order is:
+        // title → by <artist> → remixed from <slug>
+        (meta.querySelector('.by') ?? meta.querySelector('h3')).after(from);
       }
       const m = track.meta ?? {};
       const chips = $('.chips', meta);
@@ -452,7 +454,7 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
       shareBtn.title = 'copy link to this song';
       shareBtn.addEventListener('click', () => shareTrack(track));
       exportRow.appendChild(shareBtn);
-      if (document.querySelector('#gen-prompt')) {
+      if (myProfileId != null) {
         const remixBtn = document.createElement('button');
         remixBtn.className = 'export remix';
         remixBtn.textContent = '⎋ remix';

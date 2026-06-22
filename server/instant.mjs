@@ -32,6 +32,10 @@ export async function setArtistName(adminDb, user, artistName) {
 // aggregate (ratingSum/ratingCount) on the item. `value` is 1-5 to set, or null
 // to clear. Computes the new aggregate from the currently-stored ratings plus
 // this caller's delta (the row is upserted/deleted in the same transact).
+// NOTE: the aggregate is delta-maintained (item.ratingCount/ratingSum ± delta),
+// NOT re-summed from all ratings rows. It will NOT self-heal if ratings rows are
+// removed out-of-band — e.g. deleting a profile cascades away its ratings links
+// but does not decrement ratingSum/ratingCount on the item.
 // Returns { you, avg, count } or null when the slug doesn't exist.
 export async function setRating(adminDb, namespace, slug, profileId, value) {
   const res = await adminDb.query({ [namespace]: { $: { where: { slug } } } });

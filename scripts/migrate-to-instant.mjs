@@ -29,6 +29,8 @@ async function migrateNamespace(ns, itemsDir, ratingsDir, profileId) {
     if (!item?.id) { failed++; continue; }
     if (existing.has(item.id)) { skipped++; continue; }
     const rating = await ratingFor(ratingsDir, item.id);
+    // rating.rating is no longer an item field and is silently ignored by insertItem;
+    // disk ratings are migrated separately by scripts/migrate-ratings.mjs
     const res = await insertItem(adminDb, ns, { ...item, ...rating }, profileId);
     if (res.ok) { created++; existing.add(item.id); } else { skipped++; }
   }
