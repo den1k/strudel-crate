@@ -192,6 +192,7 @@ body {
   padding: 8px 22px; cursor: pointer;
 }
 #stop:disabled { background: var(--line); color: var(--dim); cursor: default; }
+#stop.is-play:not(:disabled) { background: var(--acid); } /* ▶ PLAY: a cued song ready to start */
 
 .seekbar { flex: 1; display: flex; align-items: center; gap: 10px; min-width: 0; }
 .seekbar[hidden] { display: none; } /* override display:flex; [hidden] alone won't hide a flex box */

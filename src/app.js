@@ -15,7 +15,9 @@ import { saveListState, loadListState } from './list-state.js';
 const $ = (sel, el = document) => el.querySelector(sel);
 
 export async function initApp({ namespace, emptyHint, splitStems = false }) {
-  const state = { tracks: [], playingId: null, playingSpec: null, samplesReady: false, batch: 'all', filter: 'all', user: null, playsBySlug: {} };
+  // cuedId/cuedSpec: a song primed in the footer transport (from a ?play= link)
+  // but not yet started — the footer button shows ▶ PLAY and one click starts it.
+  const state = { tracks: [], playingId: null, playingSpec: null, cuedId: null, cuedSpec: null, samplesReady: false, batch: 'all', filter: 'all', user: null, playsBySlug: {} };
   let playTimer = null; // pending "count this play" timer (fires after 4s of playback)
   let myProfileId = null;
   // The auth-gated "mine" button — a one-click shortcut into the author axis.
@@ -229,6 +231,10 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
   // --- playback (one StrudelMirror per track; solo mode keeps it exclusive) --
   async function play(track) {
     clearTimeout(playTimer);
+    // Starting playback consumes any cued/ready song (incl. this one).
+    state.cuedId = null;
+    state.cuedSpec = null;
+    document.querySelector('.track.cued')?.classList.remove('cued');
     state.playingId = track.id;
     // exportSpec assumes track.meta.bpm; a stem without it throws → no timeline
     state.playingSpec = (() => {
@@ -588,11 +594,34 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
     $('#status').textContent = state.samplesReady ? '● samples loaded' : '◌ warming up samples…';
     $('#status').classList.toggle('ready', state.samplesReady);
     const playing = state.tracks.find((t) => t.id === state.playingId);
-    $('#now-playing').textContent = playing ? `NOW PLAYING — ${playing.title}` : '';
-    $('#stop').disabled = !playing;
-    const showSeek = !!playing && hasTimeline(state.playingSpec);
+    // When nothing is playing, a cued song (from a ?play= link) is shown "ready".
+    const cued = !playing && state.cuedId ? state.tracks.find((t) => t.id === state.cuedId) : null;
+    const current = playing ?? cued;
+    const spec = playing ? state.playingSpec : cued ? state.cuedSpec : null;
+    $('#now-playing').textContent = playing
+      ? `NOW PLAYING — ${playing.title}`
+      : cued
+        ? `READY — ${cued.title}`
+        : '';
+    // The footer button is a play/stop toggle: ▶ PLAY when a song is cued,
+    // ■ STOP while one is playing, and disabled when nothing is loaded.
+    const btn = $('#stop');
+    btn.textContent = playing ? '■ STOP' : '▶ PLAY';
+    btn.disabled = !current;
+    btn.classList.toggle('is-play', !!cued);
+    const showSeek = !!current && hasTimeline(spec);
     seekbar.hidden = !showSeek;
-    if (showSeek) totalEl.textContent = mmss(state.playingSpec.seconds);
+    if (showSeek) {
+      totalEl.textContent = mmss(spec.seconds);
+      if (!playing) paintSeek(0, 0); // cued: show the rail parked at the start
+    }
+  }
+
+  // Footer play/stop toggle: stop what's playing, else start the cued song.
+  function transportToggle() {
+    if (state.playingId) { stop(); return; }
+    const cued = state.cuedId && state.tracks.find((t) => t.id === state.cuedId);
+    if (cued) play(cued);
   }
 
   function renderBatchFilter() {
@@ -641,7 +670,7 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
   }
 
   // --- boot --------------------------------------------------------------
-  $('#stop').addEventListener('click', stop);
+  $('#stop').addEventListener('click', transportToggle);
   rail.addEventListener('pointerdown', (e) => {
     if (!hasTimeline(state.playingSpec)) return;
     scrubbing = true;
@@ -758,6 +787,10 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
     if (pendingCue && cuedRow) {
       pendingCue = false;
       pendingScrollRestore = false; // cue scroll wins over saved scrollY
+      // Prime the song in the footer transport, ready to play (no autoplay).
+      state.cuedId = cuedRow.id;
+      state.cuedSpec = (() => { try { return exportSpec(cuedRow); } catch { return null; } })();
+      renderTransport();
       const card = document.querySelector(`#tracks .track[data-id="${CSS.escape(cuedRow.id)}"]`);
       if (card) {
         card.classList.add('cued');
