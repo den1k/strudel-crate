@@ -72,6 +72,18 @@ describe('majorityBatch', () => {
   });
 });
 
+describe('remix buildArgv', () => {
+  it('builds the /remix command', () => {
+    const argv = buildArgv({ type: 'remix', collection: 'tracks', sourceSlug: 'demo-01', prompt: 'darker, halftime' });
+    expect(argv[0]).toBe('-p');
+    expect(argv[1]).toBe('/remix tracks demo-01 "darker, halftime"');
+  });
+  it('strips double quotes defensively', () => {
+    const argv = buildArgv({ type: 'remix', collection: 'stems', sourceSlug: 's-01', prompt: 'a "b" c' });
+    expect(argv[1]).toBe('/remix stems s-01 "a b c"');
+  });
+});
+
 
 import { describe as describe2, it as it2, expect as expect2, beforeEach } from 'vitest';
 import { EventEmitter } from 'node:events';

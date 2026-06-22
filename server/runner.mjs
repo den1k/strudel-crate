@@ -9,7 +9,8 @@ const COLLECTION_BY_TYPE = {
   'generate-tracks': 'tracks',
 };
 
-export function collectionFor(type, prompt) {
+export function collectionFor(type, prompt, collection) {
+  if (type === 'remix') return collection;
   if (type === 'revise-from-notes') return prompt === 'stems' ? 'stems' : 'tracks';
   return COLLECTION_BY_TYPE[type];
 }
@@ -25,6 +26,7 @@ const ALLOWED_TOOLS = [
   'Bash(node scripts/feedback.mjs:*)',
   'Bash(node scripts/pending-revisions.mjs:*)',
   'Bash(node scripts/validate.mjs:*)',
+  'Bash(node scripts/remix-source.mjs:*)',
   'Bash(date:*)', 'Bash(pwd)', 'Bash(ls:*)', 'Bash(grep:*)',
   'Bash(mkdir -p staging)', 'Bash(rm staging/:*)',
 ].join(',');
@@ -37,7 +39,9 @@ export function buildArgv(job) {
   const safePrompt = String(job.prompt ?? '').replace(/"/g, '');
   const prompt = job.type === 'revise-from-notes'
     ? `/revise-from-notes ${safePrompt}`
-    : `/${job.type} "${safePrompt}" ${job.count}`;
+    : job.type === 'remix'
+      ? `/remix ${job.collection} ${job.sourceSlug} "${safePrompt}"`
+      : `/${job.type} "${safePrompt}" ${job.count}`;
   return ['-p', prompt, '--output-format', 'json', '--allowedTools', ALLOWED_TOOLS];
 }
 
