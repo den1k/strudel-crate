@@ -3,15 +3,20 @@ import { join } from 'node:path';
 import express from 'express';
 import { collectionFor } from './runner.mjs';
 import { saveRating, getProfile, setArtistName, recordPlay } from './instant.mjs';
+import { createPlayLimiter } from './rate-limit.mjs';
 
 const ID_RE = /^[A-Za-z0-9_-]+$/; // rating files are written as <id>.json — no path chars
+
+// Real client ip behind nginx (X-Forwarded-For), falling back to the socket.
+const clientIp = (req) =>
+  req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket?.remoteAddress || 'anon';
 
 // Express 4 doesn't catch async handler rejections — route them to the error handler.
 const wrap = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
 
 // One rating route per collection at /api/<name>/:id/rating (id = slug).
 // Listing is retired — the client reads Instant directly.
-function collectionRoutes(app, name, adminDb, requireAuth, resolveUser) {
+function collectionRoutes(app, name, adminDb, requireAuth, resolveUser, playLimiter) {
   app.put(`/api/${name}/:id/rating`, requireAuth, wrap(async (req, res) => {
     const { id } = req.params;
     if (!ID_RE.test(id)) return res.status(400).json({ error: 'invalid id' });
@@ -31,6 +36,7 @@ function collectionRoutes(app, name, adminDb, requireAuth, resolveUser) {
   app.post(`/api/${name}/:id/play`, resolveUser, wrap(async (req, res) => {
     const { id } = req.params;
     if (!ID_RE.test(id)) return res.status(400).json({ error: 'invalid id' });
+    if (!playLimiter(clientIp(req), name, id)) return res.status(429).json({ error: 'too many plays' });
     const result = await recordPlay(adminDb, name, id, req.user);
     if (!result) return res.status(404).json({ error: 'not found' });
     res.json(result);
@@ -116,11 +122,12 @@ export function createApp(opts = {}) {
   // production passes a middleware that verifies an Instant token + allowlist.
   const requireAuth = opts.requireAuth ?? ((_req, _res, next) => next());
   const resolveUser = opts.resolveUser ?? ((_req, _res, next) => next());
+  const playLimiter = opts.playLimiter ?? createPlayLimiter();
   const adminDb = opts.adminDb;
   const namespaces = opts.namespaces ?? ['tracks', 'stems'];
 
   if (adminDb) {
-    for (const name of namespaces) collectionRoutes(app, name, adminDb, requireAuth, resolveUser);
+    for (const name of namespaces) collectionRoutes(app, name, adminDb, requireAuth, resolveUser, playLimiter);
     profileRoutes(app, adminDb, requireAuth);
   }
 
