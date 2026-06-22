@@ -119,6 +119,7 @@ export function createApp(opts = {}) {
   // /api/* always wins; the /stems clean URL mirrors vite.config.js's rewrite.
   if (opts.distDir) {
     app.get(['/stems', '/stems/'], (_req, res) => res.sendFile(join(opts.distDir, 'stems.html')));
+    app.get('/song/:slug', (_req, res) => res.sendFile(join(opts.distDir, 'song.html')));
     app.use(express.static(opts.distDir));
   }
 
