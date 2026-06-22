@@ -6,6 +6,7 @@ import {
   progressFraction,
   readCycle,
   applySeek,
+  isFinished,
 } from '../src/transport.js';
 
 describe('mmss', () => {
@@ -48,6 +49,22 @@ describe('progressFraction', () => {
   });
   it('returns 0 for a degenerate total', () => {
     expect(progressFraction(4, 0)).toBe(0);
+  });
+});
+
+describe('isFinished', () => {
+  it('is true once the playhead reaches or passes the arrangement length', () => {
+    expect(isFinished(32, 32)).toBe(true);
+    expect(isFinished(40, 32)).toBe(true);
+  });
+  it('is false while still inside the arrangement', () => {
+    expect(isFinished(0, 32)).toBe(false);
+    expect(isFinished(31.99, 32)).toBe(false);
+  });
+  it('is false for a degenerate or unknown timeline', () => {
+    expect(isFinished(5, 0)).toBe(false);
+    expect(isFinished(NaN, 32)).toBe(false);
+    expect(isFinished(null, 32)).toBe(false);
   });
 });
 

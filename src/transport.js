@@ -28,6 +28,14 @@ export function progressFraction(cycle, cycles) {
   return clamp01(cycle / cycles);
 }
 
+// The arrangement has played through once the playhead reaches its length.
+// Strudel's Cyclist loops the pattern forever, so the seek loop uses this to
+// stop playback at the end instead of letting the audio replay past the
+// duration shown on the progress bar. False for a degenerate/unknown timeline.
+export function isFinished(cycle, cycles) {
+  return Number.isFinite(cycle) && cycles > 0 && cycle >= cycles;
+}
+
 // --- scheduler-pure glue (operates on a Cyclist-like object) ----------------
 
 // Current cycle of a running scheduler, or null when unavailable (stopped, or a

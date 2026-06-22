@@ -9,7 +9,7 @@ import { exportTrack, isExporting } from './export.js';
 import { groupVersions } from './versions.js';
 import banks from '../shared/sample-banks.json';
 import { exportSpec } from './export-spec.js';
-import { mmss, hasTimeline, fractionToCycle, progressFraction } from './transport.js';
+import { mmss, hasTimeline, fractionToCycle, progressFraction, isFinished } from './transport.js';
 import { db } from './db.js';
 import { onUser } from './auth.js';
 import { enableSilentSwitchPlayback } from './ios-audio.js';
@@ -150,6 +150,9 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
       const cycle = cyclePosition(state.playingId);
       if (cycle == null) return;
       const spec = state.playingSpec;
+      // The Cyclist loops the arrangement; stop at its end so audio doesn't
+      // replay past the duration shown on the bar.
+      if (isFinished(cycle, spec.cycles)) { stop(); return; }
       paintSeek(progressFraction(cycle, spec.cycles), cycle / spec.cps);
     };
     rafId = requestAnimationFrame(tick);
