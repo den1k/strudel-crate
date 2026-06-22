@@ -9,13 +9,26 @@
 // cooldownMs defaults below the client's 4s play threshold: legit UI replays of
 // one song are inherently ≥4s apart (you must hear 4s to ping), so they always
 // pass, while scripted bursts on a single song are dropped.
-export function createPlayLimiter({ cooldownMs = 3000, perIpPerMin = 60, now = () => Date.now() } = {}) {
+export function createPlayLimiter({ cooldownMs = 3000, perIpPerMin = 60, maxKeys = 10000, now = () => Date.now() } = {}) {
   const lastByKey = new Map(); // `${ip}:${ns}:${slug}` -> last allowed timestamp
   const hitsByIp = new Map();  // ip -> [timestamps within the last 60s]
+
+  // Drop entries that can no longer affect a decision: cooldowns that have
+  // elapsed and ip windows with no recent hits. Keeps both maps bounded without
+  // a background timer; only runs once the combined size crosses maxKeys.
+  function sweep(t) {
+    for (const [k, ts] of lastByKey) if (t - ts >= cooldownMs) lastByKey.delete(k);
+    for (const [ipKey, arr] of hitsByIp) {
+      const live = arr.filter((ts) => t - ts < 60000);
+      if (live.length) hitsByIp.set(ipKey, live);
+      else hitsByIp.delete(ipKey);
+    }
+  }
 
   return function allow(ip, namespace, slug) {
     const id = ip ?? 'anon';
     const t = now();
+    if (lastByKey.size + hitsByIp.size > maxKeys) sweep(t);
 
     const key = `${id}:${namespace}:${slug}`;
     const last = lastByKey.get(key);

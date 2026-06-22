@@ -292,6 +292,12 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
   // back to the latest version. Keyed by family root id → selected version id.
   const selectedByFamily = new Map();
 
+  // Tap-away closes any open plays breakdown (mobile). The plays element's own
+  // click calls stopPropagation, so tapping it never reaches this handler.
+  document.addEventListener('click', () => {
+    for (const el of document.querySelectorAll('.plays.open')) el.classList.remove('open');
+  });
+
   function trackCard(family) {
     const card = document.createElement('article');
     card.className = 'track';

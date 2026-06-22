@@ -44,6 +44,17 @@ describe('createPlayLimiter', () => {
     expect(allow('2.2.2.2', 'tracks', 's-01')).toBe(true); // different ip, same song
   });
 
+  it('prunes stale entries without dropping an active cooldown', () => {
+    let t = 1000;
+    const allow = createPlayLimiter({ cooldownMs: 5000, perIpPerMin: 100, maxKeys: 1, now: () => t });
+    expect(allow('1.1.1.1', 'tracks', 'a')).toBe(true); // writes key A
+    t = 2000;
+    expect(allow('1.1.1.1', 'tracks', 'b')).toBe(true); // size > maxKeys triggers a sweep
+    expect(allow('1.1.1.1', 'tracks', 'a')).toBe(false); // A still within cooldown — not pruned
+    t = 20000; // long after every cooldown/window
+    expect(allow('1.1.1.1', 'tracks', 'c')).toBe(true); // stale A/B swept, no error, allowed
+  });
+
   it('treats a missing ip as a single anonymous bucket without throwing', () => {
     let t = 1000;
     const allow = createPlayLimiter({ cooldownMs: 5000, perIpPerMin: 100, now: () => t });

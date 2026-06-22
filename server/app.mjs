@@ -8,6 +8,8 @@ import { createPlayLimiter } from './rate-limit.mjs';
 const ID_RE = /^[A-Za-z0-9_-]+$/; // rating files are written as <id>.json — no path chars
 
 // Real client ip behind nginx (X-Forwarded-For), falling back to the socket.
+// Trustworthy only because nginx is the guaranteed ingress in production and
+// rewrites the header; a directly-exposed instance could spoof it.
 const clientIp = (req) =>
   req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket?.remoteAddress || 'anon';
 
