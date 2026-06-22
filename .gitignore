@@ -11,3 +11,6 @@ data/jobs/
 
 # generation agents' scratch dir; save scripts delete files on success
 staging/
+
+# git worktrees for isolated Claude sessions
+.claude/worktrees/
