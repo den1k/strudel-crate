@@ -83,14 +83,20 @@ function showToast(message) {
 }
 
 function renderSong(item, ns, family, ready) {
+  const isStem = ns === 'stems';
   document.title = `${item.title} — STRUDEL`;
+
+  // Reflect the namespace in the masthead (STRUDEL/SONG vs STRUDEL/STEM).
+  const brandH1 = $('.masthead .brand h1');
+  if (brandH1) brandH1.lastChild.textContent = isStem ? 'STEM' : 'SONG';
+
   const root = $('#song');
   root.innerHTML = '';
 
   const back = document.createElement('a');
   back.className = 'song-back';
-  back.href = ns === 'stems' ? '/stems' : '/';
-  back.textContent = '← back to crate';
+  back.href = isStem ? '/stems' : '/';
+  back.textContent = isStem ? '← back to stems' : '← back to crate';
   root.appendChild(back);
 
   const head = document.createElement('div');
