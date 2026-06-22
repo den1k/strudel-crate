@@ -172,7 +172,6 @@ export async function insertItem(adminDb, namespace, track, authorProfileId) {
     meta: track.meta,
     createdAt: track.createdAt,
     isPublic: true,
-    rating: track.rating ?? null,
     notes: track.notes ?? '',
     lesson: track.lesson ?? '',
   };

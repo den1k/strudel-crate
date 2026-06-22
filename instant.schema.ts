@@ -15,7 +15,6 @@ const itemFields = {
   createdAt: i.string().indexed(), // ISO 8601 — sorts chronologically lexicographically
   isPublic: i.boolean().indexed(),
   versionOf: i.string().indexed().optional(), // root slug for v2+, absent for v1
-  rating: i.number().optional(), // 1-5 or absent
   notes: i.string().optional(), // per-item notes
   lesson: i.string().optional(), // cross-batch lesson
   playCount: i.number().optional(), // total plays across everyone; absent ⇒ 0

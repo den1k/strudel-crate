@@ -58,7 +58,7 @@ describe('insertItem', () => {
     expect(res.ok).toBe(true);
     const op = db._txs[0];
     expect(op.ns).toBe('tracks');
-    expect(op.update).toMatchObject({ slug: '2026-06-16-x-01', isPublic: true, rating: null, notes: '', lesson: '' });
+    expect(op.update).toMatchObject({ slug: '2026-06-16-x-01', isPublic: true, notes: '', lesson: '' });
     expect(op.update.versionOf).toBeUndefined();
     expect(op.link).toEqual({ author: 'p1' });
   });
