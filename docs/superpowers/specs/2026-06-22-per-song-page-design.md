@@ -47,10 +47,17 @@ Layout, top → bottom:
 
 - **Header** — brand + a "← back to crate" link. Links to `/` for a track,
   `/stems` for a stem.
-- **Big player** — large title, artist name, and a prominent play/stop button.
-  Reuses `mountEditor` (from `src/editor.js`) so playback runs on the same
-  Strudel engine as the lists. The footer seek scrubber may be reused if it
-  drops in cleanly; otherwise a play/stop button is sufficient for v1.
+- **Big player** — large title, artist name, a prominent play/stop button, and
+  a **seek scrubber** (required). Reuses `mountEditor` (from `src/editor.js`) so
+  playback runs on the same Strudel engine as the lists. The scrubber uses the
+  same footer DOM structure (`#seekbar` / `#seek-rail` / `#seek-fill` /
+  `#elapsed` / `#total`) and the same `transport.js` helpers the lists use
+  (`mmss`, `hasTimeline`, `fractionToCycle`, `progressFraction`, `isFinished`)
+  plus `cyclePosition` / `seekEditor` from `editor.js`. Because the page hosts a
+  single track, the rAF progress loop and drag-to-seek wiring are
+  reimplemented in `song.js` against that one editor (simpler than the list's
+  multi-track switching) rather than extracting `app.js`'s loop — keeping the
+  change to `app.js` surgical (share button + bootstrap extraction only).
 - **Expanded Strudel code** — the `mountEditor` CodeMirror view, shown expanded
   and read-only. This *is* the code display (no separate, drift-prone code
   block).
@@ -118,8 +125,9 @@ needed for sharing).
   - slug parsing from a `/song/<slug>` pathname returns the decoded slug (and
     handles trailing slash / missing slug).
 - `groupVersions` is already tested; reused as-is for the version list.
-- Manual verification: load `/song/<known-slug>` in dev, confirm play, code,
-  metadata, version links, back link, and the not-found path.
+- Manual verification: load `/song/<known-slug>` in dev, confirm play, the seek
+  scrubber tracks progress and drag-to-seek works, code, metadata, version
+  links, back link, and the not-found path.
 
 ## Out of scope (YAGNI)
 
