@@ -1,6 +1,6 @@
 // test/auth.test.mjs — exercises the real token+allowlist gate, not a stub.
 import { describe, it, expect } from 'vitest';
-import { buildRequireAuth } from '../server/auth.mjs';
+import { buildRequireAuth, buildResolveUser } from '../server/auth.mjs';
 
 const mkRes = () => {
   const res = {};
@@ -77,5 +77,56 @@ describe('buildRequireAuth', () => {
     const { res, nexted } = await run(mw, { headers: { authorization: 'Bearer expired' } });
     expect(nexted).toBe(false);
     expect(res.statusCode).toBe(401);
+  });
+});
+
+describe('buildResolveUser', () => {
+  it('returns a pass-through when adminDb is missing', async () => {
+    const mw = buildResolveUser({ adminDb: null, allowedEmails: allow });
+    const req = { headers: {} };
+    const { nexted } = await run(mw, req);
+    expect(nexted).toBe(true);
+    expect(req.user).toBeUndefined();
+  });
+
+  it('proceeds anonymously when no token is present', async () => {
+    const mw = buildResolveUser({ adminDb: fakeAdmin(async () => ({})), allowedEmails: allow });
+    const req = { headers: {} };
+    const { nexted } = await run(mw, req);
+    expect(nexted).toBe(true);
+    expect(req.user).toBeUndefined();
+  });
+
+  it('attaches req.user for a valid allowlisted token', async () => {
+    const mw = buildResolveUser({
+      adminDb: fakeAdmin(async () => ({ id: 'u1', email: 'kalavox@gmail.com' })),
+      allowedEmails: allow,
+    });
+    const req = { headers: { authorization: 'Bearer good' } };
+    const { nexted } = await run(mw, req);
+    expect(nexted).toBe(true);
+    expect(req.user).toMatchObject({ id: 'u1' });
+  });
+
+  it('proceeds anonymously for a non-allowlisted email', async () => {
+    const mw = buildResolveUser({
+      adminDb: fakeAdmin(async () => ({ id: 'u9', email: 'stranger@x.com' })),
+      allowedEmails: allow,
+    });
+    const req = { headers: { authorization: 'Bearer good' } };
+    const { nexted } = await run(mw, req);
+    expect(nexted).toBe(true);
+    expect(req.user).toBeUndefined();
+  });
+
+  it('proceeds anonymously when the token is invalid', async () => {
+    const mw = buildResolveUser({
+      adminDb: fakeAdmin(async () => { throw new Error('bad'); }),
+      allowedEmails: allow,
+    });
+    const req = { headers: { authorization: 'Bearer bad' } };
+    const { nexted } = await run(mw, req);
+    expect(nexted).toBe(true);
+    expect(req.user).toBeUndefined();
   });
 });

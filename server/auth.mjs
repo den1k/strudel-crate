@@ -21,3 +21,22 @@ export function buildRequireAuth({ adminDb, allowedEmails }) {
     }
   };
 }
+
+// Soft auth for public-but-personalized routes (e.g. play counts): if a valid,
+// allowlisted Bearer token is present, attach req.user; otherwise proceed
+// anonymously. NEVER rejects. Pass-through when adminDb is missing.
+export function buildResolveUser({ adminDb, allowedEmails }) {
+  if (!adminDb) return (_req, _res, next) => next();
+  return async (req, _res, next) => {
+    const header = req.headers.authorization ?? '';
+    const token = header.startsWith('Bearer ') ? header.slice(7) : null;
+    if (token) {
+      try {
+        const user = await adminDb.auth.verifyToken(token);
+        const email = user?.email?.toLowerCase();
+        if (email && allowedEmails.includes(email)) req.user = user;
+      } catch { /* ignore — proceed anonymously */ }
+    }
+    next();
+  };
+}
