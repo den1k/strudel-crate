@@ -59,6 +59,10 @@ export function setupAuth() {
     if (user) {
       signInModal.close();
       cluster.setSignedIn(displayName(user, null));
+      fetch('/api/profile')
+        .then((res) => (res.ok ? res.json() : null))
+        .then((p) => { if (p) cluster.setName(displayName(user, p.artistName)); })
+        .catch(() => { /* keep the email-prefix fallback */ });
     } else {
       profileModal.close();
       cluster.setSignedOut();
