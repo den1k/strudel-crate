@@ -45,7 +45,7 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
   }
 
   async function shareTrack(track) {
-    const url = location.origin + songUrl(track.id);
+    const url = location.origin + songUrl(track.entityId);
     if (navigator.share) {
       try { await navigator.share({ title: track.title, url }); } catch { /* cancelled */ }
       return;
@@ -269,6 +269,7 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
     return {
       ...row,
       id: row.slug,
+      entityId: row.id, // globally-unique Instant id; the /song URL uses this, not the slug
       artistName: author?.artistName ?? null,
       authorProfileId: author?.id ?? null,
     };
@@ -330,7 +331,7 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
       meta.innerHTML = `<h3></h3><span class="id"></span><span class="plays"></span><p class="desc"></p><div class="chips"></div>`;
       const titleLink = document.createElement('a');
       titleLink.className = 'title-link';
-      titleLink.href = songUrl(track.id);
+      titleLink.href = songUrl(track.entityId);
       titleLink.textContent = track.title;
       $('h3', meta).appendChild(titleLink);
       $('.id', meta).textContent = track.id;

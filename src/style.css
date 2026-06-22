@@ -87,7 +87,8 @@ body {
   border: 1px solid var(--acid); font-size: 16px; cursor: pointer;
 }
 .play:hover { background: var(--acid); color: var(--bg); }
-.track.playing .play { background: var(--acid); }
+.track.playing .play,
+.play.playing { background: var(--acid); }
 
 /* EQ bars while playing */
 .eq { display: inline-flex; gap: 3px; align-items: flex-end; height: 18px; }

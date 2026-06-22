@@ -5,9 +5,10 @@ import { getAudioContext } from '@strudel/webaudio';
 import { mountEditor, getEditor, cyclePosition, seekEditor } from './editor.js';
 import { bootStrudel } from './strudel-boot.js';
 import { exportSpec } from './export-spec.js';
+import { exportTrack, isExporting } from './export.js';
 import { groupVersions } from './versions.js';
 import { mmss, hasTimeline, fractionToCycle, progressFraction, isFinished } from './transport.js';
-import { slugFromPath, songUrl } from './song-url.js';
+import { idFromPath, songUrl } from './song-url.js';
 import { db } from './db.js';
 
 const $ = (sel, el = document) => el.querySelector(sel);
@@ -21,13 +22,21 @@ function renderEmpty(message) {
 // Mirrors app.js's mapRow; the slug is the identity editor.js/exportSpec use.
 function mapRow(row) {
   const author = Array.isArray(row.author) ? row.author[0] : row.author;
-  return { ...row, id: row.slug, artistName: author?.artistName ?? null };
+  return { ...row, id: row.slug, entityId: row.id, artistName: author?.artistName ?? null };
 }
 
-// Resolve a slug to { ns, item }. Tracks win over stems on a (rare) collision.
-async function resolveItem(slug) {
+// Resolve a URL param to { ns, item }. New links carry the globally-unique
+// entity id, so we look that up first (no cross-namespace ambiguity). Older
+// links carry the prompt slug; we fall back to that (tracks win on the rare
+// slug collision) so previously-shared URLs keep working.
+async function resolveItem(param) {
   for (const ns of NAMESPACES) {
-    const res = await db.queryOnce({ [ns]: { author: {}, $: { where: { slug } } } });
+    const res = await db.queryOnce({ [ns]: { author: {}, $: { where: { id: param } } } });
+    const row = res.data?.[ns]?.[0];
+    if (row) return { ns, item: mapRow(row) };
+  }
+  for (const ns of NAMESPACES) {
+    const res = await db.queryOnce({ [ns]: { author: {}, $: { where: { slug: param } } } });
     const row = res.data?.[ns]?.[0];
     if (row) return { ns, item: mapRow(row) };
   }
@@ -41,12 +50,12 @@ async function fetchFamily(ns, item) {
   const res = await db.queryOnce({
     [ns]: { $: { where: { or: [{ slug: root }, { versionOf: root }] } } },
   });
-  const rows = (res.data?.[ns] ?? []).map((r) => ({ ...r, id: r.slug }));
+  const rows = (res.data?.[ns] ?? []).map((r) => ({ ...r, id: r.slug, entityId: r.id }));
   return groupVersions(rows).find((f) => f.versions.some((v) => v.id === item.id)) ?? null;
 }
 
 async function shareSong(item) {
-  const url = location.origin + songUrl(item.id);
+  const url = location.origin + songUrl(item.entityId);
   if (navigator.share) {
     try { await navigator.share({ title: item.title, url }); } catch { /* user cancelled */ }
     return;
@@ -101,13 +110,46 @@ function renderSong(item, ns, family, ready) {
     by.textContent = `by ${item.artistName}`;
     title.appendChild(by);
   }
+  head.append(playBtn, title);
+  root.appendChild(head);
+
+  // Download + share row, mirroring the list pages (stems also offer a per-sound zip).
+  const exportRow = document.createElement('div');
+  exportRow.className = 'exports song-exports';
+  const splitStems = ns === 'stems';
+  for (const fmt of splitStems ? ['wav', 'mp3', 'stems'] : ['wav', 'mp3']) {
+    const btn = document.createElement('button');
+    btn.className = 'export';
+    btn.textContent = `↓ ${fmt}`;
+    btn.title =
+      fmt === 'wav'
+        ? 'download lossless wav'
+        : fmt === 'mp3'
+          ? 'download mp3 192kbps'
+          : 'download per-sound 24-bit stems (zip)';
+    btn.addEventListener('click', async () => {
+      if (isExporting()) return;
+      document.querySelectorAll('button.export').forEach((el) => (el.disabled = true));
+      const label = btn.textContent;
+      try {
+        await exportTrack(item, fmt, { onStatus: (s) => (btn.textContent = s) });
+      } catch (err) {
+        console.error(err);
+        showToast('export failed');
+      } finally {
+        btn.textContent = label;
+        document.querySelectorAll('button.export').forEach((el) => (el.disabled = false));
+      }
+    });
+    exportRow.appendChild(btn);
+  }
   const share = document.createElement('button');
   share.className = 'export song-share';
   share.textContent = '⤴ share';
   share.title = 'copy link to this song';
   share.addEventListener('click', () => shareSong(item));
-  head.append(playBtn, title, share);
-  root.appendChild(head);
+  exportRow.appendChild(share);
+  root.appendChild(exportRow);
 
   const meta = document.createElement('div');
   meta.className = 'song-meta';
@@ -158,7 +200,7 @@ function renderSong(item, ns, family, ready) {
     for (const v of family.versions) {
       const a = document.createElement('a');
       a.className = 'version' + (v.id === item.id ? ' on' : '');
-      a.href = songUrl(v.id);
+      a.href = songUrl(v.entityId);
       a.textContent = `v${v.version}`;
       a.title = `version ${v.version} — ${v.createdAt}`;
       vers.appendChild(a);
@@ -198,6 +240,7 @@ function wirePlayback(item, playBtn, editorWrap, ready) {
     stopBtn.disabled = !playing;
     nowPlaying.textContent = playing ? `NOW PLAYING — ${item.title}` : '';
     playBtn.innerHTML = playing ? '<span class="eq"><i></i><i></i><i></i></span>' : '▶';
+    playBtn.classList.toggle('playing', playing); // acid bg so the dark eq bars are visible
     playBtn.title = playing ? 'stop' : 'play';
   }
 
@@ -281,8 +324,8 @@ function wirePlayback(item, playBtn, editorWrap, ready) {
 
 async function main() {
   if (!db) return renderEmpty('Instant not configured — set VITE_INSTANT_APP_ID');
-  const slug = slugFromPath(location.pathname);
-  if (!slug) return renderEmpty('no song specified');
+  const songId = idFromPath(location.pathname);
+  if (!songId) return renderEmpty('no song specified');
 
   const ready = bootStrudel();
   ready.then(() => {
@@ -290,7 +333,7 @@ async function main() {
     $('#status').classList.add('ready');
   });
 
-  const found = await resolveItem(slug);
+  const found = await resolveItem(songId);
   if (!found) return renderEmpty('song not found');
   const family = await fetchFamily(found.ns, found.item);
   renderSong(found.item, found.ns, family, ready);
