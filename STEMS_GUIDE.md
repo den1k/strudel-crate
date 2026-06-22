@@ -35,9 +35,10 @@ most of it.
 
 ## Stem rules (hard requirements)
 
-1. **Shape:** optional `setcpm(<bpm>/4)` on the first line, then ONE final
-   `stack(...)` expression. **No `arrange()`** — stems are loops, not arrangements.
-   No `$:` labels, no variable assignments, no `samples()`, no `await`, no visual
+1. **Shape:** optional `samples(...)` loads first (one per line — see "Loading
+   sounds" below), then optional `setcpm(<bpm>/4)`, then ONE final `stack(...)`
+   expression. **No `arrange()`** — stems are loops, not arrangements.
+   No `$:` labels, no variable assignments, no `await`, no visual
    functions (`.pianoroll()`, `.scope()`, …).
 2. **ONE star sound.** A single voice carries the stem. At most ONE subtle support
    layer (gain ≤ 0.4) and only if it serves the star (e.g. a sine sub under a
@@ -50,8 +51,10 @@ most of it.
    timbre (fm/vowel/crush/shape/noise), filter (lpf/bpf + lpenv + resonance),
    space (room/delay/pan), motion (tremolo/speed/degrade). A raw waveform with one
    filter sweep is not sound design.
-5. **Double quotes** for all pattern strings. **Sounds** only from
-   `scripts/sounds.json`. **First 8 cycles must produce sound.** Per-stack-layer
+5. **Double quotes** for all pattern strings. **Sounds** must resolve — either in the
+   base palette (`scripts/sounds.json`, always available) or in a bank you load with a
+   `samples(...)` call (see "Loading sounds" below). **First 8 cycles must produce
+   sound.** Per-stack-layer
    `.gain()` between 0.3 and 1.2 (support layer 0.3–0.4); echo copies inside
    `.off()`/`.jux()` chains may sit lower.
 6. **Original sound.** Never leave a default tone untouched; transform the source
@@ -64,6 +67,28 @@ most of it.
    complete, original stem around the seed — do NOT paste it unchanged, and do NOT
    collapse into a generic `sine.slow` filter-sweep-into-reverb. The seed is where you
    begin; the constraints are how you stay different from your siblings.
+
+## Loading sounds (the sound universe is open)
+
+The base palette (`scripts/sounds.json`) is always available with zero setup, but it is a
+**starting point, not a limit**. If your stem wants a sound it doesn't have — a specific
+drum break to chop, a granular pad, a wavetable, an unusual percussion hit — load a bank
+that has it at the TOP of your code, one call per line:
+
+```
+samples('github:eddyflux/crate')   // lo-fi kit: crate_bd, crate_djembe, crate_bell, …
+samples('github:Bubobubobubobubo/Dough-Waveforms')   // wavetables: wt_violin, wt_birds, …
+note("c3").s("wt_violin").vib(5).vibmod(0.3)
+```
+
+- `samples('github:user/repo')` loads that repo's `strudel.json` (the manifest's top-level
+  keys, minus `_base`, are the sound names). `samples('https://host/strudel.json')` works
+  for any host.
+- The validator runs your `samples()` loads and resolves every referenced sound against
+  base ∪ what you loaded; a name that resolves nowhere fails. Loaded banks are vendored on
+  save, so playback never breaks if upstream vanishes.
+- Original timbre still comes mostly from **synthesis** (the arsenal below) — but a loaded
+  sample you mangle past recognition (`.chop`, `.striate`, `.speed`, `.crush`) is fair game.
 
 ## Sound-design arsenal (all verified to work here)
 
@@ -120,7 +145,9 @@ spell out — surprising combinations are the whole point.
 
 ## Common validator failures
 
-- `unknown sounds: X` → X isn't in `scripts/sounds.json`; grep it for alternatives.
+- `unknown sounds: X` → X resolves nowhere: not in the base palette
+  (`scripts/sounds.json`) and not in any bank you loaded. `samples('github:…')` a bank that
+  has it, or pick a name that resolves.
 - `evaluation failed: ...` → unbalanced `[ ] < > ( )` in mini-notation, or a typo'd
   function name.
 - `did not evaluate to a Pattern` → code doesn't end with the `stack(...)` expression.

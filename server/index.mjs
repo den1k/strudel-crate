@@ -40,6 +40,7 @@ const app = createApp({
   namespaces: ['tracks', 'stems'],
   jobStore, runner, progressFor, requireAuth, resolveUser, requireUser, allowedEmails,
   distDir: existsSync(distDir) ? distDir : undefined,
+  sampleCacheDir: join(repoRoot, 'data', 'sample-cache'),
 });
 
 await runner.recover();

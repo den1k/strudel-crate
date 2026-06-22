@@ -5,6 +5,7 @@
 import { readFile, unlink } from 'node:fs/promises';
 import { validateTrack } from './validate.mjs';
 import { adminDb, insertItem } from './lib/instant.mjs';
+import { cacheTrackSamples } from './lib/sample-cache.mjs';
 
 const NAMESPACE = 'tracks';
 const CHARACTER = true;
@@ -23,6 +24,16 @@ async function main() {
 
   const result = await validateTrack(track, { character: CHARACTER });
   if (!result.ok) { console.log(`FAIL ${track.id ?? file} — ${result.error}`); process.exit(1); }
+
+  // Cache-on-save: vendor any self-declared sample banks so the saved track
+  // survives an upstream repo vanishing. Best-effort — a vendoring miss warns
+  // but does not block the save (the track still validated against live banks).
+  try {
+    const cache = await cacheTrackSamples(track.id, track.code);
+    for (const b of cache.banks.filter((b) => !b.ok)) console.error(`WARN ${track.id} — cache miss for ${b.source}: ${b.error}`);
+  } catch (err) {
+    console.error(`WARN ${track.id} — sample caching failed: ${err.message}`);
+  }
 
   const authorProfileId = process.env.CRATE_AUTHOR_PROFILE_ID || null;
   if (!authorProfileId) console.error(`WARN ${track.id} — no CRATE_AUTHOR_PROFILE_ID; saving unauthored`);

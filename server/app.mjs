@@ -170,6 +170,19 @@ export function createApp(opts = {}) {
 
   if (opts.jobStore && opts.runner) jobRoutes(app, opts.jobStore, opts.runner, opts.progressFor, requireAuth, adminDb);
 
+  // Vendored sample cache (cache-on-save). Served read-only so the webapp can
+  // prefer locally-cached banks over upstream github repos. /sample-cache/index.json
+  // lists cached bank slugs; /sample-cache/banks/<slug>/... serves the vendored files.
+  if (opts.sampleCacheDir) {
+    app.get('/sample-cache/index.json', wrap(async (_req, res) => {
+      const { readdir } = await import('node:fs/promises');
+      let slugs = [];
+      try { slugs = await readdir(join(opts.sampleCacheDir, 'banks')); } catch { /* none cached yet */ }
+      res.json({ slugs });
+    }));
+    app.use('/sample-cache', express.static(opts.sampleCacheDir));
+  }
+
   // Production: serve the built SPA (dev uses Vite). Defined AFTER the API so
   // /api/* always wins; the /stems clean URL mirrors vite.config.js's rewrite.
   if (opts.distDir) {

@@ -52,10 +52,24 @@ describe('track seeds', () => {
       const res = await validateCode(wrapTrack(source.frag, signature.frag));
       expect(res.ok, `${source.id} × ${signature.id}: ${res.error}`).toBe(true);
     }
+  }, 60000); // 200+ pairs validated headlessly
+
+  it('yields well beyond the original 20 composable seeds', () => {
+    expect(composePairs(pool).length).toBeGreaterThanOrEqual(100);
   });
 
-  it('yields at least 20 distinct composable seeds', () => {
-    expect(composePairs(pool).length).toBeGreaterThanOrEqual(20);
+  it('tags every source with a genre', () => {
+    for (const s of pool.sources) {
+      expect(typeof s.genre, `source ${s.id} missing genre`).toBe('string');
+      expect(s.genre.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('spans the genres the design calls for', () => {
+    const genres = new Set(pool.sources.map((s) => s.genre));
+    for (const g of ['hip-hop', 'dub', 'ambient', 'cinematic', 'dnb', 'footwork', 'jazz', 'world']) {
+      expect(genres.has(g), `no source tagged ${g}`).toBe(true);
+    }
   });
 
   it('has unique source and signature ids', () => {

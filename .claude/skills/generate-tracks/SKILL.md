@@ -10,6 +10,11 @@ parallel, each validated before it counts. Unless the prompt says otherwise, eve
 track is a COMPLETE 3–6 minute piece with an intro, an elaborate middle, and an
 outro (see the guide's arrange() default).
 
+Generation is **two-stage**: first design a bespoke **instrument kit** for the
+batch (Stage 1 — this is where open sound discovery happens), then compose every
+track from that shared kit (Stage 2 — coherence + per-track variation). The kit is
+designed fresh for every batch; never reuse a previous batch's kit.
+
 ## Workflow
 
 0. **Revise from notes first:** run the `revise-from-notes` skill with argument
@@ -69,12 +74,55 @@ outro (see the guide's arrange() default).
    - **forbids:** e.g. "not RolandTR909", "no `sawtooth` acid bass", "`sine.slow` may not
      be your primary filter motion" — spread these so the batch doesn't converge.
 
-5. **Fan out agents:** dispatch ALL agents for a wave in a SINGLE message (parallel
-   tool calls), waves of at most 8. **Substitute `<repo root>` below with the
-   ABSOLUTE path of your current working directory (run `pwd` first).** In a git
-   worktree that is the worktree path, NOT the main checkout — a relative or wrong
-   path makes agents write files and `git commit` in the wrong checkout. Each
-   agent gets this prompt, placeholders filled:
+5. **STAGE 1 — design the batch kit (fresh, from the brief).** Read `KIT_GUIDE.md`
+   in full. The kit is a set of 5–7 named, designed voice fragments (a kick/perc, a
+   bass, a lead, a pad/choir, a vocal-chop and/or a texture) — each a validated
+   Strudel sub-expression that may load its own banks with `samples('github:user/repo')`.
+   This is the batch's identity; design it to match the brief and to REACH past the
+   base palette (the whole point is range — discover and load sounds that fit).
+
+   Run ONE kit-design agent (or a small fan-out of one agent per voice if you want
+   parallelism — then assemble their `frag`s into one palette file). Its prompt:
+
+   ```
+   You are designing ONE bespoke instrument kit for a batch of Strudel tracks. Work
+   in <repo root> (absolute paths for every file/command; do not cd elsewhere).
+
+   1. Read KIT_GUIDE.md COMPLETELY (and STEMS_GUIDE.md for the sound-design
+      vocabulary it points to). Each kit voice is designed like a stem — one
+      transformed, original sound — but written as a bare sub-expression.
+   2. BATCH SOUND BRIEF — design the kit to sound like THIS, and reach past the base
+      palette to do it (load banks with samples('github:user/repo') where the brief
+      wants sounds the base set lacks):
+      {style_brief}
+      Cross-track lessons to honor: {digest}
+   3. Run `mkdir -p staging`, then write staging/{batch}.json as a palette:
+      { "batch": "{batch}", "brief": "<the brief above>", "createdAt": "{timestamp}",
+        "samples": [<batch-level bank sources, optional>],
+        "voices": [ { "role": <kick|perc|bass|lead|pad|vocal|texture>, "name": "<unique>",
+                      "samples": [<this voice's bank sources>], "frag": "<Strudel sub-expression>",
+                      "note": "<how to use it>" }, … ] }
+      Need >=4 voices spanning >=3 distinct roles; aim for 5–7. Voices must cohere
+      as ONE kit (shared space, shared tonal centre for pitched voices).
+   4. Run: node scripts/save-palette.mjs staging/{batch}.json
+      This validates every voice like a stem, vendors the banks, and writes
+      palettes/{batch}.json. On FAIL, fix the named voice and re-run (up to 3 tries).
+   5. Reply with EXACTLY one line: OK kit {batch} (<n> voices) — or — FAILED kit {batch} <reason>
+   ```
+
+   After Stage 1 passes, **read `palettes/{batch}.json`** yourself. You will inject
+   its voice fragments into every compose agent (Stage 2). Build:
+   - `{kit_preamble}` = one `samples(...)` line per source in the kit's effective
+     sample set (the union of the top-level `samples` and every voice's `samples`).
+   - `{kit_voices}` = the voice list rendered as `role · name · note → frag`, one
+     per line, verbatim, so agents can paste/adapt each `frag` as a stack layer.
+
+6. **STAGE 2 — fan out compose agents:** dispatch ALL agents for a wave in a SINGLE
+   message (parallel tool calls), waves of at most 8. **Substitute `<repo root>`
+   below with the ABSOLUTE path of your current working directory (run `pwd`
+   first).** In a git worktree that is the worktree path, NOT the main checkout — a
+   relative or wrong path makes agents write files and `git commit` in the wrong
+   checkout. Each agent gets this prompt, placeholders filled:
 
    ```
    You are writing exactly one Strudel track file. Work in <repo root> (use this
@@ -96,6 +144,17 @@ outro (see the guide's arrange() default).
       Extension constraints you MUST obey: drum bank: {drum_bank}; develop these
       dimensions across sections: {development_dimensions}; motion mechanism:
       {motion_mechanism}; tail: {tail}; forbids: {forbids}.
+
+      BATCH KIT — this batch shares ONE bespoke instrument kit; build your track FROM it.
+      Put these sample loads at the very TOP of your code, before setcpm (one per line):
+      {kit_preamble}
+      Kit voices (paste/adapt each frag as a stack() layer — they are your kit, not the
+      whole arrangement; you choose which to use per section, may retune/re-rhythm them to
+      your seed and directive, and may add tasteful extra layers):
+      {kit_voices}
+      Use the kit as the batch's shared identity. Your seed + directive shape HOW you
+      arrange and vary the kit across sections; do not abandon the kit's sounds.
+
       Cross-track lessons to apply (honor every lesson listed under
       "Lessons for all future tracks"):
       {digest}
@@ -110,7 +169,11 @@ outro (see the guide's arrange() default).
    4. Run: node scripts/save-track.mjs staging/{id}.json
       This validates AND saves the track to the database (with you as author).
       If it prints FAIL: read the reason, fix staging/{id}.json, re-run. Up to 3 attempts.
-      - unknown sounds → grep scripts/sounds.json for valid names.
+      - unknown sounds → the sound resolves nowhere: it is not in the base palette
+        AND not in a bank you loaded. Add the kit's `samples()` preamble (you may
+        have dropped a line), `samples('github:…')` a bank that has it, or pick a
+        resolving name. (Kit voices already carry their own loads — keep the
+        preamble intact.)
       - "lacks character" → add an off-grid groove (euclid/swing), dirt
         (crush/shape/vowel), richer harmony, or a transform until >=3 categories.
       If still failing after 3 attempts: delete the file (rm staging/{id}.json).
@@ -119,14 +182,21 @@ outro (see the guide's arrange() default).
       OK {id} "<title>"   — or —   FAILED {id} <one-line reason>
    ```
 
-6. **Report:** after all waves, echo the **batch style brief** you used (so the user
-   sees the shared DNA), then output a table (id · title · status), the count of valid
-   tracks written, any failures with reasons. Remind the user:
+7. **Report:** after all waves, echo the **batch style brief** AND a one-line summary
+   of the **batch kit** (the voice names/roles) you used, so the user sees the shared
+   DNA. Then output a table (id · title · status), the count of valid tracks written,
+   any failures with reasons. Remind the user:
    `npm run dev` → http://localhost:5173 to listen and rate.
 
 ## Notes
 
-- `save-track.mjs` is the contract: it validates AND persists, so a track only
-  exists if `save-track.mjs` passes & saves it.
-- Never edit `scripts/sounds.json` to make a track pass — change the track.
+- Two-stage contract: Stage 1 `save-palette.mjs` writes `palettes/<batch>.json`
+  (validates every voice like a stem + vendors banks); Stage 2 `save-track.mjs`
+  validates AND persists each track. A track only exists if `save-track.mjs` passes.
+- The composed track is still ONE `arrange()`/`stack()` expression with the kit's
+  `samples()` preamble hoisted to the top — it validates via the dynamic validator
+  with no special support. Kit voices are code fragments in the prompt, not runtime
+  variables.
+- Never edit `scripts/sounds.json` to make a track pass — change the track. The base
+  palette is a floor, not a ceiling: load banks to reach past it.
 - If the user gives a count > 30, cap at 30 and say so.
