@@ -110,6 +110,13 @@ function renderSong(item, ns, family, ready) {
     by.textContent = `by ${item.artistName}`;
     title.appendChild(by);
   }
+  if (item.remixOf) {
+    const from = document.createElement('a');
+    from.className = 'remix-from';
+    from.href = songUrl(item.remixOf);
+    from.textContent = `remixed from ${item.remixOf}`;
+    title.appendChild(from);
+  }
   head.append(playBtn, title);
   root.appendChild(head);
 

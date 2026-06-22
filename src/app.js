@@ -372,6 +372,14 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
         by.textContent = `by ${track.artistName}`;
         meta.querySelector('h3').after(by);
       }
+      if (track.remixOf) {
+        const src = state.tracks.find((t) => t.id === track.remixOf);
+        const from = document.createElement('a');
+        from.className = 'remix-from';
+        from.href = songUrl(src ? src.entityId : track.remixOf);
+        from.textContent = `remixed from ${track.remixOf}`;
+        meta.querySelector('h3').after(from);
+      }
       const m = track.meta ?? {};
       const chips = $('.chips', meta);
       const chipValues = [
@@ -444,6 +452,26 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
       shareBtn.title = 'copy link to this song';
       shareBtn.addEventListener('click', () => shareTrack(track));
       exportRow.appendChild(shareBtn);
+      if (document.querySelector('#gen-prompt')) {
+        const remixBtn = document.createElement('button');
+        remixBtn.className = 'export remix';
+        remixBtn.textContent = '⎋ remix';
+        remixBtn.title = 'remix this into a new song you own';
+        remixBtn.addEventListener('click', async () => {
+          const instructions = prompt(`Remix "${track.title}" — describe the changes:`);
+          if (!instructions || !instructions.trim()) return;
+          if (instructions.includes('"')) { flashError(card); return; }
+          try {
+            const res = await fetch('/api/jobs', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ type: 'remix', namespace, slug: track.id, instructions: instructions.trim() }),
+            });
+            if (!res.ok) { flashError(card); return; }
+          } catch { flashError(card); }
+        });
+        exportRow.appendChild(remixBtn);
+      }
       meta.appendChild(exportRow);
 
       const rate = document.createElement('div');
