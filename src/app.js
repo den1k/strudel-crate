@@ -9,6 +9,7 @@ import { db } from './db.js';
 import { onUser } from './auth.js';
 import { bootStrudel } from './strudel-boot.js';
 import { songUrl } from './song-url.js';
+import { saveListState, loadListState } from './list-state.js';
 
 const $ = (sel, el = document) => el.querySelector(sel);
 
@@ -29,6 +30,24 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
   const collection = namespace; // 'tracks' | 'stems'
   const urlBatch = new URLSearchParams(location.search).get('batch');
   if (urlBatch) state.batch = urlBatch;
+
+  // --- Back/Forward state restoration (see list-state.js) -------------------
+  // Take scroll control away from the browser: the list height is unknown at
+  // load (Instant streams it in), so the browser's own restore would fire too
+  // early and land at the top. We restore manually once the list has height.
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+  // Only restore on a genuine Back/Forward nav — a fresh reload or new tab
+  // keeps the current default behavior (restored stays null).
+  const navType = performance.getEntriesByType('navigation')[0]?.type;
+  const restored = navType === 'back_forward' ? loadListState(namespace) : null;
+  if (restored) {
+    // A ?batch= deep-link still wins; otherwise honor the batch we left on.
+    if (!urlBatch) state.batch = restored.batch;
+    state.filter = restored.filter;
+  }
+  // One-shot: restore scroll only on the first render that produced content,
+  // so later live Instant pushes never yank the user's scroll (set below).
+  let pendingScrollRestore = !!restored;
 
   let toastTimer = null;
   function showToast(message) {
@@ -291,6 +310,9 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
   // renderTracks() (e.g. when a play/rating bumps a row) doesn't snap the card
   // back to the latest version. Keyed by family root id → selected version id.
   const selectedByFamily = new Map();
+  // Rehydrate the per-family version choices so restored cards mount on the
+  // version the user had selected (trackCard falls back to latest if gone).
+  if (restored) for (const [fam, ver] of restored.selectedByFamily) selectedByFamily.set(fam, ver);
 
   // Tap-away closes any open plays breakdown (mobile). The plays element's own
   // click calls stopPropagation, so tapping it never reaches this handler.
@@ -576,6 +598,24 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
       renderTracks();
     }),
   );
+  // Reflect a restored segment filter on the controls (the batch <select> is
+  // handled by renderBatchFilter() reading state.batch).
+  if (restored) {
+    document.querySelectorAll('.seg button').forEach((b) =>
+      b.classList.toggle('on', b.dataset.filter === state.filter),
+    );
+  }
+
+  // Snapshot on leave. pagehide (not beforeunload, which iOS ignores) fires
+  // reliably on iOS Safari Back, including into bfcache — the iOS-correct hook.
+  window.addEventListener('pagehide', () => {
+    saveListState(namespace, {
+      batch: state.batch,
+      filter: state.filter,
+      selectedByFamily: [...selectedByFamily.entries()],
+      scrollY: window.scrollY,
+    });
+  });
 
   // --- live data from Instant ------------------------------------------------
   function applyRows(rows) {
@@ -583,6 +623,13 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
     renderBatchFilter();
     renderTracks();
     renderTransport();
+    // Restore scroll only once the list actually has height (first render with
+    // content). rAF waits for layout; clearing the flag means later live pushes
+    // never re-snap the user's scroll.
+    if (pendingScrollRestore && visibleFamilies().length > 0) {
+      pendingScrollRestore = false;
+      requestAnimationFrame(() => window.scrollTo(0, restored.scrollY));
+    }
   }
 
   if (!db) {
