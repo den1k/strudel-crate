@@ -349,6 +349,20 @@ body {
 }
 .auth-btn:hover { color: var(--acid); border-color: var(--acid); }
 
+/* right-aligned user cluster: sign-in button or name chip */
+.user { display: flex; align-items: center; }
+.user-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  max-width: 180px;
+  background: transparent; color: var(--ink);
+  border: 1px solid var(--line); font-family: var(--mono); font-size: 12px;
+  padding: 6px 12px; cursor: pointer;
+}
+.user-chip:hover { color: var(--acid); border-color: var(--acid); }
+.user-chip[hidden] { display: none; }
+.user-chip-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.user-chip-caret { color: var(--dim); font-size: 10px; }
+
 .auth-modal {
   position: fixed; inset: 0; z-index: 50;
   display: grid; place-items: center;
@@ -390,5 +404,17 @@ body {
 }
 .auth-x:hover { color: var(--hot); }
 .auth-err { color: var(--hot); font-size: 12px; margin-top: 12px; }
-.profile-edit input { font: inherit; padding: 0.25rem 0.5rem; border-radius: 6px; }
-.profile-edit input.saved { outline: 2px solid #4caf50; }
+
+/* profile modal — reuses .auth-modal/.auth-card; these style the extra rows */
+.profile-saved { color: var(--acid); font-size: 12px; margin-top: 10px; }
+.profile-saved[hidden] { display: none; }
+.profile-email { color: var(--dim); font-size: 12px; margin-top: 16px; word-break: break-all; }
+.profile-stats { color: var(--dim); font-size: 12px; margin-top: 4px; }
+.profile-stats[hidden] { display: none; }
+.profile-signout {
+  margin-top: 20px; width: 100%;
+  background: transparent; color: var(--dim);
+  border: 1px solid var(--line); font-family: var(--mono); font-size: 12px;
+  padding: 9px; cursor: pointer;
+}
+.profile-signout:hover { color: var(--hot); border-color: var(--hot); }

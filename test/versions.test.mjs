@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { groupVersions, pendingRevisions } from '../src/versions.js';
+import { groupVersions, pendingRevisions, familyCount } from '../src/versions.js';
 
 const stem = (id, extra = {}) => ({
   id, batch: 'b', title: id, prompt: 'p',
@@ -45,6 +45,38 @@ describe('groupVersions', () => {
     expect(fams[0].family).toBe('x');
     expect(fams[0].versions[0].version).toBe(1);
     expect(fams[0].latest.id).toBe('x-v2');
+  });
+});
+
+describe('familyCount', () => {
+  const row = (slug, extra = {}) => ({ slug, ...extra });
+
+  it('counts standalone rows as one family each', () => {
+    expect(familyCount([row('a'), row('b'), row('c')])).toBe(3);
+  });
+
+  it('counts a root and its versionOf children as a single family', () => {
+    expect(familyCount([
+      row('a'),
+      row('a-v2', { versionOf: 'a' }),
+      row('a-v3', { versionOf: 'a' }),
+    ])).toBe(1);
+  });
+
+  it('mixes families and standalones correctly', () => {
+    expect(familyCount([
+      row('a'),
+      row('a-v2', { versionOf: 'a' }),
+      row('b'),
+    ])).toBe(2);
+  });
+
+  it('returns 0 for an empty list', () => {
+    expect(familyCount([])).toBe(0);
+  });
+
+  it('falls back to id when slug is absent', () => {
+    expect(familyCount([{ id: 'x' }, { id: 'y' }])).toBe(2);
   });
 });
 

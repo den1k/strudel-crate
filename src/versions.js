@@ -40,3 +40,12 @@ export function pendingRevisions(items) {
       };
     });
 }
+
+// Count distinct version-families from raw Instant rows. Rows carry `slug`
+// (the human id) and optional `versionOf` (pointing at the root slug), so map
+// to the {id, versionOf} shape groupVersions expects before grouping.
+export function familyCount(rows) {
+  return groupVersions(
+    rows.map((r) => ({ id: r.slug ?? r.id, versionOf: r.versionOf })),
+  ).length;
+}
