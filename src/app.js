@@ -276,11 +276,14 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
     clearTimeout(playTimer);
     const id = state.playingId;
     if (!id) return;
+    // Capture position + spec and arm the cued state BEFORE stop(): stopping the
+    // editor synchronously fires its onToggle, which nulls state.playingSpec, so
+    // we must read it first (else the paused footer loses its seek rail).
     const cycle = cyclePosition(id);
-    getEditor(id)?.stop();
     state.cuedId = id;
     state.cuedSpec = state.playingSpec;
     state.pausedCycle = Number.isFinite(cycle) ? cycle : 0;
+    getEditor(id)?.stop();
     state.playingId = null;
     state.playingSpec = null;
     stopSeekLoop();
