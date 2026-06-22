@@ -5,6 +5,7 @@ import { getAudioContext } from '@strudel/webaudio';
 import { mountEditor, getEditor, cyclePosition, seekEditor } from './editor.js';
 import { bootStrudel } from './strudel-boot.js';
 import { exportSpec } from './export-spec.js';
+import { exportTrack, isExporting } from './export.js';
 import { groupVersions } from './versions.js';
 import { mmss, hasTimeline, fractionToCycle, progressFraction, isFinished } from './transport.js';
 import { slugFromPath, songUrl } from './song-url.js';
@@ -101,13 +102,46 @@ function renderSong(item, ns, family, ready) {
     by.textContent = `by ${item.artistName}`;
     title.appendChild(by);
   }
+  head.append(playBtn, title);
+  root.appendChild(head);
+
+  // Download + share row, mirroring the list pages (stems also offer a per-sound zip).
+  const exportRow = document.createElement('div');
+  exportRow.className = 'exports song-exports';
+  const splitStems = ns === 'stems';
+  for (const fmt of splitStems ? ['wav', 'mp3', 'stems'] : ['wav', 'mp3']) {
+    const btn = document.createElement('button');
+    btn.className = 'export';
+    btn.textContent = `↓ ${fmt}`;
+    btn.title =
+      fmt === 'wav'
+        ? 'download lossless wav'
+        : fmt === 'mp3'
+          ? 'download mp3 192kbps'
+          : 'download per-sound 24-bit stems (zip)';
+    btn.addEventListener('click', async () => {
+      if (isExporting()) return;
+      document.querySelectorAll('button.export').forEach((el) => (el.disabled = true));
+      const label = btn.textContent;
+      try {
+        await exportTrack(item, fmt, { onStatus: (s) => (btn.textContent = s) });
+      } catch (err) {
+        console.error(err);
+        showToast('export failed');
+      } finally {
+        btn.textContent = label;
+        document.querySelectorAll('button.export').forEach((el) => (el.disabled = false));
+      }
+    });
+    exportRow.appendChild(btn);
+  }
   const share = document.createElement('button');
   share.className = 'export song-share';
   share.textContent = '⤴ share';
   share.title = 'copy link to this song';
   share.addEventListener('click', () => shareSong(item));
-  head.append(playBtn, title, share);
-  root.appendChild(head);
+  exportRow.appendChild(share);
+  root.appendChild(exportRow);
 
   const meta = document.createElement('div');
   meta.className = 'song-meta';
