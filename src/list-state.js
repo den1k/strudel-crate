@@ -1,7 +1,7 @@
 // Persists list-page state (filters + scroll) so a Back navigation can restore
 // it. Pure + storage-injected (defaults to sessionStorage) so it unit-tests
 // without a DOM. The snapshot shape is:
-//   { batch: string, filter: string,
+//   { batch: string, filter: string, user: string | null,
 //     selectedByFamily: [[famId, verId], ...], scrollY: number }
 // selectedByFamily is a serialized Map (entries array); the caller rehydrates.
 
