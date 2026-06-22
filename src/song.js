@@ -198,6 +198,7 @@ function wirePlayback(item, playBtn, editorWrap, ready) {
     stopBtn.disabled = !playing;
     nowPlaying.textContent = playing ? `NOW PLAYING — ${item.title}` : '';
     playBtn.innerHTML = playing ? '<span class="eq"><i></i><i></i><i></i></span>' : '▶';
+    playBtn.classList.toggle('playing', playing); // acid bg so the dark eq bars are visible
     playBtn.title = playing ? 'stop' : 'play';
   }
 
