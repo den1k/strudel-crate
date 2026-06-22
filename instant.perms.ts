@@ -9,14 +9,24 @@ const ownerOrPublic =
 const rules = {
   tracks: {
     allow: { view: ownerOrPublic, create: 'false', update: 'false', delete: 'false' },
+    fields: { lesson: "auth.id != null && auth.id in data.ref('author.user.id')" },
   },
   stems: {
     allow: { view: ownerOrPublic, create: 'false', update: 'false', delete: 'false' },
+    fields: { lesson: "auth.id != null && auth.id in data.ref('author.user.id')" },
   },
   profiles: {
     allow: { view: 'true', create: 'false', update: 'false', delete: 'false' },
   },
   plays: {
+    allow: {
+      view: "auth.id != null && auth.id in data.ref('profile.user.id')",
+      create: 'false',
+      update: 'false',
+      delete: 'false',
+    },
+  },
+  ratings: {
     allow: {
       view: "auth.id != null && auth.id in data.ref('profile.user.id')",
       create: 'false',

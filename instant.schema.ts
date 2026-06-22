@@ -19,6 +19,9 @@ const itemFields = {
   notes: i.string().optional(), // per-item notes
   lesson: i.string().optional(), // cross-batch lesson
   playCount: i.number().optional(), // total plays across everyone; absent ⇒ 0
+  ratingSum: i.number().optional(),   // sum of all users' ratings; absent ⇒ 0
+  ratingCount: i.number().optional(), // number of users who rated; absent ⇒ 0
+  remixOf: i.string().indexed().optional(), // source root slug when this item is a remix
 };
 
 const _schema = i.schema({
@@ -38,6 +41,12 @@ const _schema = i.schema({
       count: i.number(),           // this profile's play count for this item
       lastPlayedAt: i.string(),    // ISO 8601
     }),
+    ratings: i.entity({
+      namespace: i.string(),       // 'tracks' | 'stems'
+      slug: i.string().indexed(),  // which item was rated
+      value: i.number(),           // 1-5
+      updatedAt: i.string(),       // ISO 8601
+    }),
   },
   links: {
     tracksAuthor: {
@@ -51,6 +60,10 @@ const _schema = i.schema({
     playsProfile: {
       forward: { on: 'plays', has: 'one', label: 'profile', onDelete: 'cascade' },
       reverse: { on: 'profiles', has: 'many', label: 'plays' },
+    },
+    ratingsProfile: {
+      forward: { on: 'ratings', has: 'one', label: 'profile', onDelete: 'cascade' },
+      reverse: { on: 'profiles', has: 'many', label: 'ratings' },
     },
     userProfile: {
       forward: { on: 'profiles', has: 'one', label: 'user', onDelete: 'cascade' },
