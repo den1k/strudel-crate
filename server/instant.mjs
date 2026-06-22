@@ -177,6 +177,7 @@ export async function insertItem(adminDb, namespace, track, authorProfileId) {
     lesson: track.lesson ?? '',
   };
   if (track.versionOf) update.versionOf = track.versionOf;
+  if (track.remixOf) update.remixOf = track.remixOf;
   let tx = adminDb.tx[namespace][entId].update(update);
   if (authorProfileId) tx = tx.link({ author: authorProfileId });
   await adminDb.transact(tx);

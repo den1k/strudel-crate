@@ -77,6 +77,18 @@ describe('insertItem', () => {
   });
 });
 
+describe('insertItem remixOf', () => {
+  it('persists remixOf when present', async () => {
+    const db = fakeAdmin({ tracks: [] });
+    const track = { id: 'demo-01-remix-01', title: 't', prompt: 'darker', batch: 'b', description: 'd', code: 'c', meta: {}, createdAt: '2026-06-22T00:00:00Z', remixOf: 'demo-01' };
+    const out = await insertItem(db, 'tracks', track, 'p1');
+    expect(out.ok).toBe(true);
+    const tx = db._txs.find((t) => t.ns === 'tracks');
+    expect(tx.update.remixOf).toBe('demo-01');
+    expect(tx.link).toEqual({ author: 'p1' });
+  });
+});
+
 describe('recordPlay', () => {
   it('bumps the total and treats absent playCount as 0 (anonymous)', async () => {
     const db = fakeAdmin({ tracks: [{ id: 't1', slug: 's-01' }] });
