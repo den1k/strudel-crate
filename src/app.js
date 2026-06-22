@@ -1,18 +1,13 @@
-import * as core from '@strudel/core';
-import * as mini from '@strudel/mini';
-import * as tonal from '@strudel/tonal';
-import * as webaudio from '@strudel/webaudio';
-import { initAudioOnFirstClick, registerSynthSounds, samples, getAudioContext } from '@strudel/webaudio';
+import { getAudioContext } from '@strudel/webaudio';
 import { mountEditor, getEditor, isStarted, cyclePosition, seekEditor } from './editor.js';
 import { nextPlayingId } from './playing-state.js';
 import { exportTrack, isExporting } from './export.js';
 import { groupVersions } from './versions.js';
-import banks from '../shared/sample-banks.json';
 import { exportSpec } from './export-spec.js';
 import { mmss, hasTimeline, fractionToCycle, progressFraction, isFinished } from './transport.js';
 import { db } from './db.js';
 import { onUser } from './auth.js';
-import { enableSilentSwitchPlayback } from './ios-audio.js';
+import { bootStrudel } from './strudel-boot.js';
 
 const $ = (sel, el = document) => el.querySelector(sel);
 
@@ -33,25 +28,8 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
   const urlBatch = new URLSearchParams(location.search).get('batch');
   if (urlBatch) state.batch = urlBatch;
 
-  // --- strudel init: load the same banks the validator allowlists ---------
-  // NOT @strudel/web: its dist inlines private copies of core/webaudio, so
-  // sounds registered through it are invisible to editor.js's webaudioOutput
-  // (two sound registries — silent playback). evalScope mirrors
-  // scripts/strudel-env.mjs but with real audio instead of stubs, keeping the
-  // webapp on the exact module instances the editors play through.
-  initAudioOnFirstClick(); // resume the AudioContext on the first user gesture
-  enableSilentSwitchPlayback(); // iOS: play through the hardware silent switch
-  const ready = (async () => {
-    await core.evalScope(core, mini, tonal, webaudio);
-    await Promise.all([
-      registerSynthSounds(),
-      ...banks.map((b) =>
-        b.shorthand
-          ? samples(b.shorthand)
-          : samples(b.json, b.base, { prebake: b.prebake, tag: b.tag }),
-      ),
-    ]);
-  })();
+  // --- strudel init: one shared runtime for every page (see strudel-boot.js) -
+  const ready = bootStrudel();
   ready.then(() => {
     state.samplesReady = true;
     renderTransport();
