@@ -2522,25 +2522,6 @@
     "lastSeen": "2026-06-23"
   },
   {
-    "ref": "github:DelicTide/samples",
-    "repo": "DelicTide/samples",
-    "category": "vocal",
-    "soundCount": 8,
-    "sounds": [
-      "name",
-      "version",
-      "description",
-      "resources",
-      "repository",
-      "keywords",
-      "author",
-      "license"
-    ],
-    "description": "vocal · 8 sounds · name, version, description …",
-    "stars": 1,
-    "lastSeen": "2026-06-23"
-  },
-  {
     "ref": "https://raw.githubusercontent.com/febeverelst/algorave_FE-VER/main/Samples/strudel.json",
     "repo": "febeverelst/algorave_FE-VER",
     "category": "vocal",
@@ -4923,18 +4904,6 @@
     "lastSeen": "2026-06-23"
   },
   {
-    "ref": "github:Lurker0316/strudelsample",
-    "repo": "Lurker0316/strudelsample",
-    "category": "misc",
-    "soundCount": 1,
-    "sounds": [
-      "samples"
-    ],
-    "description": "misc · 1 sounds · samples",
-    "stars": 0,
-    "lastSeen": "2026-06-23"
-  },
-  {
     "ref": "github:luvl4ne/breaks",
     "repo": "luvl4ne/breaks",
     "category": "breaks",
@@ -5613,18 +5582,6 @@
     "lastSeen": "2026-06-23"
   },
   {
-    "ref": "github:proullon/strudel",
-    "repo": "proullon/strudel",
-    "category": "misc",
-    "soundCount": 1,
-    "sounds": [
-      "samples"
-    ],
-    "description": "misc · 1 sounds · samples",
-    "stars": 0,
-    "lastSeen": "2026-06-23"
-  },
-  {
     "ref": "github:rdwrome/SPAM",
     "repo": "rdwrome/SPAM",
     "category": "misc",
@@ -5977,18 +5934,6 @@
       "zombi"
     ],
     "description": "misc · 12 sounds · botanik, brazil, darkstar …",
-    "stars": 0,
-    "lastSeen": "2026-06-23"
-  },
-  {
-    "ref": "github:SerhatKaraman0/strudel_samples",
-    "repo": "SerhatKaraman0/strudel_samples",
-    "category": "misc",
-    "soundCount": 1,
-    "sounds": [
-      "samples"
-    ],
-    "description": "misc · 1 sounds · samples",
     "stars": 0,
     "lastSeen": "2026-06-23"
   },

@@ -34,14 +34,14 @@ These are REAL, loadable Strudel banks (crawled from public repos). Reach past t
 - Samplesbit/strudel_samples · github:Samplesbit/strudel_samples · 1
 - sucaritaesredonda/samples · github:sucaritaesredonda/samples · 7
 
-### vocal (15)
+### vocal (14)
 - switchangel/beginningtrance · github:switchangel/beginningtrance · 1
 - jpopesculian/ep1320 · github:jpopesculian/ep1320 · 58
 - boggodan/bflute · github:boggodan/bflute · 3
-- DelicTide/samples · github:DelicTide/samples · 8
 - febeverelst/algorave_FE-VER · https://raw.githubusercontent.com/febeverelst/algorave_FE-VER/main/Samples/strudel.json · 2
 - TodePond/pond · github:TodePond/pond · 9
-- …and 9 more — grep `data/banks.json`.
+- cosmiclavaflow/samples · github:cosmiclavaflow/samples · 1
+- …and 8 more — grep `data/banks.json`.
 
 ### world (1)
 - nicolas-rabault/strudel-samples · github:nicolas-rabault/strudel-samples · 29
@@ -65,11 +65,11 @@ These are REAL, loadable Strudel banks (crawled from public repos). Reach past t
 - boggodan/nfolk · github:boggodan/nfolk · 8
 - lynn/sounds · https://raw.githubusercontent.com/lynn/sounds/main/chrono-trigger/strudel.json · 57
 
-### misc (54)
+### misc (51)
 - QuantumVillage/quantum-music · github:QuantumVillage/quantum-music · 1
 - vasilymilovidov/samples · github:vasilymilovidov/samples · 8
 - eduardoagarcia/strudel · https://raw.githubusercontent.com/eduardoagarcia/strudel/main/samples/fx/strudel.json · 1
 - yaxu/mrid · github:yaxu/mrid · 13
 - Bubobubobubobubo/Dough-Amiga · github:Bubobubobubobubo/Dough-Amiga · 116
 - salsicha/capoeira_strudel · github:salsicha/capoeira_strudel · 2
-- …and 48 more — grep `data/banks.json`.
+- …and 45 more — grep `data/banks.json`.
