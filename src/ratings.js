@@ -11,3 +11,11 @@ export function isTopAggregate(item) {
 export function myRatingOf(state, slug) {
   return state?.myRatings?.[slug] ?? null;
 }
+// Is this normalized track/stem owned by the signed-in profile? The `author`
+// link is has-one, which InstaQL returns as a single OBJECT — so the source of
+// truth is the normalized `authorProfileId` (see mapRow), never `author[0].id`.
+// Indexing the array shape here silently made every card non-owned and hid the
+// owner-only notes/lessons inputs.
+export function isOwnedBy(item, profileId) {
+  return profileId != null && item?.authorProfileId != null && item.authorProfileId === profileId;
+}

@@ -9,7 +9,7 @@ import { db } from './db.js';
 import { onUser } from './auth.js';
 import { bootStrudel } from './strudel-boot.js';
 import { songUrl } from './song-url.js';
-import { aggregateAvg, isTopAggregate, myRatingOf } from './ratings.js';
+import { aggregateAvg, isTopAggregate, myRatingOf, isOwnedBy } from './ratings.js';
 import { readViewParams, buildSearch } from './view-url.js';
 import { saveListState, loadListState } from './list-state.js';
 
@@ -630,8 +630,7 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
         return ta;
       };
 
-      const ownerId = track.author?.[0]?.id ?? null;
-      const isOwner = myProfileId != null && ownerId === myProfileId;
+      const isOwner = isOwnedBy(track, myProfileId);
 
       const feedback = document.createElement('div');
       feedback.className = 'feedback';
