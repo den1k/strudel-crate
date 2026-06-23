@@ -53,6 +53,10 @@ body {
   border: 1px solid var(--line); font-family: var(--mono); font-size: 12px;
   padding: 6px 10px; cursor: pointer;
 }
+/* Chrome sizes a <select> to fit its widest option; the batch slugs are long,
+   which otherwise balloons the control and wraps the masthead. Cap it — the
+   open dropdown still shows each option in full. */
+.filters select { max-width: 220px; text-overflow: ellipsis; }
 .seg { display: flex; }
 .seg button + button { border-left: 0; }
 .seg button.on { background: var(--acid); color: var(--bg); font-weight: 600; }
