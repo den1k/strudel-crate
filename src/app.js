@@ -605,10 +605,16 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
         rate.appendChild(b);
       }
       const badge = document.createElement('span');
-      badge.className = 'agg';
       const avg = aggregateAvg(track);
-      badge.textContent = avg != null ? `★ ${avg} · ${track.ratingCount}` : 'unrated';
-      badge.title = avg != null ? `${track.ratingCount} rating(s)` : 'no ratings yet';
+      if (avg != null) {
+        badge.className = 'agg rated';
+        badge.innerHTML = `<span class="star">★</span> ${avg} <span class="agg-n">· ${track.ratingCount}</span>`;
+        badge.title = `${track.ratingCount} rating(s)`;
+      } else {
+        badge.className = 'agg';
+        badge.textContent = 'unrated';
+        badge.title = 'no ratings yet';
+      }
       rate.appendChild(badge);
 
       const autosaveArea = (className, placeholder, value, field) => {
