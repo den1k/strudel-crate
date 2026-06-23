@@ -36,6 +36,13 @@ designed fresh for every batch; never reuse a previous batch's kit.
    compose agents), to steer the fresh kit toward unexplored territory and away from
    re-mining the same banks.
 
+   Then read `shared/banks-digest.md` and capture it as `{bank_digest}`. This is the
+   **bank discovery digest**: a category-grouped list of REAL, loadable Strudel sample
+   banks crawled from public GitHub repos (far more than the handful named in the
+   guide). It is injected into the Stage-1 kit-design agent ONLY, so the agent can reach
+   past the base palette to banks that actually exist instead of relying on recall. If
+   the file is missing, inject the literal text "none yet".
+
 3. **Compute the batch id:** `YYYY-MM-DD-<slug>` where slug = the prompt lowercased,
    non-alphanumerics → `-`, trimmed to ≤ 40 chars (e.g. `2026-06-03-dark-hypnotic-techno`).
    If `node scripts/list-slugs.mjs tracks | grep <batch>` shows the batch already exists, append `-b2`, `-b3`, ….
@@ -109,6 +116,14 @@ designed fresh for every batch; never reuse a previous batch's kit.
       techniques NOT already over-used, and consider the under-explored roles it
       names. Do not re-mine the same ground — fresh kit, fresh territory:
       {kit_digest}
+
+      LOADABLE BANKS — these are REAL public Strudel banks (crawled from GitHub),
+      far more than the guide names. Reach past the base palette: pick banks that
+      fit the brief and load them with samples('<ref>'). Before you write a
+      samples() load, grep data/banks.json for that bank to confirm its EXACT sound
+      names (the digest lists banks, not every sound). Prefer banks here over recall
+      — a bank you only half-remember may not exist and will fail validation:
+      {bank_digest}
    3. Run `mkdir -p staging`, then write staging/{batch}.json as a palette:
       { "batch": "{batch}", "brief": "<the brief above>", "createdAt": "{timestamp}",
         "samples": [<batch-level bank sources, optional>],
@@ -239,3 +254,27 @@ designed fresh for every batch; never reuse a previous batch's kit.
   that a small exporter mirrors to that sidecar). `kit-feedback.mjs` already consumes
   that shape via `loadKitLessons()`, so wiring a UI later requires no change to the
   digest — only the producer side.
+
+## Bank discovery (loadable-bank index)
+
+- `npm run crawl-banks` (`scripts/crawl-banks.mjs`) crawls GitHub code search for
+  public Strudel banks (`filename:strudel.json`), light-validates each
+  (fetch+parse, a bank-shape guard — `isSampleBank`: rejects the
+  npm/package-manifest shape (`name`+`version`+`description`, or a lone generic
+  container key like `resources`/`files`/`assets`/`samples`) and requires a strong
+  majority of the manifest's string leaves to look like audio file paths, which
+  rejects app-config/data/packaged-asset `strudel.json` files — then ≥1 sound),
+  categorizes it, and writes
+  a committed `data/banks.json` index plus a compact `shared/banks-digest.md`. It is
+  the ONLY networked unit and
+  uses the authed `gh` CLI. A weekly systemd timer (`vimsical-crate-crawl-banks`)
+  re-runs it and commits the diff; see the design spec's deploy notes.
+- **`shared/banks-digest.md`** is injected as `{bank_digest}` into the Stage-1
+  kit-design prompt ONLY (see step 2 + the Stage-1 prompt). It is a discovery aid,
+  not a trust boundary — the dynamic validator (`scripts/validate.mjs`) and
+  cache-on-save remain the source of truth at save time, so a stale/broken indexed
+  bank still gets rejected there.
+- **`data/banks.json`** is the full index (every bank's exact sound names). Agents
+  grep it for a bank's sound names before writing a `samples()` load. Pure helpers
+  live in `scripts/lib/bank-index.mjs` (unit-tested, offline). This is separate from
+  `shared/sample-banks.json` (the always-loaded boot prebake), which is unchanged.
