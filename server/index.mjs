@@ -6,7 +6,7 @@ import { createApp } from './app.mjs';
 import { buildRequireAuth, buildResolveUser, buildRequireUser } from './auth.mjs';
 import { createJobStore } from './jobs.mjs';
 import { createRunner, liveProduced } from './runner.mjs';
-import { itemSlugs } from './instant.mjs';
+import { itemsByJob } from './instant.mjs';
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const distDir = join(repoRoot, 'dist');
@@ -27,12 +27,12 @@ const requireAuth = buildRequireAuth({ adminDb, allowedEmails });
 const resolveUser = buildResolveUser({ adminDb, allowedEmails });
 const requireUser = buildRequireUser({ adminDb });
 const jobStore = createJobStore({ jobsDir: join(repoRoot, 'data', 'jobs') });
-const runner = createRunner({ repoRoot, jobStore, adminDb });
+const runner = createRunner({ repoRoot, jobStore, adminDb, maxConcurrent: Number(process.env.CRATE_MAX_JOBS) || 2 });
 
 const progressFor = async (job) => {
   if (!adminDb || job.status !== 'running') return undefined;
-  const count = (await itemSlugs(adminDb, job.collection)).size;
-  return liveProduced(job, count);
+  const produced = (await itemsByJob(adminDb, job.collection, job.id)).length;
+  return liveProduced(job, produced);
 };
 
 const app = createApp({
