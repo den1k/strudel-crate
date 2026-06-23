@@ -126,10 +126,11 @@ function renderSong(item, ns, family, ready) {
   head.append(playBtn, title);
   root.appendChild(head);
 
-  // Download + share row, mirroring the list pages (stems also offer a per-sound zip).
+  // Download + share row, mirroring the list pages (tracks also offer a per-sound
+  // stems zip; a stem is a single sound, so its zip would just duplicate the wav).
   const exportRow = document.createElement('div');
   exportRow.className = 'exports song-exports';
-  const splitStems = ns === 'stems';
+  const splitStems = ns === 'tracks';
   for (const fmt of splitStems ? ['wav', 'mp3', 'stems'] : ['wav', 'mp3']) {
     const btn = document.createElement('button');
     btn.className = 'export';
