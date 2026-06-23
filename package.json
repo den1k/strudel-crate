@@ -12,6 +12,7 @@
     "test": "vitest run",
     "validate": "node scripts/validate.mjs",
     "feedback": "node scripts/feedback.mjs",
+    "kit-feedback": "node scripts/kit-feedback.mjs",
     "build-sounds": "node scripts/build-sounds.mjs"
   },
   "dependencies": {

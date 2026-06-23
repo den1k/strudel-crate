@@ -29,6 +29,13 @@ designed fresh for every batch; never reuse a previous batch's kit.
    never included. Capture the output — it is injected into every agent prompt. If it
    says "No lessons yet", inject the literal text "none yet".
 
+   Then run `node scripts/kit-feedback.mjs` and capture its output as `{kit_digest}`.
+   This is the **anti-convergence kit memo**: it lists the sample banks, synthesis
+   techniques, and roles that recent batches' kits already mined, plus any kit lessons
+   the user left. It is injected into the Stage-1 kit-design agent ONLY (not the
+   compose agents), to steer the fresh kit toward unexplored territory and away from
+   re-mining the same banks.
+
 3. **Compute the batch id:** `YYYY-MM-DD-<slug>` where slug = the prompt lowercased,
    non-alphanumerics → `-`, trimmed to ≤ 40 chars (e.g. `2026-06-03-dark-hypnotic-techno`).
    If `node scripts/list-slugs.mjs tracks | grep <batch>` shows the batch already exists, append `-b2`, `-b3`, ….
@@ -96,6 +103,12 @@ designed fresh for every batch; never reuse a previous batch's kit.
       wants sounds the base set lacks):
       {style_brief}
       Cross-track lessons to honor: {digest}
+
+      ANTI-CONVERGENCE — recent batches' kits already mined the territory in this
+      memo. Push for RANGE: load DIFFERENT banks than the ones listed, lean on
+      techniques NOT already over-used, and consider the under-explored roles it
+      names. Do not re-mine the same ground — fresh kit, fresh territory:
+      {kit_digest}
    3. Run `mkdir -p staging`, then write staging/{batch}.json as a palette:
       { "batch": "{batch}", "brief": "<the brief above>", "createdAt": "{timestamp}",
         "samples": [<batch-level bank sources, optional>],
@@ -200,3 +213,29 @@ designed fresh for every batch; never reuse a previous batch's kit.
 - Never edit `scripts/sounds.json` to make a track pass — change the track. The base
   palette is a floor, not a ceiling: load banks to reach past it.
 - If the user gives a count > 30, cap at 30 and say so.
+
+## Kit feedback & anti-convergence (Phase 3)
+
+- `node scripts/kit-feedback.mjs [limit]` builds the **kit digest** from the disk
+  artifacts the pipeline already writes (`palettes/<batch>.json`) plus an optional
+  human sidecar (`data/kit-lessons/<batch>.json`). It reports which sample banks,
+  synthesis techniques, and roles recent kits mined, and surfaces kit lessons — so
+  Stage-1 kit design can steer toward fresh territory (range) and away from
+  re-mining the same banks (anti-convergence). It is injected as `{kit_digest}` into
+  the Stage-1 prompt ONLY. Like `feedback.mjs`, only the `lesson` text crosses into
+  the digest — a kit's rating and notes stay with that kit.
+- **Kit-lessons sidecar** (`data/kit-lessons/<batch>.json`): `{ "batch": "<batch>",
+  "lesson": "<cross-batch guidance, e.g. 'the choir pad was the best part — more
+  ensemble vocals'>", "rating": <n|null>, "notes": "<per-kit, never injected>",
+  "updatedAt": "<ISO>" }`. Mirrors `data/ratings/` exactly; only `lesson` feeds the
+  digest. Write one when a batch's KIT (not a single track) taught something about
+  the territory to pursue or avoid.
+- **Deferred — "rate kits in the UI":** the spec's Phase 3 item (1) wants kits rated
+  in the same UI as stems. That UI + its InstantDB storage are owned by the
+  social-ratings/notes/remix session and were intentionally NOT touched here. The
+  clean seam left for a future coordinated change: a kit-ratings store that writes
+  the same `{ batch, rating, notes, lesson, updatedAt }` shape into
+  `data/kit-lessons/<batch>.json` (or an InstantDB `kits`/`kitRatings` namespace
+  that a small exporter mirrors to that sidecar). `kit-feedback.mjs` already consumes
+  that shape via `loadKitLessons()`, so wiring a UI later requires no change to the
+  digest — only the producer side.
