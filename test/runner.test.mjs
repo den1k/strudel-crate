@@ -1,6 +1,6 @@
 // test/runner.test.mjs
 import { describe, it, expect } from 'vitest';
-import { buildArgv, collectionFor, diffNew, liveProduced, majorityBatch } from '../server/runner.mjs';
+import { buildArgv, collectionFor, liveProduced, majorityBatch } from '../server/runner.mjs';
 
 describe('collectionFor', () => {
   it('maps generate types to their dir', () => {
@@ -36,27 +36,13 @@ describe('buildArgv', () => {
   });
 });
 
-describe('diffNew', () => {
-  it('returns ids present in after but not before, sorted', () => {
-    const before = new Set(['a', 'b']);
-    const after = new Set(['b', 'c', 'a', 'd']);
-    expect(diffNew(before, after)).toEqual(['c', 'd']);
-  });
-});
-
 describe('liveProduced', () => {
-  it('returns produced = current - baseline for a running job', () => {
-    expect(liveProduced({ status: 'running', baselineCount: 5 }, 8)).toBe(3);
-  });
-  it('clamps to 0 when files were removed', () => {
-    expect(liveProduced({ status: 'running', baselineCount: 5 }, 2)).toBe(0);
+  it('returns the produced count for a running job', () => {
+    expect(liveProduced({ status: 'running' }, 3)).toBe(3);
   });
   it('is undefined for non-running jobs', () => {
-    expect(liveProduced({ status: 'done', baselineCount: 5 }, 8)).toBeUndefined();
-    expect(liveProduced({ status: 'queued', baselineCount: 5 }, 8)).toBeUndefined();
-  });
-  it('is undefined when baselineCount is missing', () => {
-    expect(liveProduced({ status: 'running' }, 8)).toBeUndefined();
+    expect(liveProduced({ status: 'done' }, 8)).toBeUndefined();
+    expect(liveProduced({ status: 'queued' }, 8)).toBeUndefined();
   });
 });
 
@@ -140,11 +126,10 @@ describe2('createRunner worker', () => {
     await runner.enqueue(baseJob('j1'));
     await until(() => children.length === 1);
     expect2((await jobStore.get('j1')).status).toBe('running');
-    expect2((await jobStore.get('j1')).baselineCount).toBe(0);
-    // The agent's save scripts created two new stem rows in Instant.
+    // The agent's save scripts created two new stem rows, each stamped with this job's id.
     admin._store.stems.push(
-      { id: 's1', slug: '2026-06-15-pads-01', batch: '2026-06-15-pads' },
-      { id: 's2', slug: '2026-06-15-pads-02', batch: '2026-06-15-pads' },
+      { id: 's1', slug: '2026-06-15-pads-01', batch: '2026-06-15-pads', jobId: 'j1' },
+      { id: 's2', slug: '2026-06-15-pads-02', batch: '2026-06-15-pads', jobId: 'j1' },
     );
     children[0].stdout.emit('data', JSON.stringify({ result: 'OK 2 stems' }));
     children[0].emit('close', 0);
@@ -180,6 +165,18 @@ describe2('createRunner worker', () => {
     expect2(children[0].opts.env.CRATE_AUTHOR_PROFILE_ID).toBeUndefined();
     children[0].emit('close', 0);
     await until(async () => (await jobStore.get('j1'))?.status === 'done');
+  });
+
+  it2('sets CRATE_JOB_ID in the child env', async () => {
+    const { spawn, children } = fakeSpawnFactory();
+    const admin = fakeAdmin({ profiles: [], stems: [], tracks: [] });
+    const runner = createRunner({ repoRoot, jobStore, adminDb: admin, spawn, now: ticks });
+    await jobStore.write(baseJob('j1'));
+    await runner.enqueue(baseJob('j1'));
+    await until(() => children.length === 1);
+    expect2(children[0].opts.env.CRATE_JOB_ID).toBe('j1');
+    children[0].emit('close', 0);
+    await until(async () => (await jobStore.get('j1')).status === 'done');
   });
 
   it2('marks a job failed on non-zero exit', async () => {
@@ -244,7 +241,7 @@ describe2('createRunner worker', () => {
     await runner.enqueue(baseJob('rev', { type: 'revise-from-notes', prompt: 'stems', count: null }));
     await until(() => children.length === 1);
     // a revised version row: slug ends in -v2 but its batch field is the family's batch
-    admin._store.stems.push({ id: 's1', slug: '2026-06-08-alien-04-v2', batch: '2026-06-08-alien' });
+    admin._store.stems.push({ id: 's1', slug: '2026-06-08-alien-04-v2', batch: '2026-06-08-alien', jobId: 'rev' });
     children[0].emit('close', 0);
     await until(async () => (await jobStore.get('rev')).status === 'done');
     const done = await jobStore.get('rev');
@@ -260,11 +257,11 @@ describe2('createRunner worker', () => {
     await runner.enqueue(baseJob('gen'));
     await until(() => children.length === 1);
     // Step-0 revise wrote a version row from an OLD batch...
-    admin._store.stems.push({ id: 'o1', slug: '2026-06-01-old-03-v2', batch: '2026-06-01-old' });
+    admin._store.stems.push({ id: 'o1', slug: '2026-06-01-old-03-v2', batch: '2026-06-01-old', jobId: 'gen' });
     // ...then the generation step wrote the new batch (the majority).
     admin._store.stems.push(
-      { id: 'n1', slug: '2026-06-15-new-01', batch: '2026-06-15-new' },
-      { id: 'n2', slug: '2026-06-15-new-02', batch: '2026-06-15-new' },
+      { id: 'n1', slug: '2026-06-15-new-01', batch: '2026-06-15-new', jobId: 'gen' },
+      { id: 'n2', slug: '2026-06-15-new-02', batch: '2026-06-15-new', jobId: 'gen' },
     );
     children[0].emit('close', 0);
     await until(async () => (await jobStore.get('gen')).status === 'done');
@@ -279,8 +276,8 @@ describe2('createRunner worker', () => {
     await runner.enqueue(baseJob('j1'));
     await until(() => children.length === 1);
     admin._store.stems.push(
-      { id: 'a1', slug: '2026-06-15-pads-01', batch: '2026-06-15-pads' },
-      { id: 'b1', slug: '2026-06-15-bass-01', batch: '2026-06-15-bass' },
+      { id: 'a1', slug: '2026-06-15-pads-01', batch: '2026-06-15-pads', jobId: 'j1' },
+      { id: 'b1', slug: '2026-06-15-bass-01', batch: '2026-06-15-bass', jobId: 'j1' },
     );
     children[0].emit('close', 0);
     await until(async () => (await jobStore.get('j1')).status === 'done');
@@ -290,13 +287,13 @@ describe2('createRunner worker', () => {
   it2('marks the job failed when Instant throws mid-run', async () => {
     const { spawn, children } = fakeSpawnFactory();
     const admin = fakeAdmin({ profiles: [], stems: [], tracks: [] });
-    // Make query throw on the second call (the post-run itemSlugs call), simulating
+    // Make query throw on the first call (the post-run itemsByJob call), simulating
     // Instant becoming unreachable after the job has started running.
     let queryCalls = 0;
     const origQuery = admin.query.bind(admin);
     admin.query = async (q) => {
       queryCalls += 1;
-      if (queryCalls >= 2) throw new Error('instant down');
+      if (queryCalls >= 1) throw new Error('instant down');
       return origQuery(q);
     };
     const runner = createRunner({ repoRoot, jobStore, adminDb: admin, spawn, now: ticks });
