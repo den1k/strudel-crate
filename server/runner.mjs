@@ -1,8 +1,8 @@
 // Single-slot worker that runs the generation skills headless via `claude -p`.
-// Pure helpers (buildArgv/collectionFor/diffNew) are exported for tests;
+// Pure helpers (buildArgv/collectionFor/liveProduced/majorityBatch) are exported for tests;
 // createRunner (later task) owns the queue and side effects.
 import { spawn as nodeSpawn } from 'node:child_process';
-import { itemSlugs, itemsBySlug, ensureProfile } from './instant.mjs';
+import { itemsByJob, ensureProfile } from './instant.mjs';
 
 const COLLECTION_BY_TYPE = {
   'generate-stems': 'stems',
@@ -45,16 +45,11 @@ export function buildArgv(job) {
   return ['-p', prompt, '--output-format', 'json', '--allowedTools', ALLOWED_TOOLS];
 }
 
-export function diffNew(before, after) {
-  return [...after].filter((id) => !before.has(id)).sort();
-}
-
-// Live count of items produced since the job started. Undefined unless the job
-// is running AND has a numeric baseline (so a stray pre-baseline job never shows
-// a bogus full-directory count).
-export function liveProduced(job, currentCount) {
-  if (job.status !== 'running' || typeof job.baselineCount !== 'number') return undefined;
-  return Math.max(0, currentCount - job.baselineCount);
+// Number of rows this job has produced so far (rows stamped with its jobId).
+// Undefined unless the job is running — a finished job reports final newItems.
+export function liveProduced(job, producedCount) {
+  if (job.status !== 'running') return undefined;
+  return producedCount;
 }
 
 // The trustworthy batch is the majority `batch` among the newly-created rows
@@ -84,9 +79,10 @@ export function createRunner({
   repoRoot, jobStore, adminDb,
   spawn = nodeSpawn,
   now = () => new Date().toISOString(),
+  maxConcurrent = 2,
 }) {
   const queue = [];
-  let running = false;
+  let active = 0;
 
   function runClaude(job, authorProfileId) {
     return new Promise((resolve) => {
@@ -95,6 +91,7 @@ export function createRunner({
       let resolved = false;
       const settle = (result) => { if (!resolved) { resolved = true; resolve(result); } };
       const env = { ...process.env };
+      env.CRATE_JOB_ID = job.id;
       if (authorProfileId) env.CRATE_AUTHOR_PROFILE_ID = authorProfileId;
       const child = spawn('claude', buildArgv(job), { cwd: repoRoot, env });
       child.stdout?.on('data', (d) => { out += d; });
@@ -112,12 +109,10 @@ export function createRunner({
       const authorProfileId = job.userId
         ? await ensureProfile(adminDb, { id: job.userId, email: job.userEmail })
         : null;
-      const before = await itemSlugs(adminDb, ns);
-      await jobStore.update(id, { status: 'running', startedAt: now(), baselineCount: before.size });
+      await jobStore.update(id, { status: 'running', startedAt: now() });
       const { code, out, err } = await runClaude(job, authorProfileId);
-      const after = await itemSlugs(adminDb, ns);
-      const newItems = diffNew(before, after);
-      const newRows = await itemsBySlug(adminDb, ns, newItems);
+      const newRows = await itemsByJob(adminDb, ns, id);
+      const newItems = newRows.map((r) => r.slug).sort();
       const patch = { finishedAt: now(), newItems, batch: majorityBatch(newRows) };
       if (code === 0) { patch.status = 'done'; patch.summary = parseSummary(out); }
       else {
@@ -131,22 +126,19 @@ export function createRunner({
     }
   }
 
-  async function pump() {
-    if (running) return;
-    const id = queue.shift();
-    if (!id) return;
-    running = true;
-    try {
-      await runOne(id);
-    } finally {
-      running = false;
-      if (queue.length) pump();
+  function pump() {
+    while (active < maxConcurrent && queue.length) {
+      const id = queue.shift();
+      active += 1;
+      runOne(id)
+        .catch((err) => console.error('runOne failed', err))
+        .finally(() => { active -= 1; pump(); });
     }
   }
 
   async function enqueue(job) {
     queue.push(job.id);
-    pump().catch((err) => console.error('runner pump failed', err));
+    pump();
     return job;
   }
 
@@ -158,7 +150,7 @@ export function createRunner({
         queue.push(job.id);
       }
     }
-    pump().catch((err) => console.error('runner pump failed', err));
+    pump();
   }
 
   return { enqueue, recover };

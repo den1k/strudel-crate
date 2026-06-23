@@ -21,6 +21,7 @@ const itemFields = {
   ratingSum: i.number().optional(),   // sum of all users' ratings; absent ⇒ 0
   ratingCount: i.number().optional(), // number of users who rated; absent ⇒ 0
   remixOf: i.string().indexed().optional(), // source root slug when this item is a remix
+  jobId: i.string().indexed().optional(), // runner job that created this row; for per-job attribution + progress
 };
 
 const _schema = i.schema({

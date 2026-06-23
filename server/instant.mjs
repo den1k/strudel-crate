@@ -118,6 +118,14 @@ export async function itemsBySlug(adminDb, namespace, slugs) {
   return res[namespace];
 }
 
+// Rows created by a given runner job (stamped with jobId via CRATE_JOB_ID at
+// insert time). The basis for per-job newItems + live progress, replacing the
+// namespace-wide before/after diff so jobs can share a namespace concurrently.
+export async function itemsByJob(adminDb, namespace, jobId) {
+  const res = await adminDb.query({ [namespace]: { $: { where: { jobId } } } });
+  return res[namespace];
+}
+
 // All items in a namespace, with their rating/notes/lesson — for feedback and
 // pending-revisions digests.
 export async function queryItems(adminDb, namespace) {
@@ -181,6 +189,11 @@ export async function insertItem(adminDb, namespace, track, authorProfileId) {
   };
   if (track.versionOf) update.versionOf = track.versionOf;
   if (track.remixOf) update.remixOf = track.remixOf;
+  // Stamp the runner job that created this row. The runner sets CRATE_JOB_ID in
+  // the claude child's env (Task 3); it flows through sub-agents to save-*.mjs.
+  // Absent for manual CLI runs — those rows simply carry no jobId.
+  const jobId = process.env.CRATE_JOB_ID;
+  if (jobId) update.jobId = jobId;
   let tx = adminDb.tx[namespace][entId].update(update);
   if (authorProfileId) tx = tx.link({ author: authorProfileId });
   await adminDb.transact(tx);

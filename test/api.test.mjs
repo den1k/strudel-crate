@@ -141,7 +141,7 @@ describe('jobs API', () => {
     await jobStore.write({
       id: 'run1', type: 'generate-stems', prompt: 'p', count: 4, collection: 'stems',
       status: 'running', createdAt: '2026-06-15T00:00:00Z', startedAt: '2026-06-15T00:00:01Z',
-      finishedAt: null, summary: null, error: null, batch: null, newItems: [], baselineCount: 2,
+      finishedAt: null, summary: null, error: null, batch: null, newItems: [],
     });
     await jobStore.write({
       id: 'q1', type: 'generate-stems', prompt: 'p', count: 4, collection: 'stems',
