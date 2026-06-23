@@ -109,6 +109,34 @@ describe('isSampleBank', () => {
     expect(isSampleBank({ _base: 'https://x/', breaks: ['break1', 'break2', 'break3'] })).toBe(false);
   });
 
+  it('rejects the npm/package-manifest shape (name+version+description+resources)', () => {
+    // DelicTide/samples: .wav paths under `resources`, but top-level keys are
+    // package metadata — `resources` would register as a bogus sound.
+    expect(isSampleBank({
+      name: 'Vocal_Samples',
+      version: '1.0.0',
+      description: 'A collection of audio samples.',
+      resources: ['vocals/a.wav', 'vocals/b.wav', 'vocals/c.wav'],
+    })).toBe(false);
+  });
+
+  it('rejects a manifest whose only audio-carrying key is a generic container', () => {
+    // even without the npm triple, a lone `files`/`assets`/`samples` container of
+    // .wav paths is a packaged asset list, not a bank.
+    expect(isSampleBank({ _base: 'https://x/', files: ['a.wav', 'b.wav'] })).toBe(false);
+    expect(isSampleBank({ assets: ['a.wav', 'b.wav'] })).toBe(false);
+  });
+
+  it('still accepts a bank that has a real sound named after a real instrument alongside others', () => {
+    // a genuine bank whose sound keys happen to NOT all be containers passes.
+    expect(isSampleBank({ _base: 'https://x/', kick: ['k.wav'], files: ['f.wav'] })).toBe(true);
+  });
+
+  it('still accepts a single-sound bank and a _base-only-plus-one bank', () => {
+    expect(isSampleBank({ kick: ['k.wav'] })).toBe(true);
+    expect(isSampleBank({ _base: 'https://x/', crash: 'crash.wav' })).toBe(true);
+  });
+
   it('rejects when almost nothing looks like audio even if values are arrays', () => {
     expect(isSampleBank({
       title: ['Some Product'], product_url: ['https://z'], tags: ['a', 'b'],

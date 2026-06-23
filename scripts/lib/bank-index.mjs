@@ -76,16 +76,38 @@ export function extractSounds(manifest) {
 
 // ---- bank-shape guard ------------------------------------------------------
 
+// Generic container keys a package/asset-manifest uses to hold its file list
+// (e.g. `{ name, version, resources: [...wav] }`). A real Strudel bank's
+// top-level keys ARE the sound names, so a manifest whose ONLY audio-carrying
+// key is one of these is a packaged asset list, not a bank.
+const CONTAINER_KEYS = new Set(['resources', 'files', 'assets', 'samples', 'sounds']);
+
+/**
+ * The npm/package-manifest signature: top-level `name`, `version`, AND
+ * `description` keys together. No real Strudel bank uses that combo as top-level
+ * keys (those would register as bogus "sounds"), so it reliably marks a packaged
+ * asset list whose .wav paths would otherwise pass the audio-majority check.
+ */
+function looksLikePackageManifest(manifest) {
+  return 'name' in manifest && 'version' in manifest && 'description' in manifest;
+}
+
 /**
  * True only if `manifest` looks like a real Strudel sample bank, not an app
- * config or data file that merely shares the `strudel.json` filename.
+ * config, data file, or packaged asset list that merely shares the
+ * `strudel.json` filename.
  *
- * Gathers every string leaf under the non-`_` keys (descending through arrays
- * and nested objects, so the array / single-path / wavetable-object bank shapes
- * all count) and keeps the manifest only when there is at least one such leaf
- * and a strong majority (>= AUDIO_MAJORITY = 60%) look like audio file paths.
- * The `{id, name, url}` config shape — string leaves that are not audio paths —
- * fails the majority and is rejected.
+ * Two guards, both required:
+ *  1. Shape signature — reject the package-manifest shape: the npm-style
+ *     `name`+`version`+`description` top-level triple, OR a manifest whose ONLY
+ *     audio-carrying key is a generic container name (`resources`/`files`/
+ *     `assets`/`samples`/`sounds`). A real bank's top-level keys are the sound
+ *     names themselves, so neither signal can match a legitimate bank.
+ *  2. Audio majority — gather every string leaf under the non-`_` keys
+ *     (descending through arrays and nested objects, so the array / single-path /
+ *     wavetable-object bank shapes all count) and keep only when there is at
+ *     least one such leaf and a strong majority (>= AUDIO_MAJORITY = 60%) look
+ *     like audio file paths. The `{id, name, url}` config shape fails here.
  *
  * Tradeoff: a rare bank that lists extensionless sample names
  * (e.g. ["break1","break2"]) has no audio-looking leaves and is dropped. That is
@@ -94,6 +116,18 @@ export function extractSounds(manifest) {
  */
 export function isSampleBank(manifest) {
   if (!manifest || typeof manifest !== 'object' || Array.isArray(manifest)) return false;
+
+  // Guard 1a: the npm/package-manifest triple is never a real bank's key set.
+  if (looksLikePackageManifest(manifest)) return false;
+
+  // Guard 1b: if every audio-carrying top-level key is a generic container name,
+  // this is a packaged asset list (one bogus "resources" sound), not a bank.
+  const soundKeys = extractSounds(manifest);
+  if (soundKeys.length > 0 && soundKeys.every((k) => CONTAINER_KEYS.has(k.toLowerCase()))) {
+    return false;
+  }
+
+  // Guard 2: audio majority across all string leaves under the non-`_` keys.
   const leaves = [];
   for (const [key, val] of Object.entries(manifest)) {
     if (key.startsWith('_')) continue;
