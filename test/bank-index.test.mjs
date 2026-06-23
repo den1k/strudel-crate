@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   parseManifest,
   extractSounds,
+  isSampleBank,
   resolveRef,
   categorize,
   describe as describeBank,
@@ -32,7 +33,7 @@ describe('parseManifest', () => {
 // ---- extractSounds ---------------------------------------------------------
 
 describe('extractSounds', () => {
-  it('returns the sound keys', () => {
+  it('returns the sound keys whose value is an array', () => {
     expect(extractSounds({ crate_bd: ['a'], crate_sd: ['b'] })).toEqual(['crate_bd', 'crate_sd']);
   });
 
@@ -44,10 +45,101 @@ describe('extractSounds', () => {
     expect(extractSounds({ _base: 'x', _meta: 1, hh: ['a'] })).toEqual(['hh']);
   });
 
+  it('counts keys that carry sample paths: array, single string, or nested object', () => {
+    expect(extractSounds({ kick: ['a.wav'], snare: 'b.wav' })).toEqual(['kick', 'snare']);
+    expect(extractSounds({ wt: { d2: ['x.wav'] } })).toEqual(['wt']);
+  });
+
+  it('does not count a key whose value holds no path strings (number/bool/empty)', () => {
+    // pure config scalars (no nested strings) are never sounds.
+    expect(extractSounds({ version: 1, enabled: true, hh: ['b.wav'] })).toEqual(['hh']);
+    expect(extractSounds({ count: 3, kick: 'k.wav' })).toEqual(['kick']);
+  });
+
   it('returns [] for an empty or null manifest', () => {
     expect(extractSounds({})).toEqual([]);
     expect(extractSounds({ _base: './' })).toEqual([]);
     expect(extractSounds(null)).toEqual([]);
+  });
+});
+
+// ---- isSampleBank ----------------------------------------------------------
+
+describe('isSampleBank', () => {
+  it('accepts a real bank: array values of audio file paths', () => {
+    expect(isSampleBank({
+      _base: 'https://x/',
+      crate_bd: ['bd/0.wav', 'bd/1.wav'],
+      crate_hh: ['hh/0.wav'],
+    })).toBe(true);
+  });
+
+  it('accepts varied audio extensions case-insensitively, with query/fragment', () => {
+    expect(isSampleBank({
+      a: ['kick.WAV', 'snare.ogg'],
+      b: ['pad.mp3?v=2', 'voc.flac#x', 'tom.aif', 'horn.aiff', 'clip.m4a'],
+    })).toBe(true);
+  });
+
+  it('rejects the app-config shape (non-_ values are plain strings)', () => {
+    expect(isSampleBank({
+      id: 'x', name: 'free apps', description: 'd', url: 'https://y',
+    })).toBe(false);
+  });
+
+  it('accepts the single-path bank shape (scalar string values, e.g. one-shot loops)', () => {
+    expect(isSampleBank({
+      _base: 'https://x/', shade: 'loop_shade.wav', sncm: 'loop_caustics.wav',
+    })).toBe(true);
+  });
+
+  it('accepts the nested-object bank shape (e.g. wavetable banks)', () => {
+    expect(isSampleBank({
+      _base: 'https://x/', wt_stereo: { d2: ['wt_stereo/AKWF_0.wav', 'wt_stereo/AKWF_1.wav'] },
+    })).toBe(true);
+  });
+
+  it('rejects a dictionary/config whose object values bottom out in non-audio strings', () => {
+    expect(isSampleBank({
+      term: { meaning: 'a definition' }, other: { meaning: 'another' },
+    })).toBe(false);
+  });
+
+  it('rejects a bank that lists extensionless sample names (documented tradeoff)', () => {
+    expect(isSampleBank({ _base: 'https://x/', breaks: ['break1', 'break2', 'break3'] })).toBe(false);
+  });
+
+  it('rejects when almost nothing looks like audio even if values are arrays', () => {
+    expect(isSampleBank({
+      title: ['Some Product'], product_url: ['https://z'], tags: ['a', 'b'],
+    })).toBe(false);
+  });
+
+  it('requires at least one array value (all-empty arrays do not qualify)', () => {
+    expect(isSampleBank({ a: [], b: [] })).toBe(false);
+  });
+
+  it('ignores _-prefixed keys when judging shape', () => {
+    expect(isSampleBank({ _base: 'https://x/', _meta: 'whatever', kick: ['k.wav'] })).toBe(true);
+  });
+
+  it('passes a strong majority (>=60%) of audio entries with a few stragglers', () => {
+    // 4 of 5 entries are audio → 80% ≥ 60% → bank.
+    expect(isSampleBank({
+      kit: ['a.wav', 'b.wav', 'c.ogg', 'd.mp3', 'README.txt'],
+    })).toBe(true);
+  });
+
+  it('rejects a minority of audio entries (below threshold)', () => {
+    // 1 of 4 audio → 25% < 60% → not a bank.
+    expect(isSampleBank({
+      data: ['a.wav', 'b.json', 'c.csv', 'd.txt'],
+    })).toBe(false);
+  });
+
+  it('rejects null / non-object input', () => {
+    expect(isSampleBank(null)).toBe(false);
+    expect(isSampleBank([1, 2])).toBe(false);
   });
 });
 

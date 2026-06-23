@@ -259,8 +259,11 @@ designed fresh for every batch; never reuse a previous batch's kit.
 
 - `npm run crawl-banks` (`scripts/crawl-banks.mjs`) crawls GitHub code search for
   public Strudel banks (`filename:strudel.json`), light-validates each
-  (fetch+parse+≥1 sound), categorizes it, and writes a committed `data/banks.json`
-  index plus a compact `shared/banks-digest.md`. It is the ONLY networked unit and
+  (fetch+parse, a bank-shape guard — `isSampleBank`: a strong majority of the
+  manifest's string leaves must look like audio file paths, which rejects
+  app-config/data `strudel.json` files — then ≥1 sound), categorizes it, and writes
+  a committed `data/banks.json` index plus a compact `shared/banks-digest.md`. It is
+  the ONLY networked unit and
   uses the authed `gh` CLI. A weekly systemd timer (`vimsical-crate-crawl-banks`)
   re-runs it and commits the diff; see the design spec's deploy notes.
 - **`shared/banks-digest.md`** is injected as `{bank_digest}` into the Stage-1

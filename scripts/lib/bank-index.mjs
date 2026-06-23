@@ -25,13 +25,83 @@ export function parseManifest(text) {
   return parsed;
 }
 
+// Audio file extensions a Strudel bank's sample paths use. Matched
+// case-insensitively, tolerating a trailing query string or fragment
+// (e.g. `kick.wav?v=2`, `pad.mp3#a`).
+const AUDIO_EXT_RE = /\.(wav|ogg|mp3|flac|aif|aiff|m4a)(?:[?#].*)?$/i;
+
+// A manifest qualifies as a sample bank when at least this fraction of its
+// string leaf values look like audio file paths. Tuned to admit real banks
+// (whose leaves are ~100% audio) while rejecting app-config / data manifests
+// that merely happen to be named strudel.json.
+const AUDIO_MAJORITY = 0.6;
+
+/**
+ * Collect every string leaf under a manifest value, descending through arrays
+ * and nested objects. Real Strudel banks come in three shapes, all handled:
+ *   - array of paths:   "kick": ["a.wav", "b.wav"]
+ *   - single path:      "kick": "a.wav"
+ *   - nested object:    "wt": { "d2": ["a.wav", ...] }   (e.g. wavetable banks)
+ */
+function collectStrings(val, out) {
+  if (typeof val === 'string') out.push(val);
+  else if (Array.isArray(val)) for (const v of val) collectStrings(v, out);
+  else if (val && typeof val === 'object') for (const v of Object.values(val)) collectStrings(v, out);
+  return out;
+}
+
+/**
+ * True if a non-`_` manifest value carries at least one sample path (i.e. it is
+ * a string, array, or object that bottoms out in strings) — so it represents a
+ * loadable sound rather than a scalar config field. The leaf strings still have
+ * to pass the audio-majority check in `isSampleBank` for the bank to be kept.
+ */
+function valueHoldsSamples(val) {
+  return collectStrings(val, []).length > 0;
+}
+
 /**
  * The sound names a manifest defines: every top-level key that is not a
- * `_`-prefixed meta key (`_base`, `_meta`, …). Order is preserved.
+ * `_`-prefixed meta key (`_base`, `_meta`, …) whose value carries sample paths
+ * (a string, an array, or a nested object of strings). A plain config key whose
+ * value bottoms out in a number/bool (no path strings) is never a sound. Order
+ * is preserved.
  */
 export function extractSounds(manifest) {
   if (!manifest || typeof manifest !== 'object') return [];
-  return Object.keys(manifest).filter((k) => !k.startsWith('_'));
+  return Object.keys(manifest).filter(
+    (k) => !k.startsWith('_') && valueHoldsSamples(manifest[k]),
+  );
+}
+
+// ---- bank-shape guard ------------------------------------------------------
+
+/**
+ * True only if `manifest` looks like a real Strudel sample bank, not an app
+ * config or data file that merely shares the `strudel.json` filename.
+ *
+ * Gathers every string leaf under the non-`_` keys (descending through arrays
+ * and nested objects, so the array / single-path / wavetable-object bank shapes
+ * all count) and keeps the manifest only when there is at least one such leaf
+ * and a strong majority (>= AUDIO_MAJORITY = 60%) look like audio file paths.
+ * The `{id, name, url}` config shape — string leaves that are not audio paths —
+ * fails the majority and is rejected.
+ *
+ * Tradeoff: a rare bank that lists extensionless sample names
+ * (e.g. ["break1","break2"]) has no audio-looking leaves and is dropped. That is
+ * acceptable — the alternative would re-admit config manifests, and such banks
+ * are uncommon and still loadable by hand once known.
+ */
+export function isSampleBank(manifest) {
+  if (!manifest || typeof manifest !== 'object' || Array.isArray(manifest)) return false;
+  const leaves = [];
+  for (const [key, val] of Object.entries(manifest)) {
+    if (key.startsWith('_')) continue;
+    collectStrings(val, leaves);
+  }
+  if (leaves.length === 0) return false;
+  const audio = leaves.filter((s) => AUDIO_EXT_RE.test(s)).length;
+  return audio / leaves.length >= AUDIO_MAJORITY;
 }
 
 // ---- loadable reference resolution -----------------------------------------

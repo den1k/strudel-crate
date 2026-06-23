@@ -26,6 +26,7 @@ import { fileURLToPath } from 'node:url';
 import {
   parseManifest,
   extractSounds,
+  isSampleBank,
   resolveRef,
   categorize,
   describe as describeBank,
@@ -153,6 +154,10 @@ async function enrichCandidate(cand, { fetchImpl = fetch } = {}) {
 
   const manifest = parseManifest(text);
   if (!manifest) return { skipped: true, reason: 'not a JSON object' };
+  // Shape guard: a strudel.json that is really an app config / data file
+  // (string/object values, no audio paths) is NOT a sample bank — drop it so it
+  // never pollutes the index or the digest agents read.
+  if (!isSampleBank(manifest)) return { skipped: true, reason: 'not a sample bank' };
   const sounds = extractSounds(manifest);
   if (sounds.length === 0) return { skipped: true, reason: 'no sounds' };
 
@@ -234,11 +239,13 @@ async function main() {
   const { entries, skips, totalCandidates } = await crawl({ maxPages });
 
   const breakdown = categoryBreakdown(entries);
+  const notBankCount = skips.filter((s) => s.reason === 'not a sample bank').length;
   console.error(`\nIndexed ${entries.length} banks (from ${totalCandidates} repos; ${skips.length} skipped).`);
+  console.error(`  of which ${notBankCount} dropped by the bank-shape filter (not a sample bank).`);
   console.error('Category breakdown:', JSON.stringify(breakdown));
   if (skips.length) {
-    console.error('Skipped (first 20):');
-    for (const s of skips.slice(0, 20)) console.error(`  - ${s.repo}: ${s.reason}`);
+    console.error('Skipped (first 25):');
+    for (const s of skips.slice(0, 25)) console.error(`  - ${s.repo}: ${s.reason}`);
   }
 
   if (dryRun) {
