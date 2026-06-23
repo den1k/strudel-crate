@@ -79,7 +79,7 @@ export function createRunner({
   repoRoot, jobStore, adminDb,
   spawn = nodeSpawn,
   now = () => new Date().toISOString(),
-  maxConcurrent = 2,
+  maxConcurrent = 1,
 }) {
   const queue = [];
   let active = 0;

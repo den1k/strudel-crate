@@ -27,7 +27,10 @@ const requireAuth = buildRequireAuth({ adminDb, allowedEmails });
 const resolveUser = buildResolveUser({ adminDb, allowedEmails });
 const requireUser = buildRequireUser({ adminDb });
 const jobStore = createJobStore({ jobsDir: join(repoRoot, 'data', 'jobs') });
-const runner = createRunner({ repoRoot, jobStore, adminDb, maxConcurrent: Number(process.env.CRATE_MAX_JOBS) || 2 });
+// Default 1: on a 4-core/15GB host one job already fans out up to ~8 parallel
+// compose sub-agents (each ~500MB), so two full jobs oversubscribe RAM/CPU.
+// Raise CRATE_MAX_JOBS only when the box is otherwise idle.
+const runner = createRunner({ repoRoot, jobStore, adminDb, maxConcurrent: Number(process.env.CRATE_MAX_JOBS) || 1 });
 
 const progressFor = async (job) => {
   if (!adminDb || job.status !== 'running') return undefined;
