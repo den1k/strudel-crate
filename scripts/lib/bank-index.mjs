@@ -171,7 +171,10 @@ export const CATEGORY_KEYWORDS = {
     'rim', 'tom', 'crash', 'ride', 'cym', 'cowbell', 'shaker', 'tamb',
     'perc', 'drum', '909', '808drum', '707', '606', 'cr78', 'linn',
   ],
-  bass: ['bass', 'sub', '808', 'reese', 'wobble', 'moog', 'bassline'],
+  // '808' deliberately excluded: 808-drum-machine names (808bd, 808sd, …) already
+  // vote drums via bd/sd, so counting '808' as bass mislabels whole drum kits
+  // (e.g. tidalcycles/Dirt-Samples) as bass. Real bass hits 'bass'/'sub'/'reese'.
+  bass: ['bass', 'sub', 'reese', 'wobble', 'moog', 'bassline'],
   lead: ['lead', 'arp', 'pluck', 'stab', 'acid', 'saw', 'synth', 'seq', 'blip', 'wt_', 'wavetable'],
   pad: ['pad', 'swpad', 'string', 'strings', 'warm', 'drone', 'ambient', 'atmos', 'chord'],
   vocal: ['vox', 'voc', 'voice', 'choir', 'vowel', 'breath', 'ooh', 'aah', 'ahh', 'sing', 'speak', 'word', 'phrase'],

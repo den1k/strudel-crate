@@ -139,17 +139,28 @@ async function enrichCandidate(cand, { fetchImpl = fetch } = {}) {
   const branch = meta.defaultBranch;
   const rawUrl = `https://raw.githubusercontent.com/${cand.owner}/${cand.repo}/${branch}/${cand.path}`;
 
+  // A real strudel.json is a few KB–few hundred KB. Cap + time-bound the fetch so
+  // a single pathological public repo can't OOM or hang the unattended crawl.
+  const FETCH_TIMEOUT_MS = 15000;
+  const MAX_MANIFEST_BYTES = 5 * 1024 * 1024;
   let res, text;
   try {
-    res = await fetchImpl(rawUrl);
+    res = await fetchImpl(rawUrl, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
   } catch (err) {
     return { skipped: true, reason: `fetch error: ${err.message}` };
   }
   if (!res.ok) return { skipped: true, reason: `HTTP ${res.status}` };
+  const declaredLen = Number(res.headers?.get?.('content-length'));
+  if (Number.isFinite(declaredLen) && declaredLen > MAX_MANIFEST_BYTES) {
+    return { skipped: true, reason: `manifest too large (${declaredLen} bytes)` };
+  }
   try {
     text = await res.text();
   } catch (err) {
     return { skipped: true, reason: `body read error: ${err.message}` };
+  }
+  if (text.length > MAX_MANIFEST_BYTES) {
+    return { skipped: true, reason: `manifest too large (${text.length} bytes)` };
   }
 
   const manifest = parseManifest(text);
