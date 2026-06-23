@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { fakeAdmin } from './fake-admin.mjs';
 import {
-  ensureProfile, getProfile, setArtistName, itemSlugs, itemsBySlug, insertItem, recordPlay, setRating,
+  ensureProfile, getProfile, setArtistName, itemSlugs, itemsBySlug, itemsByJob, insertItem, recordPlay, setRating,
   setNotes, itemOwnerProfileId,
 } from '../server/instant.mjs';
 
@@ -45,6 +45,16 @@ describe('itemSlugs / itemsBySlug', () => {
   });
 });
 
+describe('itemsByJob', () => {
+  it('returns only rows whose jobId matches', async () => {
+    const db = fakeAdmin({ stems: [
+      { slug: 'a', jobId: 'j1' }, { slug: 'b', jobId: 'j2' }, { slug: 'c', jobId: 'j1' },
+    ] });
+    const rows = await itemsByJob(db, 'stems', 'j1');
+    expect(rows.map((r) => r.slug)).toEqual(['a', 'c']);
+  });
+});
+
 describe('insertItem', () => {
   const track = {
     id: '2026-06-16-x-01', title: 'X', prompt: 'p', batch: '2026-06-16-x',
@@ -74,6 +84,24 @@ describe('insertItem', () => {
     const db = fakeAdmin({ tracks: [] });
     await insertItem(db, 'tracks', { ...track, id: '2026-06-16-x-01-v2', versionOf: '2026-06-16-x-01' }, 'p1');
     expect(db._txs[0].update.versionOf).toBe('2026-06-16-x-01');
+  });
+
+  it('stamps jobId from CRATE_JOB_ID when set', async () => {
+    const db = fakeAdmin({ tracks: [] });
+    process.env.CRATE_JOB_ID = 'job-123';
+    try {
+      await insertItem(db, 'tracks', track, 'p1');
+    } finally {
+      delete process.env.CRATE_JOB_ID;
+    }
+    expect(db._txs[0].update.jobId).toBe('job-123');
+  });
+
+  it('omits jobId when CRATE_JOB_ID is unset', async () => {
+    const db = fakeAdmin({ tracks: [] });
+    delete process.env.CRATE_JOB_ID;
+    await insertItem(db, 'tracks', track, 'p1');
+    expect(db._txs[0].update.jobId).toBeUndefined();
   });
 });
 
