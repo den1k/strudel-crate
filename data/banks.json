@@ -1,33 +1,5 @@
 [
   {
-    "ref": "https://raw.githubusercontent.com/mathix420/free-the-web-apps/master/content/strudel.json",
-    "repo": "mathix420/free-the-web-apps",
-    "category": "misc",
-    "soundCount": 17,
-    "sounds": [
-      "id",
-      "name",
-      "description",
-      "url",
-      "logo",
-      "macLogo",
-      "screenshot",
-      "logoSize",
-      "tags",
-      "longDescription",
-      "category",
-      "developer",
-      "pricing",
-      "platforms",
-      "features",
-      "useCases",
-      "faq"
-    ],
-    "description": "misc · 17 sounds · id, name, description …",
-    "stars": 517,
-    "lastSeen": "2026-06-23"
-  },
-  {
     "ref": "https://raw.githubusercontent.com/tidalcycles/Dirt-Samples/master/strudel.json",
     "repo": "tidalcycles/Dirt-Samples",
     "category": "bass",
@@ -359,22 +331,6 @@
     "lastSeen": "2026-06-23"
   },
   {
-    "ref": "https://raw.githubusercontent.com/fla-sil/PyTorrent/main/Package_Metadata/pypi_packages/strudel.json",
-    "repo": "fla-sil/PyTorrent",
-    "category": "misc",
-    "soundCount": 5,
-    "sounds": [
-      "info",
-      "last_serial",
-      "releases",
-      "urls",
-      "timestamp"
-    ],
-    "description": "misc · 5 sounds · info, last_serial, releases …",
-    "stars": 43,
-    "lastSeen": "2026-06-23"
-  },
-  {
     "ref": "https://raw.githubusercontent.com/timoncool/Bulka/main/website/public/samples/e-pianos/strudel.json",
     "repo": "timoncool/Bulka",
     "category": "melodic",
@@ -475,27 +431,6 @@
     "lastSeen": "2026-06-23"
   },
   {
-    "ref": "https://raw.githubusercontent.com/changhongzi/BNC_COCA_EN2CN/main/data/strudel.json",
-    "repo": "changhongzi/BNC_COCA_EN2CN",
-    "category": "vocal",
-    "soundCount": 10,
-    "sounds": [
-      "word",
-      "headword",
-      "frequency",
-      "list",
-      "usPhone",
-      "ukPhone",
-      "examType",
-      "translations",
-      "phrs",
-      "sentences"
-    ],
-    "description": "vocal · 10 sounds · word, headword, frequency …",
-    "stars": 22,
-    "lastSeen": "2026-06-23"
-  },
-  {
     "ref": "github:tidalcycles/uzu-drumkit",
     "repo": "tidalcycles/uzu-drumkit",
     "category": "drums",
@@ -576,19 +511,6 @@
     ],
     "description": "drums · 13 sounds · garden_cp, garden_bd, garden_oh …",
     "stars": 19,
-    "lastSeen": "2026-06-23"
-  },
-  {
-    "ref": "https://raw.githubusercontent.com/freetalk-fun/freetalk-dictionary-v1/main/words/strudel.json",
-    "repo": "freetalk-fun/freetalk-dictionary-v1",
-    "category": "misc",
-    "soundCount": 2,
-    "sounds": [
-      "term",
-      "meanings"
-    ],
-    "description": "misc · 2 sounds · term, meanings",
-    "stars": 15,
     "lastSeen": "2026-06-23"
   },
   {
@@ -769,35 +691,6 @@
     ],
     "description": "misc · 8 sounds · ir, kik, prc …",
     "stars": 11,
-    "lastSeen": "2026-06-23"
-  },
-  {
-    "ref": "https://raw.githubusercontent.com/hanjoyo/kbbi/main/s/strudel.json",
-    "repo": "hanjoyo/kbbi",
-    "category": "misc",
-    "soundCount": 2,
-    "sounds": [
-      "pranala",
-      "entri"
-    ],
-    "description": "misc · 2 sounds · pranala, entri",
-    "stars": 8,
-    "lastSeen": "2026-06-23"
-  },
-  {
-    "ref": "https://raw.githubusercontent.com/trolex213/scraper/main/product_hunt_metadata/strudel.json",
-    "repo": "trolex213/scraper",
-    "category": "misc",
-    "soundCount": 5,
-    "sounds": [
-      "title",
-      "product_url",
-      "description",
-      "producthunt_url",
-      "crawl_timestamp"
-    ],
-    "description": "misc · 5 sounds · title, product_url, description …",
-    "stars": 8,
     "lastSeen": "2026-06-23"
   },
   {
@@ -1157,7 +1050,7 @@
     "ref": "github:Bubobubobubobubo/Dough-Fox",
     "repo": "Bubobubobubobubo/Dough-Fox",
     "category": "drums",
-    "soundCount": 63,
+    "soundCount": 62,
     "sounds": [
       "fclap",
       "fdarkkick",
@@ -1201,7 +1094,6 @@
       "fcowbell",
       "fxupper",
       "fkit",
-      "fconga",
       "fglitch",
       "fstab",
       "ftamborine",
@@ -1223,7 +1115,7 @@
       "fhit",
       "fdot"
     ],
-    "description": "drums · 63 sounds · fclap, fdarkkick, fbeep …",
+    "description": "drums · 62 sounds · fclap, fdarkkick, fbeep …",
     "stars": 2,
     "lastSeen": "2026-06-23"
   },
@@ -2560,18 +2452,6 @@
     "lastSeen": "2026-06-23"
   },
   {
-    "ref": "github:byolim/breaks",
-    "repo": "byolim/breaks",
-    "category": "breaks",
-    "soundCount": 1,
-    "sounds": [
-      "breaks"
-    ],
-    "description": "breaks · 1 sounds · breaks",
-    "stars": 1,
-    "lastSeen": "2026-06-23"
-  },
-  {
     "ref": "github:concordia-dcart/samples-extra",
     "repo": "concordia-dcart/samples-extra",
     "category": "drums",
@@ -2657,29 +2537,6 @@
       "license"
     ],
     "description": "vocal · 8 sounds · name, version, description …",
-    "stars": 1,
-    "lastSeen": "2026-06-23"
-  },
-  {
-    "ref": "https://raw.githubusercontent.com/EnglishDog/ed-dictionary-v1/main/words/s/strudel.json",
-    "repo": "EnglishDog/ed-dictionary-v1",
-    "category": "vocal",
-    "soundCount": 12,
-    "sounds": [
-      "conceptnet",
-      "relatedwords",
-      "related_ngsl",
-      "related_awl_economics",
-      "related_awl_computer_science_s",
-      "related_awl_computer_science",
-      "irregular_words",
-      "plurals",
-      "gerunds",
-      "wooordhunt",
-      "custom_words",
-      "important_word"
-    ],
-    "description": "vocal · 12 sounds · conceptnet, relatedwords, related_ngsl …",
     "stars": 1,
     "lastSeen": "2026-06-23"
   },
@@ -3020,22 +2877,6 @@
     "lastSeen": "2026-06-23"
   },
   {
-    "ref": "https://raw.githubusercontent.com/vsandstrom/strudelcourse/main/src/lib/strudel.json",
-    "repo": "vsandstrom/strudelcourse",
-    "category": "misc",
-    "soundCount": 5,
-    "sounds": [
-      "sound",
-      "note",
-      "stack",
-      "samples",
-      "pingpong"
-    ],
-    "description": "misc · 5 sounds · sound, note, stack …",
-    "stars": 1,
-    "lastSeen": "2026-06-23"
-  },
-  {
     "ref": "github:aalokok/soundrepo",
     "repo": "aalokok/soundrepo",
     "category": "lead",
@@ -3285,39 +3126,6 @@
       "breaks"
     ],
     "description": "breaks · 1 sounds · breaks",
-    "stars": 0,
-    "lastSeen": "2026-06-23"
-  },
-  {
-    "ref": "https://raw.githubusercontent.com/coala-info/coala-mp/master/web/public/tools/strudel.json",
-    "repo": "coala-info/coala-mp",
-    "category": "misc",
-    "soundCount": 22,
-    "sounds": [
-      "id",
-      "category",
-      "name",
-      "description",
-      "overview",
-      "homepage",
-      "validation",
-      "conda_home",
-      "github",
-      "conda_downloads",
-      "conda_downloads_num",
-      "last_updated",
-      "cwl_count",
-      "has_skill",
-      "runtime_summary",
-      "report",
-      "cwl_files",
-      "skill_file",
-      "skills_repo_link",
-      "cwls_repo_link",
-      "skill_markdown",
-      "skill_front_matter"
-    ],
-    "description": "misc · 22 sounds · id, category, name …",
     "stars": 0,
     "lastSeen": "2026-06-23"
   },
@@ -4897,22 +4705,19 @@
     "ref": "github:joeymorello/live-sample-repo",
     "repo": "joeymorello/live-sample-repo",
     "category": "drums",
-    "soundCount": 12,
+    "soundCount": 9,
     "sounds": [
-      "bass",
       "bd",
       "cp",
       "drum_loop",
-      "fx",
       "hh",
       "lead",
       "oh",
-      "pad",
       "perc",
       "sd",
       "vox"
     ],
-    "description": "drums · 12 sounds · bass, bd, cp …",
+    "description": "drums · 9 sounds · bd, cp, drum_loop …",
     "stars": 0,
     "lastSeen": "2026-06-23"
   },
@@ -5516,39 +5321,6 @@
     "lastSeen": "2026-06-23"
   },
   {
-    "ref": "https://raw.githubusercontent.com/Naandalist/CtrlAltNode/main/data_1.0.0/s/strudel.json",
-    "repo": "Naandalist/CtrlAltNode",
-    "category": "misc",
-    "soundCount": 8,
-    "sounds": [
-      "istilah",
-      "entri",
-      "bentukTidakBaku",
-      "kataTurunan",
-      "gabunganKata",
-      "peribahasa",
-      "etimologi",
-      "data"
-    ],
-    "description": "misc · 8 sounds · istilah, entri, bentukTidakBaku …",
-    "stars": 0,
-    "lastSeen": "2026-06-23"
-  },
-  {
-    "ref": "https://raw.githubusercontent.com/Naandalist/kbbi-harvester-cdn/main/word-details/S/strudel.json",
-    "repo": "Naandalist/kbbi-harvester-cdn",
-    "category": "vocal",
-    "soundCount": 3,
-    "sounds": [
-      "word",
-      "authenticated",
-      "entries"
-    ],
-    "description": "vocal · 3 sounds · word, authenticated, entries",
-    "stars": 0,
-    "lastSeen": "2026-06-23"
-  },
-  {
     "ref": "github:neshanjo/moonalley-samples",
     "repo": "neshanjo/moonalley-samples",
     "category": "misc",
@@ -5853,48 +5625,6 @@
     "lastSeen": "2026-06-23"
   },
   {
-    "ref": "https://raw.githubusercontent.com/quadram-institute-bioscience/biocondor/master/biocondor_cache/strudel.json",
-    "repo": "quadram-institute-bioscience/biocondor",
-    "category": "misc",
-    "soundCount": 31,
-    "sounds": [
-      "app_entry",
-      "conda_platforms",
-      "full_name",
-      "owner",
-      "home",
-      "source_git_url",
-      "source_git_tag",
-      "app_type",
-      "upvoted",
-      "id",
-      "app_summary",
-      "public",
-      "revision",
-      "files",
-      "package_types",
-      "description",
-      "releases",
-      "html_url",
-      "builds",
-      "watchers",
-      "dev_url",
-      "name",
-      "license",
-      "versions",
-      "url",
-      "created_at",
-      "modified_at",
-      "latest_version",
-      "summary",
-      "license_url",
-      "doc_url"
-    ],
-    "description": "misc · 31 sounds · app_entry, conda_platforms, full_name …",
-    "stars": 0,
-    "lastSeen": "2026-06-23"
-  },
-  {
     "ref": "github:rdwrome/SPAM",
     "repo": "rdwrome/SPAM",
     "category": "misc",
@@ -5903,18 +5633,6 @@
       "SPAM"
     ],
     "description": "misc · 1 sounds · SPAM",
-    "stars": 0,
-    "lastSeen": "2026-06-23"
-  },
-  {
-    "ref": "github:reema7667/strudel-sounds",
-    "repo": "reema7667/strudel-sounds",
-    "category": "misc",
-    "soundCount": 1,
-    "sounds": [
-      "ouds"
-    ],
-    "description": "misc · 1 sounds · ouds",
     "stars": 0,
     "lastSeen": "2026-06-23"
   },
@@ -6407,18 +6125,6 @@
     "lastSeen": "2026-06-23"
   },
   {
-    "ref": "github:TorenUK/breaks",
-    "repo": "TorenUK/breaks",
-    "category": "breaks",
-    "soundCount": 1,
-    "sounds": [
-      "breaks"
-    ],
-    "description": "breaks · 1 sounds · breaks",
-    "stars": 0,
-    "lastSeen": "2026-06-23"
-  },
-  {
     "ref": "github:tracedelange/proprietary-homunculus",
     "repo": "tracedelange/proprietary-homunculus",
     "category": "misc",
@@ -6539,18 +6245,6 @@
       "tub"
     ],
     "description": "misc · 1 sounds · tub",
-    "stars": 0,
-    "lastSeen": "2026-06-23"
-  },
-  {
-    "ref": "github:yaxu/svgs",
-    "repo": "yaxu/svgs",
-    "category": "misc",
-    "soundCount": 1,
-    "sounds": [
-      "faces"
-    ],
-    "description": "misc · 1 sounds · faces",
     "stars": 0,
     "lastSeen": "2026-06-23"
   }

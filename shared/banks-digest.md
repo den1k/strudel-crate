@@ -34,26 +34,26 @@ These are REAL, loadable Strudel banks (crawled from public repos). Reach past t
 - Samplesbit/strudel_samples · github:Samplesbit/strudel_samples · 1
 - sucaritaesredonda/samples · github:sucaritaesredonda/samples · 7
 
-### vocal (18)
-- changhongzi/BNC_COCA_EN2CN · https://raw.githubusercontent.com/changhongzi/BNC_COCA_EN2CN/main/data/strudel.json · 10
+### vocal (15)
 - switchangel/beginningtrance · github:switchangel/beginningtrance · 1
 - jpopesculian/ep1320 · github:jpopesculian/ep1320 · 58
 - boggodan/bflute · github:boggodan/bflute · 3
 - DelicTide/samples · github:DelicTide/samples · 8
-- EnglishDog/ed-dictionary-v1 · https://raw.githubusercontent.com/EnglishDog/ed-dictionary-v1/main/words/s/strudel.json · 12
-- …and 12 more — grep `data/banks.json`.
+- febeverelst/algorave_FE-VER · https://raw.githubusercontent.com/febeverelst/algorave_FE-VER/main/Samples/strudel.json · 2
+- TodePond/pond · github:TodePond/pond · 9
+- …and 9 more — grep `data/banks.json`.
 
 ### world (1)
 - nicolas-rabault/strudel-samples · github:nicolas-rabault/strudel-samples · 29
 
-### breaks (21)
+### breaks (19)
 - yaxu/clean-breaks · github:yaxu/clean-breaks · 32
 - switchangel/breaks · github:switchangel/breaks · 1
 - smaudd/joonies-dnb-collection-strudel · github:smaudd/joonies-dnb-collection-strudel · 2
 - Bubobubobubobubo/Dough-Amen · github:Bubobubobubobubo/Dough-Amen · 3
-- byolim/breaks · github:byolim/breaks · 1
 - creativenucleus/strudel-m8-168-dnb-jungle · github:creativenucleus/strudel-m8-168-dnb-jungle · 8
-- …and 15 more — grep `data/banks.json`.
+- sonidosingapura/rochormatic · github:sonidosingapura/rochormatic · 18
+- …and 13 more — grep `data/banks.json`.
 
 ### fx (1)
 - Emanuel-de-Jong/L1C0-B3nLib_x86_EXE · https://raw.githubusercontent.com/Emanuel-de-Jong/L1C0-B3nLib_x86_EXE/main/assets/audio/strudel.json · 5
@@ -65,11 +65,11 @@ These are REAL, loadable Strudel banks (crawled from public repos). Reach past t
 - boggodan/nfolk · github:boggodan/nfolk · 8
 - lynn/sounds · https://raw.githubusercontent.com/lynn/sounds/main/chrono-trigger/strudel.json · 57
 
-### misc (65)
-- mathix420/free-the-web-apps · https://raw.githubusercontent.com/mathix420/free-the-web-apps/master/content/strudel.json · 17
-- fla-sil/PyTorrent · https://raw.githubusercontent.com/fla-sil/PyTorrent/main/Package_Metadata/pypi_packages/strudel.json · 5
-- freetalk-fun/freetalk-dictionary-v1 · https://raw.githubusercontent.com/freetalk-fun/freetalk-dictionary-v1/main/words/strudel.json · 2
+### misc (54)
 - QuantumVillage/quantum-music · github:QuantumVillage/quantum-music · 1
 - vasilymilovidov/samples · github:vasilymilovidov/samples · 8
-- hanjoyo/kbbi · https://raw.githubusercontent.com/hanjoyo/kbbi/main/s/strudel.json · 2
-- …and 59 more — grep `data/banks.json`.
+- eduardoagarcia/strudel · https://raw.githubusercontent.com/eduardoagarcia/strudel/main/samples/fx/strudel.json · 1
+- yaxu/mrid · github:yaxu/mrid · 13
+- Bubobubobubobubo/Dough-Amiga · github:Bubobubobubobubo/Dough-Amiga · 116
+- salsicha/capoeira_strudel · github:salsicha/capoeira_strudel · 2
+- …and 48 more — grep `data/banks.json`.
