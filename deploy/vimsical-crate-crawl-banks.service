@@ -1,0 +1,26 @@
+[Unit]
+# Strudel bank discovery crawler — runs the crawl, regenerates the index +
+# digest in the LIVE crate checkout, and commits the diff. Oneshot, driven by
+# vimsical-crate-crawl-banks.timer (weekly). Not a long-running service.
+#
+# Install: see deploy/INSTALL-crawl-banks.md. DO NOT run from a worktree — the
+# WorkingDirectory MUST be the live checkout (/home/builder/apps/crate), which is
+# what the generation server reads at generation time.
+Description=Vimsical crate — weekly Strudel bank discovery crawl
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=builder
+WorkingDirectory=/home/builder/apps/crate
+# gh + node + git on PATH; gh reads its auth from ~/.config/gh (den1k token).
+Environment=PATH=/home/builder/.local/bin:/usr/local/bin:/usr/bin:/bin
+Environment=HOME=/home/builder
+ExecStart=/home/builder/apps/crate/scripts/crawl-banks-commit.sh
+StandardOutput=append:/home/builder/logs/crate-crawl-banks.log
+StandardError=append:/home/builder/logs/crate-crawl-banks.log
+
+# Hardening
+NoNewPrivileges=true
+PrivateTmp=true
