@@ -13,7 +13,8 @@
     "validate": "node scripts/validate.mjs",
     "feedback": "node scripts/feedback.mjs",
     "kit-feedback": "node scripts/kit-feedback.mjs",
-    "build-sounds": "node scripts/build-sounds.mjs"
+    "build-sounds": "node scripts/build-sounds.mjs",
+    "crawl-banks": "node scripts/crawl-banks.mjs"
   },
   "dependencies": {
     "@breezystack/lamejs": "1.2.7",
