@@ -79,9 +79,10 @@ export function createRunner({
   repoRoot, jobStore, adminDb,
   spawn = nodeSpawn,
   now = () => new Date().toISOString(),
+  maxConcurrent = 2,
 }) {
   const queue = [];
-  let running = false;
+  let active = 0;
 
   function runClaude(job, authorProfileId) {
     return new Promise((resolve) => {
@@ -125,22 +126,19 @@ export function createRunner({
     }
   }
 
-  async function pump() {
-    if (running) return;
-    const id = queue.shift();
-    if (!id) return;
-    running = true;
-    try {
-      await runOne(id);
-    } finally {
-      running = false;
-      if (queue.length) pump();
+  function pump() {
+    while (active < maxConcurrent && queue.length) {
+      const id = queue.shift();
+      active += 1;
+      runOne(id)
+        .catch((err) => console.error('runOne failed', err))
+        .finally(() => { active -= 1; pump(); });
     }
   }
 
   async function enqueue(job) {
     queue.push(job.id);
-    pump().catch((err) => console.error('runner pump failed', err));
+    pump();
     return job;
   }
 
@@ -152,7 +150,7 @@ export function createRunner({
         queue.push(job.id);
       }
     }
-    pump().catch((err) => console.error('runner pump failed', err));
+    pump();
   }
 
   return { enqueue, recover };

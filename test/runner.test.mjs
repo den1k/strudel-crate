@@ -206,10 +206,26 @@ describe2('createRunner worker', () => {
     expect2(failed.error).toContain('permission prompt timed out');
   });
 
-  it2('runs jobs one at a time (single slot)', async () => {
+  it2('runs up to maxConcurrent jobs at once and queues the rest', async () => {
     const { spawn, children } = fakeSpawnFactory();
     const admin = fakeAdmin({ profiles: [], stems: [], tracks: [] });
-    const runner = createRunner({ repoRoot, jobStore, adminDb: admin, spawn, now: ticks });
+    const runner = createRunner({ repoRoot, jobStore, adminDb: admin, spawn, now: ticks, maxConcurrent: 2 });
+    for (const id of ['j1', 'j2', 'j3']) {
+      await jobStore.write(baseJob(id));
+      await runner.enqueue(baseJob(id));
+    }
+    await until(() => children.length === 2);
+    expect2(children).toHaveLength(2);                       // two slots filled
+    expect2((await jobStore.get('j3')).status).toBe('queued'); // third waits
+    children[0].emit('close', 0);                            // free a slot
+    await until(() => children.length === 3);                // third starts
+    expect2(children).toHaveLength(3);
+  });
+
+  it2('respects maxConcurrent: 1 (serial)', async () => {
+    const { spawn, children } = fakeSpawnFactory();
+    const admin = fakeAdmin({ profiles: [], stems: [], tracks: [] });
+    const runner = createRunner({ repoRoot, jobStore, adminDb: admin, spawn, now: ticks, maxConcurrent: 1 });
     await jobStore.write(baseJob('j1'));
     await jobStore.write(baseJob('j2'));
     await runner.enqueue(baseJob('j1'));
@@ -218,7 +234,28 @@ describe2('createRunner worker', () => {
     expect2((await jobStore.get('j2')).status).toBe('queued');
     children[0].emit('close', 0);
     await until(() => children.length === 2);
-    expect2(children).toHaveLength(2);
+  });
+
+  it2('attributes rows per job when two run concurrently in the same namespace', async () => {
+    const { spawn, children } = fakeSpawnFactory();
+    const admin = fakeAdmin({ profiles: [], stems: [], tracks: [] });
+    const runner = createRunner({ repoRoot, jobStore, adminDb: admin, spawn, now: ticks, maxConcurrent: 2 });
+    await jobStore.write(baseJob('jA'));
+    await jobStore.write(baseJob('jB'));
+    await runner.enqueue(baseJob('jA'));
+    await runner.enqueue(baseJob('jB'));
+    await until(() => children.length === 2);
+    // Both jobs wrote into stems; each row carries its own job's id.
+    admin._store.stems.push(
+      { id: 'a1', slug: 'a-01', batch: 'A', jobId: 'jA' },
+      { id: 'b1', slug: 'b-01', batch: 'B', jobId: 'jB' },
+    );
+    children[0].emit('close', 0); // jA (enqueued first → children[0])
+    children[1].emit('close', 0); // jB
+    await until(async () =>
+      (await jobStore.get('jA')).status === 'done' && (await jobStore.get('jB')).status === 'done');
+    expect2((await jobStore.get('jA')).newItems).toEqual(['a-01']);
+    expect2((await jobStore.get('jB')).newItems).toEqual(['b-01']);
   });
 
   it2('recover() marks running jobs interrupted and resumes queued', async () => {
