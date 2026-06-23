@@ -12,6 +12,8 @@ Wants=network-online.target
 
 [Service]
 Type=oneshot
+# Bound the whole unattended run (defense-in-depth atop the per-fetch timeout).
+TimeoutStartSec=600
 User=builder
 WorkingDirectory=/home/builder/apps/crate
 # gh + node + git on PATH; gh reads its auth from ~/.config/gh (den1k token).

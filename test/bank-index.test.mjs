@@ -244,7 +244,10 @@ describe('categorize', () => {
     // one drum hit + one bass hit; drums has higher priority than bass.
     expect(categorize(['bd', 'sub'])).toBe('drums');
     // matched-count wins first: two bass tokens vs one drum token → bass.
-    expect(categorize(['bd', 'sub', '808'])).toBe('bass');
+    expect(categorize(['bd', 'sub', 'bass'])).toBe('bass');
+    // regression: 808-drum-kit names vote drums (via bd/sd); '808' is NOT a bass
+    // token, so a full kit like Dirt-Samples is no longer mislabeled bass.
+    expect(categorize(['808bd', '808sd', 'sub'])).toBe('drums');
   });
 
   it('matches tokens case-insensitively and inside compound names', () => {
