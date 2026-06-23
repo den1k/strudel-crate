@@ -53,6 +53,10 @@ body {
   border: 1px solid var(--line); font-family: var(--mono); font-size: 12px;
   padding: 6px 10px; cursor: pointer;
 }
+/* Chrome sizes a <select> to fit its widest option; the batch slugs are long,
+   which otherwise balloons the control and wraps the masthead. Cap it — the
+   open dropdown still shows each option in full. */
+.filters select { max-width: 220px; text-overflow: ellipsis; }
 .seg { display: flex; }
 .seg button + button { border-left: 0; }
 .seg button.on { background: var(--acid); color: var(--bg); font-weight: 600; }
@@ -231,6 +235,27 @@ body {
   .track { grid-template-columns: 56px 1fr; grid-template-areas: 'play meta' 'play rate' 'code code' 'notes notes'; }
   .sig { display: none; } /* drop the byline when the masthead is tight */
 
+  /* Tighten the page gutters so cards and controls get real estate back. */
+  .masthead { gap: 14px 16px; padding: 16px 16px 12px; }
+  .batch { padding: 20px 16px 8px; }
+  .generate { padding: 14px 16px; }
+
+  /* The masthead packs brand · nav · filters · user on one row on desktop. On
+     a phone the filter cluster (two <select>s + the rating segment) is far
+     wider than the screen, and the batch/artist selects balloon to fit their
+     longest option text (full batch slugs) — forcing horizontal scroll. Give
+     the filters their own full-width line, let it wrap, and let each control
+     shrink so nothing spills past the viewport. */
+  .filters { width: 100%; flex-wrap: wrap; gap: 8px; }
+  .filters select { flex: 1 1 0; min-width: 0; } /* share a row; clip long option text */
+  .seg { flex-basis: 100%; }                      /* rating segment drops to its own row */
+  .seg button { flex: 1; }                        /* equal, thumb-sized tap targets */
+
+  /* Genre/mood chips set white-space:nowrap and a long one painted past the
+     card's right edge (more horizontal scroll). Let them wrap when narrow. */
+  .chips { width: 100%; }
+  .chip { white-space: normal; }
+
   /* The transport is one flex row that overflows a phone's width, shoving the
      seek rail off-screen. Let it wrap, drop the non-essential warmup status,
      and give the rail its own full-width row so the song stays scrubbable. */
@@ -325,9 +350,10 @@ body {
 .job-bell .bell-ico { display: block; }
 .job-unread {
   position: absolute; top: -7px; right: -7px;
-  min-width: 15px; height: 15px; padding: 0 3px;
+  min-width: 16px; height: 16px; padding: 0 4px;
   display: grid; place-items: center;
   background: var(--hot); color: var(--bg); border: 1px solid var(--bg);
+  border-radius: 999px; /* a count badge reads as a pill, not a hard square */
   font-family: var(--mono); font-weight: 700; font-size: 10px; line-height: 1;
 }
 .job-unread[hidden] { display: none; } /* `display: grid` would otherwise defeat [hidden] */
