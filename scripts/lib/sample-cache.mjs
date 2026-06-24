@@ -94,6 +94,8 @@ export function pruneManifestPaths(manifest, keep) {
  * Vendor a bank locally: fetch its manifest + every referenced sample, rewrite
  * the manifest's _base to "./", and write it all under banks/<slug>/. Idempotent:
  * a bank that is already fully cached is skipped without refetching samples.
+ * On success, `files` is the number of samples kept and `skipped` lists referenced
+ * samples that 404'd and were omitted.
  */
 export async function cacheBank(source, opts = {}) {
   const {
@@ -182,7 +184,7 @@ export async function readTrackManifest(trackId, { cacheDir = DEFAULT_CACHE_DIR 
 /**
  * Vendor every bank a track/stem references and record the per-track manifest.
  * Best-effort but reports failures so the caller can warn. Returns
- * { ok, banks: [{ source, slug, ok, error? }] }.
+ * { ok, banks: [{ source, slug, ok, error?, skipped? }] }.
  */
 export async function cacheTrackSamples(trackId, code, opts = {}) {
   const sources = extractSampleRefs(code);
