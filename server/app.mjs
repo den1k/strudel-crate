@@ -1,9 +1,12 @@
 import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
+import { readFile } from 'node:fs/promises';
 import express from 'express';
 import { collectionFor } from './runner.mjs';
-import { setRating, setNotes, itemOwnerProfileId, ensureProfile, getProfile, setArtistName, recordPlay } from './instant.mjs';
+import { setRating, setNotes, itemOwnerProfileId, ensureProfile, getProfile, setArtistName, recordPlay, resolvePublicItem } from './instant.mjs';
 import { createPlayLimiter } from './rate-limit.mjs';
+import { songMetaTags, brandMetaTags, injectMeta, cardHash } from './og.mjs';
+import { songCardHtml, brandCardHtml } from './og-card.mjs';
 
 const ID_RE = /^[A-Za-z0-9_-]+$/; // rating files are written as <id>.json — no path chars
 
@@ -12,6 +15,11 @@ const ID_RE = /^[A-Za-z0-9_-]+$/; // rating files are written as <id>.json — n
 // rewrites the header; a directly-exposed instance could spoof it.
 const clientIp = (req) =>
   req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket?.remoteAddress || 'anon';
+
+// Absolute origin for crawler URLs: the configured public origin, else derived
+// from the (proxy-aware) request. Behind nginx, app.set('trust proxy', true)
+// makes req.protocol reflect X-Forwarded-Proto.
+const originFor = (req, configured) => configured || `${req.protocol}://${req.get('host')}`;
 
 // Express 4 doesn't catch async handler rejections — route them to the error handler.
 const wrap = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
@@ -98,6 +106,33 @@ function audioRoutes(app, audioExport, namespaces) {
     res.type(AUDIO_TYPE[ext] ?? 'application/octet-stream');
     res.setHeader('Content-Disposition', `attachment; filename="${out.filename}"`);
     res.sendFile(out.path);
+  }));
+}
+
+// Social-preview card PNGs. /og/home.jpg is the static brand card; the per-song
+// route resolves the item, renders the code-as-art card on a cache miss, and
+// serves the cached PNG. Reads stay public (they mirror the public song pages).
+function cardRoutes(app, { adminDb, namespaces, cardRenderer, cardCache }) {
+  app.get('/og/home.jpg', wrap(async (_req, res) => {
+    let p = await cardCache.cachedPath('brand');
+    if (!p) p = await cardCache.store('brand', await cardRenderer.render(brandCardHtml()));
+    res.type('jpeg');
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    res.sendFile(p);
+  }));
+
+  app.get('/api/:ns/:id/card.jpg', wrap(async (req, res) => {
+    const { ns, id } = req.params;
+    if (!namespaces.includes(ns)) return res.status(404).json({ error: 'not found' });
+    if (!ID_RE.test(id)) return res.status(400).json({ error: 'invalid id' });
+    const found = await resolvePublicItem(adminDb, [ns], id);
+    if (!found) return res.status(404).json({ error: 'not found' });
+    const name = `${found.item.entityId}-${cardHash(found.item)}`;
+    let p = await cardCache.cachedPath(name);
+    if (!p) p = await cardCache.store(name, await cardRenderer.render(songCardHtml(found.item)));
+    res.type('jpeg');
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    res.sendFile(p);
   }));
 }
 
@@ -194,6 +229,10 @@ export function createApp(opts = {}) {
 
   if (opts.audioExport) audioRoutes(app, opts.audioExport, namespaces);
 
+  if (opts.cardRenderer && opts.cardCache && adminDb) {
+    cardRoutes(app, { adminDb, namespaces, cardRenderer: opts.cardRenderer, cardCache: opts.cardCache });
+  }
+
   // Vendored sample cache (cache-on-save). Served read-only so the webapp can
   // prefer locally-cached banks over upstream github repos. /sample-cache/index.json
   // lists cached bank slugs; /sample-cache/banks/<slug>/... serves the vendored files.
@@ -216,10 +255,32 @@ export function createApp(opts = {}) {
   }
 
   // Production: serve the built SPA (dev uses Vite). Defined AFTER the API so
-  // /api/* always wins; the /stems clean URL mirrors vite.config.js's rewrite.
+  // /api/* always wins. `/` and /song/:slug get server-injected Open Graph +
+  // Twitter meta so links unfurl as rich preview cards (crawlers don't run JS).
   if (opts.distDir) {
+    app.set('trust proxy', true);
+    const configuredOrigin = opts.publicOrigin;
+    const sendInjected = async (res, file, tagsHtml) => {
+      const html = await readFile(join(opts.distDir, file), 'utf8');
+      res.type('html').send(injectMeta(html, tagsHtml));
+    };
+
+    app.get('/', wrap(async (req, res) => {
+      await sendInjected(res, 'index.html', brandMetaTags(originFor(req, configuredOrigin)));
+    }));
+
     app.get(['/stems', '/stems/'], (_req, res) => res.sendFile(join(opts.distDir, 'stems.html')));
-    app.get('/song/:slug', (_req, res) => res.sendFile(join(opts.distDir, 'song.html')));
+
+    app.get('/song/:slug', wrap(async (req, res) => {
+      const origin = originFor(req, configuredOrigin);
+      let tags = brandMetaTags(origin);
+      if (adminDb) {
+        const found = await resolvePublicItem(adminDb, namespaces, req.params.slug);
+        if (found) tags = songMetaTags(found.item, found.ns, origin);
+      }
+      await sendInjected(res, 'song.html', tags);
+    }));
+
     app.use(express.static(opts.distDir));
   }
 
