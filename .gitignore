@@ -20,3 +20,4 @@ palettes/*.json
 .claude/worktrees/
 # vendored sample banks (cache-on-save); re-fetchable, large binaries
 data/sample-cache/
+data/card-cache/
