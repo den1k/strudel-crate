@@ -121,16 +121,20 @@ export async function cacheBank(source, opts = {}) {
     return { ok: false, error: `bank ${source} exceeds the ${maxFiles}-file bound (${paths.length}) — too many samples to vendor` };
   }
 
-  // A failure here aborts the whole bank. strudel.json is written last, so a
-  // half-vendored bank has samples but no manifest — clean up the partial dir so
-  // it isn't left as an orphan (the index would otherwise have to skip it, and
-  // it just wastes disk). Callers fall back to upstream for an uncached bank.
+  // strudel.json is written last, so a half-vendored bank has samples but no
+  // manifest — abort() removes the partial dir so it isn't left as an orphan.
+  // A single missing sample (404) is common in community manifests that over-
+  // list files; skip those and cache the rest. Other failures (network, 5xx,
+  // timeout) are treated as transient and abort the whole bank.
   const abort = async (error) => { await rm(bankDir, { recursive: true, force: true }); return { ok: false, error }; };
+  const kept = [];
+  const skipped = [];
   for (const rel of paths) {
     const url = base ? new URL(rel, base).href : rel;
     let buf;
     try {
       const res = await fetchImpl(url);
+      if (res.status === 404) { skipped.push(rel); continue; }
       if (res.ok === false) return abort(`sample HTTP ${res.status}: ${url}`);
       buf = Buffer.from(await res.arrayBuffer());
     } catch (err) {
@@ -139,13 +143,22 @@ export async function cacheBank(source, opts = {}) {
     const dest = join(bankDir, rel);
     await mkdir(dirname(dest), { recursive: true });
     await writeFile(dest, buf);
+    kept.push(rel);
   }
 
-  // Rewrite _base so the cached manifest resolves against its own directory.
-  const localManifest = { ...manifest, _base: './' };
+  // A bank that referenced samples but landed none isn't worth caching — abort
+  // so callers fall back to upstream. A manifest with no sample paths at all
+  // (metadata-only) is still valid and falls through to be written.
+  if (paths.length > 0 && kept.length === 0) {
+    return abort(`all ${paths.length} samples 404'd for ${source}`);
+  }
+
+  // Rewrite _base relative and prune any skipped paths so the cached manifest
+  // lists only files that physically exist under banks/<slug>/.
+  const localManifest = { ...pruneManifestPaths(manifest, new Set(kept)), _base: './' };
   await mkdir(bankDir, { recursive: true });
   await writeFile(join(bankDir, 'strudel.json'), JSON.stringify(localManifest, null, 2) + '\n');
-  return { ok: true, slug, cached: false, files: paths.length };
+  return { ok: true, slug, cached: false, files: kept.length, skipped };
 }
 
 /** Record which banks a saved track depends on (for offline re-validation / GC). */
