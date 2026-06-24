@@ -10,6 +10,8 @@ import { itemsByJob } from './instant.mjs';
 import { createAudioCache } from './audio-cache.mjs';
 import { createRenderer } from './render-audio.mjs';
 import { createAudioExport } from './audio-export.mjs';
+import { createCardRenderer } from './render-card.mjs';
+import { createCardCache } from './card-cache.mjs';
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const distDir = join(repoRoot, 'dist');
@@ -46,6 +48,12 @@ const audioExport = audioCache && renderer
   ? createAudioExport({ adminDb, cache: audioCache, renderer, namespaces: ['tracks', 'stems'] })
   : null;
 
+const cardCache = createCardCache({
+  dir: join(repoRoot, 'data', 'card-cache'),
+  maxBytes: Number(process.env.CRATE_CARD_CACHE_MAX_BYTES) || 268435456,
+});
+const cardRenderer = createCardRenderer({});
+
 // Default 1: on a 4-core/15GB host one job already fans out up to ~8 parallel
 // compose sub-agents (each ~500MB), so two full jobs oversubscribe RAM/CPU.
 // Raise CRATE_MAX_JOBS only when the box is otherwise idle.
@@ -68,6 +76,9 @@ const app = createApp({
   distDir: existsSync(distDir) ? distDir : undefined,
   sampleCacheDir: join(repoRoot, 'data', 'sample-cache'),
   audioExport,
+  cardRenderer,
+  cardCache,
+  publicOrigin: process.env.CRATE_PUBLIC_ORIGIN || 'https://crate.vimsical.com',
 });
 
 await runner.recover();
