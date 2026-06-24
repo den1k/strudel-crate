@@ -22,3 +22,5 @@ palettes/*.json
 data/sample-cache/
 # rendered/cached audio; re-fetchable, large binaries
 data/audio-cache/
+# rendered/cached social preview card images; re-renderable
+data/card-cache/

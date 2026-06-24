@@ -168,6 +168,37 @@ export async function recordPlay(adminDb, namespace, slug, user) {
   return { playCount, you };
 }
 
+// Resolve a /song or /card URL param ({entity id} preferred, {slug} legacy) to
+// { ns, item } across the given namespaces, in the render shape the OG helpers
+// and card templates expect. Mirrors src/song.js's resolveItem (id-first, then
+// slug; the first namespace wins a rare slug collision). Returns null on miss.
+export async function resolvePublicItem(adminDb, namespaces, param) {
+  const map = (row, ns) => {
+    const author = Array.isArray(row.author) ? row.author[0] : row.author;
+    return {
+      ns,
+      item: {
+        entityId: row.id,
+        slug: row.slug,
+        title: row.title,
+        description: row.description,
+        code: row.code,
+        meta: row.meta,
+        artistName: author?.artistName ?? null,
+      },
+    };
+  };
+  for (const ns of namespaces) {
+    const res = await adminDb.query({ [ns]: { author: {}, $: { where: { id: param } } } });
+    if (res[ns][0]) return map(res[ns][0], ns);
+  }
+  for (const ns of namespaces) {
+    const res = await adminDb.query({ [ns]: { author: {}, $: { where: { slug: param } } } });
+    if (res[ns][0]) return map(res[ns][0], ns);
+  }
+  return null;
+}
+
 // Insert a validated track/stem object. `track.id` becomes `slug`. Rejects a
 // duplicate slug. Links author when a profile id is given.
 export async function insertItem(adminDb, namespace, track, authorProfileId) {
