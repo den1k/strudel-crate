@@ -189,7 +189,7 @@ export async function cacheTrackSamples(trackId, code, opts = {}) {
   const banks = [];
   for (const source of sources) {
     const res = await cacheBank(source, opts);
-    banks.push({ source, slug: bankSlug(source), ok: res.ok, error: res.error });
+    banks.push({ source, slug: bankSlug(source), ok: res.ok, error: res.error, skipped: res.skipped });
   }
   if (sources.length) await writeTrackManifest(trackId, sources, opts);
   return { ok: banks.every((b) => b.ok), banks };

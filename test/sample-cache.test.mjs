@@ -11,6 +11,7 @@ import {
   writeTrackManifest,
   readTrackManifest,
   pruneManifestPaths,
+  cacheTrackSamples,
 } from '../scripts/lib/sample-cache.mjs';
 
 describe('bankSlug', () => {
@@ -166,6 +167,19 @@ describe('cacheBank + manifests (filesystem)', () => {
     const res = await cacheBank('github:fake/big', { cacheDir: dir, fetchImpl: bigFetch, maxFiles: 10 });
     expect(res.ok).toBe(false);
     expect(res.error).toMatch(/too many|exceeds|bound/i);
+  });
+
+  it('cacheTrackSamples reports skipped samples per bank', async () => {
+    const manifest = { _base: 'https://fake.test/banks/', cp: ['cp/a.wav', 'cp/missing.wav'] };
+    const fetch404 = async (url) => {
+      if (url.includes('.json')) return { ok: true, status: 200, json: async () => manifest };
+      if (url.includes('missing')) return { ok: false, status: 404 };
+      return { ok: true, status: 200, arrayBuffer: async () => new TextEncoder().encode('RIFF').buffer };
+    };
+    const code = `samples('github:fake/holey')\n`;
+    const out = await cacheTrackSamples('track-skip', code, { cacheDir: dir, fetchImpl: fetch404 });
+    expect(out.ok).toBe(true);
+    expect(out.banks[0].skipped).toEqual(['cp/missing.wav']);
   });
 });
 

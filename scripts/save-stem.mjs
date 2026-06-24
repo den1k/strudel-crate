@@ -29,6 +29,7 @@ async function main() {
   try {
     const cache = await cacheTrackSamples(track.id, track.code);
     for (const b of cache.banks.filter((b) => !b.ok)) console.error(`WARN ${track.id} — cache miss for ${b.source}: ${b.error}`);
+    for (const b of cache.banks.filter((b) => b.skipped?.length)) console.error(`WARN ${track.id} — vendored ${b.source} minus ${b.skipped.length} missing sample(s)`);
   } catch (err) {
     console.error(`WARN ${track.id} — sample caching failed: ${err.message}`);
   }
