@@ -80,6 +80,7 @@ export function createRunner({
   spawn = nodeSpawn,
   now = () => new Date().toISOString(),
   maxConcurrent = 1,
+  audioExport = null,
 }) {
   const queue = [];
   let active = 0;
@@ -114,8 +115,13 @@ export function createRunner({
       const newRows = await itemsByJob(adminDb, ns, id);
       const newItems = newRows.map((r) => r.slug).sort();
       const patch = { finishedAt: now(), newItems, batch: majorityBatch(newRows) };
-      if (code === 0) { patch.status = 'done'; patch.summary = parseSummary(out); }
-      else {
+      if (code === 0) {
+        patch.status = 'done';
+        patch.summary = parseSummary(out);
+        // Background-warm the small MP3 for each new item so the first download
+        // is instant (WAV stays lazy). Fire-and-forget; never blocks the job.
+        if (audioExport) for (const slug of newItems) audioExport.prewarm(ns, slug, 'mp3');
+      } else {
         patch.status = 'failed';
         const tail = (err ?? '').trim().slice(-500);
         patch.error = tail ? `claude exited ${code}: ${tail}` : `claude exited ${code}`;
