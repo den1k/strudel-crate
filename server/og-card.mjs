@@ -1,7 +1,7 @@
 // server/og-card.mjs
 // "Acid Deck" social card: a record-label release card crossed with a
 // drum-machine display. Self-contained 1200×630 HTML (inline CSS + Google Fonts,
-// no app bundle) rendered to a PNG by server/render-card.mjs. Two motifs are
+// no app bundle) rendered to a JPEG by server/render-card.mjs. Two motifs are
 // generated deterministically from the song's content — an oscilloscope waveform
 // ("the sound") and a 16-step sequencer grid ("the pattern") — so every track
 // gets a unique, recognizable card that reads even as a chat thumbnail.

@@ -109,9 +109,9 @@ function audioRoutes(app, audioExport, namespaces) {
   }));
 }
 
-// Social-preview card PNGs. /og/home.jpg is the static brand card; the per-song
+// Social-preview card JPEGs. /og/home.jpg is the static brand card; the per-song
 // route resolves the item, renders the code-as-art card on a cache miss, and
-// serves the cached PNG. Reads stay public (they mirror the public song pages).
+// serves the cached JPEG. Reads stay public (they mirror the public song pages).
 function cardRoutes(app, { adminDb, namespaces, cardRenderer, cardCache }) {
   app.get('/og/home.jpg', wrap(async (_req, res) => {
     let p = await cardCache.cachedPath('brand');
