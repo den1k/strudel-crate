@@ -571,7 +571,7 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
       shareBtn.title = 'copy link to this song';
       shareBtn.addEventListener('click', () => shareTrack(track));
       exportRow.appendChild(shareBtn);
-      if (myProfileId != null) {
+      if (myProfileId != null && !isOwnedBy(track, myProfileId)) {
         const remixBtn = document.createElement('button');
         remixBtn.className = 'export remix';
         remixBtn.textContent = '⎋ remix';
