@@ -9,12 +9,14 @@ import { createCardCache } from '../server/card-cache.mjs';
 
 const INDEX = '<!doctype html><html><head><title>STRUDEL/CRATE</title><!--OG--></head><body>home</body></html>';
 const SONG = '<!doctype html><html><head><title>STRUDEL/SONG</title><!--OG--></head><body>song</body></html>';
+const STEMS = '<!doctype html><html><head><title>STRUDEL/STEMS</title><!--OG--></head><body>stems</body></html>';
 
 let app, adminDb, dist, renderCalls;
 beforeEach(async () => {
   dist = await mkdtemp(join(tmpdir(), 'crate-dist-'));
   await writeFile(join(dist, 'index.html'), INDEX);
   await writeFile(join(dist, 'song.html'), SONG);
+  await writeFile(join(dist, 'stems.html'), STEMS);
 
   adminDb = fakeAdmin({
     tracks: [{
@@ -23,7 +25,12 @@ beforeEach(async () => {
       meta: { genre: 'dark techno', bpm: 140, key: 'F#min', mood: 'moody', energy: 4, instruments: ['acid'] },
       author: [{ id: 'p1', artistName: 'Dennnis' }],
     }],
-    stems: [],
+    stems: [{
+      id: 's-1', slug: 'stem-01', title: 'Stained Glass',
+      description: 'Airy noise wash.', code: 's("white")',
+      meta: { genre: 'ambient', bpm: 60, key: 'atonal', mood: 'ethereal', energy: 1, instruments: ['noise'] },
+      author: [{ id: 'p1', artistName: 'Dennnis' }],
+    }],
   });
 
   renderCalls = 0;
@@ -68,6 +75,36 @@ describe('song meta injection', () => {
     adminDb._store.tracks[0].title = '"><script>alert(1)</script>';
     const res = await request(app).get('/song/e-1');
     expect(res.text).not.toContain('<script>alert(1)</script>');
+  });
+});
+
+describe('list-page ?play= injection', () => {
+  it('GET /stems?play=<stemId> injects that stem card', async () => {
+    const res = await request(app).get('/stems?play=s-1');
+    expect(res.status).toBe(200);
+    expect(res.text).toContain('Stained Glass — STRUDEL/CRATE');
+    expect(res.text).toContain('og:type" content="music.song"');
+    expect(res.text).toContain('/api/stems/s-1/card.jpg?v=');
+  });
+  it('GET /stems (no play) falls back to brand tags', async () => {
+    const res = await request(app).get('/stems');
+    expect(res.status).toBe(200);
+    expect(res.text).toContain('og:site_name" content="STRUDEL/CRATE"');
+    expect(res.text).toContain('https://crate.vimsical.com/og/home.jpg');
+  });
+  it('GET /?play=<trackId> injects that track card', async () => {
+    const res = await request(app).get('/?play=e-1');
+    expect(res.status).toBe(200);
+    expect(res.text).toContain('Neon Rinse — STRUDEL/CRATE');
+    expect(res.text).toContain('/api/tracks/e-1/card.jpg?v=');
+  });
+  it('GET /?play=<unknown> falls back to brand tags', async () => {
+    const res = await request(app).get('/?play=missing');
+    expect(res.text).toContain('og:site_name" content="STRUDEL/CRATE"');
+  });
+  it('GET /stems?play=<unknown> falls back to brand tags', async () => {
+    const res = await request(app).get('/stems?play=missing');
+    expect(res.text).toContain('og:site_name" content="STRUDEL/CRATE"');
   });
 });
 

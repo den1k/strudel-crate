@@ -255,8 +255,9 @@ export function createApp(opts = {}) {
   }
 
   // Production: serve the built SPA (dev uses Vite). Defined AFTER the API so
-  // /api/* always wins. `/` and /song/:slug get server-injected Open Graph +
-  // Twitter meta so links unfurl as rich preview cards (crawlers don't run JS).
+  // /api/* always wins. `/`, `/stems`, and /song/:slug get server-injected Open
+  // Graph + Twitter meta so links unfurl as rich preview cards (crawlers don't
+  // run JS). The list pages unfurl their ?play=<entityId> item when present.
   if (opts.distDir) {
     app.set('trust proxy', true);
     const configuredOrigin = opts.publicOrigin;
@@ -265,20 +266,28 @@ export function createApp(opts = {}) {
       res.type('html').send(injectMeta(html, tagsHtml));
     };
 
-    app.get('/', wrap(async (req, res) => {
-      await sendInjected(res, 'index.html', brandMetaTags(originFor(req, configuredOrigin)));
-    }));
+    // Tags for an item referenced by URL — the /song/:slug path param, or a list
+    // page's ?play=<entityId>. Falls back to the brand card when the ref is
+    // absent, fails validation, doesn't resolve, or admin isn't configured.
+    const tagsForRef = async (origin, ref) => {
+      if (adminDb && ref && ID_RE.test(String(ref))) {
+        const found = await resolvePublicItem(adminDb, namespaces, String(ref));
+        if (found) return songMetaTags(found.item, found.ns, origin);
+      }
+      return brandMetaTags(origin);
+    };
 
-    app.get(['/stems', '/stems/'], (_req, res) => res.sendFile(join(opts.distDir, 'stems.html')));
+    // List pages (`/` crate, `/stems`) unfurl the ?play=<id> item, else the brand.
+    const listPage = (file) => wrap(async (req, res) => {
+      const origin = originFor(req, configuredOrigin);
+      await sendInjected(res, file, await tagsForRef(origin, req.query.play));
+    });
+    app.get('/', listPage('index.html'));
+    app.get(['/stems', '/stems/'], listPage('stems.html'));
 
     app.get('/song/:slug', wrap(async (req, res) => {
       const origin = originFor(req, configuredOrigin);
-      let tags = brandMetaTags(origin);
-      if (adminDb) {
-        const found = await resolvePublicItem(adminDb, namespaces, req.params.slug);
-        if (found) tags = songMetaTags(found.item, found.ns, origin);
-      }
-      await sendInjected(res, 'song.html', tags);
+      await sendInjected(res, 'song.html', await tagsForRef(origin, req.params.slug));
     }));
 
     app.use(express.static(opts.distDir));
