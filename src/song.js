@@ -250,6 +250,8 @@ function wirePlayback(item, playBtn, editorWrap, ready) {
   try { spec = exportSpec(item); } catch { spec = null; }
   let rafId = null;
   let scrubbing = false;
+  let playingNow = false;   // synchronous "is playing" flag for the click toggles
+  let pausedCycle = null;   // resume point while paused (null = idle, replays from 0)
 
   function paintSeek(fraction, elapsedSeconds) {
     fill.style.width = `${(fraction * 100).toFixed(2)}%`;
@@ -257,15 +259,29 @@ function wirePlayback(item, playBtn, editorWrap, ready) {
     rail.setAttribute('aria-valuenow', Math.round(fraction * 100));
   }
 
+  // Three states: playing, paused (position kept), idle. The footer button is a
+  // play/pause toggle (❚❚ PAUSE / ▶ PLAY) like the list pages — never a stop.
   function showTransport(playing) {
-    const seekable = playing && hasTimeline(spec);
+    const paused = !playing && pausedCycle != null;
+    const seekable = (playing || paused) && hasTimeline(spec);
     seekbar.hidden = !seekable;
     if (seekable) totalEl.textContent = mmss(spec.seconds);
-    stopBtn.disabled = !playing;
-    nowPlaying.textContent = playing ? `NOW PLAYING — ${item.title}` : '';
+    stopBtn.disabled = false; // a song is always loaded on this page
+    stopBtn.textContent = playing ? '❚❚ PAUSE' : '▶ PLAY';
+    stopBtn.classList.toggle('is-play', !playing);
+    nowPlaying.textContent = playing
+      ? `NOW PLAYING — ${item.title}`
+      : paused
+        ? `PAUSED — ${item.title}`
+        : '';
     playBtn.innerHTML = playing ? '<span class="eq"><i></i><i></i><i></i></span>' : '▶';
     playBtn.classList.toggle('playing', playing); // acid bg so the dark eq bars are visible
-    playBtn.title = playing ? 'stop' : 'play';
+    playBtn.title = playing ? 'pause' : 'play';
+    // Park the rail when not playing: at the resume point if paused, else 0.
+    if (!playing && hasTimeline(spec)) {
+      const cyc = pausedCycle ?? 0;
+      paintSeek(progressFraction(cyc, spec.cycles), cyc / spec.cps);
+    }
   }
 
   function startSeekLoop() {
@@ -285,7 +301,7 @@ function wirePlayback(item, playBtn, editorWrap, ready) {
     if (rafId != null) cancelAnimationFrame(rafId);
     rafId = null;
     scrubbing = false;
-    paintSeek(0, 0);
+    // Rail position is parked by showTransport (at the resume point or 0).
   }
 
   const editor = mountEditor({
@@ -293,6 +309,7 @@ function wirePlayback(item, playBtn, editorWrap, ready) {
     root: $('.editor', editorWrap),
     prebake: () => ready,
     onToggle: (_id, started) => {
+      playingNow = started;
       showTransport(started);
       if (started) startSeekLoop();
       else stopSeekLoop();
@@ -305,28 +322,53 @@ function wirePlayback(item, playBtn, editorWrap, ready) {
   });
 
   async function play() {
+    playingNow = true;
+    const resumeCycle = pausedCycle; // captured before showTransport clears the paused UI
+    pausedCycle = null;
     showTransport(true);
     await ready; // audio context unlocks via this click
+    if (!playingNow) return; // paused again while samples loaded
     await getAudioContext().resume(); // post-export contexts start suspended
     editor.evaluate();
+    // Resume from where we paused (re-anchor the freshly-started scheduler).
+    if (resumeCycle != null && resumeCycle > 0) seekEditor(item.id, resumeCycle);
     startSeekLoop();
   }
 
+  // Pause: silence the audio but keep the position, so ▶ PLAY resumes from where
+  // it left off (mirrors the list pages). Capture the cycle before stop(), which
+  // synchronously fires onToggle → showTransport(false).
+  function pause() {
+    const cycle = cyclePosition(item.id);
+    pausedCycle = Number.isFinite(cycle) ? cycle : 0;
+    playingNow = false;
+    getEditor(item.id)?.stop();
+    stopSeekLoop();
+    showTransport(false);
+  }
+
+  // Full stop → idle: clear the position so ▶ replays from the top. Used at the
+  // natural end of the arrangement (see the seek loop's isFinished check).
   function stop() {
+    pausedCycle = null;
+    playingNow = false;
     getEditor(item.id)?.stop(); // onToggle clears UI; this covers not-yet-evaluated
     stopSeekLoop();
     showTransport(false);
   }
 
-  playBtn.addEventListener('click', () => (stopBtn.disabled ? play() : stop()));
-  stopBtn.addEventListener('click', stop);
+  const toggle = () => (playingNow ? pause() : play());
+  playBtn.addEventListener('click', toggle);
+  stopBtn.addEventListener('click', toggle);
 
   function seekToPointer(e) {
     if (!hasTimeline(spec)) return;
     const rect = rail.getBoundingClientRect();
     const fraction = rect.width ? (e.clientX - rect.left) / rect.width : 0;
     const clamped = Math.min(1, Math.max(0, fraction));
-    seekEditor(item.id, fractionToCycle(clamped, spec.cycles));
+    const cycle = fractionToCycle(clamped, spec.cycles);
+    seekEditor(item.id, cycle);
+    if (!playingNow) pausedCycle = cycle; // scrubbing while paused moves the resume point
     paintSeek(clamped, clamped * spec.seconds); // immediate feedback; loop paused while scrubbing
   }
 
@@ -344,6 +386,8 @@ function wirePlayback(item, playBtn, editorWrap, ready) {
   };
   rail.addEventListener('pointerup', endScrub);
   rail.addEventListener('pointercancel', endScrub);
+
+  showTransport(false); // initialize the footer button to "▶ PLAY" (enabled)
 }
 
 async function main() {
