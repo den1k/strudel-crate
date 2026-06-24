@@ -58,6 +58,7 @@ export function createRenderer({
   }
 
   async function renderOnce(track, fmt) {
+    if (!pageUrl) throw new Error('createRenderer: pageUrl is required');
     const b = await ensureBrowser();
     const page = await b.newPage();
     try {

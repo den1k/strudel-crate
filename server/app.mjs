@@ -87,7 +87,12 @@ function audioRoutes(app, audioExport, namespaces) {
   app.get('/api/:ns/:id/audio.:fmt', wrap(async (req, res) => {
     const { ns, id, fmt } = req.params;
     if (!namespaces.includes(ns)) return res.status(404).json({ error: 'not found' });
-    const out = await audioExport.getOrRender(ns, id, fmt);
+    let out;
+    try {
+      out = await audioExport.getOrRender(ns, id, fmt);
+    } catch (err) {
+      return res.status(500).json({ error: 'render failed' });
+    }
     if (!out) return res.status(404).json({ error: 'not found' });
     const ext = out.filename.split('.').pop();
     res.type(AUDIO_TYPE[ext] ?? 'application/octet-stream');

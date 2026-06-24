@@ -299,4 +299,12 @@ describe('audio export API', () => {
     const res = await request(app2).get('/api/tracks/demo-01/audio.flac');
     expect(res.status).toBe(404);
   });
+
+  it('500s when the render itself fails', async () => {
+    const audioExport = { getOrRender: async () => { throw new Error('chrome boom'); } };
+    const app2 = createApp({ adminDb, namespaces: ['tracks', 'stems'], requireAuth, requireUser, audioExport });
+    const res = await request(app2).get('/api/tracks/demo-01/audio.wav');
+    expect(res.status).toBe(500);
+    expect(res.body.error).toBe('render failed');
+  });
 });
