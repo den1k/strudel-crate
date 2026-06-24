@@ -21,6 +21,10 @@ body {
   font-family: var(--mono);
   font-size: 14px;
   padding-bottom: 72px; /* room for transport */
+  /* Force monochrome text glyphs (▶ ⤴ ↓ ←) instead of iOS color emoji, so the
+     UI icons match desktop. Inherited; the U+FE0E selectors in the markup cover
+     iOS < 17.4 where this property isn't honored. */
+  font-variant-emoji: text;
 }
 
 /* masthead */

@@ -95,14 +95,15 @@ function renderSong(item, ns, family, ready) {
   const back = document.createElement('a');
   back.className = 'song-back';
   back.href = isStem ? '/stems' : '/';
-  back.textContent = isStem ? '← back to stems' : '← back to crate';
+  // ︎ (text variation selector) keeps the arrow monochrome on iOS, not emoji.
+  back.textContent = isStem ? '←︎ back to stems' : '←︎ back to crate';
   root.appendChild(back);
 
   const head = document.createElement('div');
   head.className = 'song-head';
   const playBtn = document.createElement('button');
   playBtn.className = 'play song-play';
-  playBtn.innerHTML = '▶';
+  playBtn.innerHTML = '▶︎'; // ▶ + U+FE0E text selector → monochrome on iOS
   playBtn.title = 'play';
   const title = document.createElement('div');
   title.className = 'song-title';
@@ -133,7 +134,7 @@ function renderSong(item, ns, family, ready) {
   for (const fmt of splitStems ? ['wav', 'mp3', 'stems'] : ['wav', 'mp3']) {
     const btn = document.createElement('button');
     btn.className = 'export';
-    btn.textContent = `↓ ${fmt}`;
+    btn.textContent = `↓︎ ${fmt}`;
     btn.title =
       fmt === 'wav'
         ? 'download lossless wav'
@@ -154,7 +155,7 @@ function renderSong(item, ns, family, ready) {
   }
   const share = document.createElement('button');
   share.className = 'export song-share';
-  share.textContent = '⤴ share';
+  share.textContent = '⤴︎ share';
   share.title = 'copy link to this song';
   share.addEventListener('click', () => shareSong(item));
   exportRow.appendChild(share);
@@ -262,14 +263,14 @@ function wirePlayback(item, playBtn, editorWrap, ready) {
     seekbar.hidden = !seekable;
     if (seekable) totalEl.textContent = mmss(spec.seconds);
     stopBtn.disabled = false; // a song is always loaded on this page
-    stopBtn.textContent = playing ? '❚❚ PAUSE' : '▶ PLAY';
+    stopBtn.textContent = playing ? '❚❚ PAUSE' : '▶︎ PLAY';
     stopBtn.classList.toggle('is-play', !playing);
     nowPlaying.textContent = playing
       ? `NOW PLAYING — ${item.title}`
       : paused
         ? `PAUSED — ${item.title}`
         : '';
-    playBtn.innerHTML = playing ? '<span class="eq"><i></i><i></i><i></i></span>' : '▶';
+    playBtn.innerHTML = playing ? '<span class="eq"><i></i><i></i><i></i></span>' : '▶︎';
     playBtn.classList.toggle('playing', playing); // acid bg so the dark eq bars are visible
     playBtn.title = playing ? 'pause' : 'play';
     // Park the rail when not playing: at the resume point if paused, else 0.

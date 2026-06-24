@@ -183,7 +183,7 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
       const playing = card.dataset.id === state.playingId;
       card.classList.toggle('playing', playing);
       const btn = $('.play', card);
-      btn.innerHTML = playing ? '<span class="eq"><i></i><i></i><i></i></span>' : '▶';
+      btn.innerHTML = playing ? '<span class="eq"><i></i><i></i><i></i></span>' : '▶︎';
       btn.title = playing ? 'pause' : 'play';
     }
   }
@@ -438,7 +438,7 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
       playBtn.innerHTML =
         track.id === state.playingId
           ? '<span class="eq"><i></i><i></i><i></i></span>'
-          : '▶';
+          : '▶︎';
       playBtn.title = track.id === state.playingId ? 'pause' : 'play';
       playBtn.addEventListener('click', () =>
         track.id === state.playingId ? pause() : play(track),
@@ -455,7 +455,7 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
       $('.id', meta).textContent = track.id;
       const playsEl = $('.plays', meta);
       const total = track.playCount ?? 0;
-      const totalLabel = `▶ ${total} ${total === 1 ? 'play' : 'plays'}`;
+      const totalLabel = `▶︎ ${total} ${total === 1 ? 'play' : 'plays'}`;
       if (myProfileId != null) {
         const you = state.playsBySlug[track.id] ?? 0; // track.id === slug
         const others = Math.max(0, total - you); // everyone else: other users + anons
@@ -532,7 +532,7 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
       for (const fmt of splitStems ? ['wav', 'mp3', 'stems'] : ['wav', 'mp3']) {
         const btn = document.createElement('button');
         btn.className = 'export';
-        btn.textContent = `↓ ${fmt}`;
+        btn.textContent = `↓︎ ${fmt}`;
         btn.title =
           fmt === 'wav'
             ? 'download lossless wav'
@@ -552,7 +552,7 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
       }
       const shareBtn = document.createElement('button');
       shareBtn.className = 'export share';
-      shareBtn.textContent = '⤴ share';
+      shareBtn.textContent = '⤴︎ share';
       shareBtn.title = 'copy link to this song';
       shareBtn.addEventListener('click', () => shareTrack(track));
       exportRow.appendChild(shareBtn);
@@ -689,7 +689,7 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
     // The footer button is a play/pause toggle: ❚❚ PAUSE while a song plays,
     // ▶ PLAY when one is cued/paused, and disabled when nothing is loaded.
     const btn = $('#stop');
-    btn.textContent = playing ? '❚❚ PAUSE' : '▶ PLAY';
+    btn.textContent = playing ? '❚❚ PAUSE' : '▶︎ PLAY';
     btn.disabled = !current;
     btn.classList.toggle('is-play', !!cued);
     const showSeek = !!current && hasTimeline(spec);
