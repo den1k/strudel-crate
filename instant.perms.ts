@@ -1,39 +1,54 @@
-// instant.perms.ts
-// Public reads (or owner-only for non-public items). ALL writes are server-side
-// via the admin SDK, which bypasses these rules — so client create/update/delete
-// are intentionally "false". profiles are publicly viewable so artist names show
-// to logged-out visitors (playback is public).
-const ownerOrPublic =
-  "data.isPublic == true || (auth.id != null && auth.id in data.ref('author.user.id'))";
+// Docs: https://www.instantdb.com/docs/permissions
+
+import type { InstantRules } from "@instantdb/core";
 
 const rules = {
-  tracks: {
-    allow: { view: ownerOrPublic, create: 'false', update: 'false', delete: 'false' },
-    fields: { lesson: "auth.id != null && auth.id in data.ref('author.user.id')" },
-  },
-  stems: {
-    allow: { view: ownerOrPublic, create: 'false', update: 'false', delete: 'false' },
-    fields: { lesson: "auth.id != null && auth.id in data.ref('author.user.id')" },
-  },
-  profiles: {
-    allow: { view: 'true', create: 'false', update: 'false', delete: 'false' },
-  },
   plays: {
     allow: {
       view: "auth.id != null && auth.id in data.ref('profile.user.id')",
-      create: 'false',
-      update: 'false',
-      delete: 'false',
+      create: "false",
+      delete: "false",
+      update: "false",
+    },
+  },
+  stems: {
+    allow: {
+      view: "data.isPublic == true || (auth.id != null && auth.id in data.ref('author.user.id'))",
+      create: "false",
+      delete: "false",
+      update: "false",
+    },
+    fields: {
+      lesson: "auth.id != null && auth.id in data.ref('author.user.id')",
+    },
+  },
+  tracks: {
+    allow: {
+      view: "data.isPublic == true || (auth.id != null && auth.id in data.ref('author.user.id'))",
+      create: "false",
+      delete: "false",
+      update: "false",
+    },
+    fields: {
+      lesson: "auth.id != null && auth.id in data.ref('author.user.id')",
     },
   },
   ratings: {
     allow: {
       view: "auth.id != null && auth.id in data.ref('profile.user.id')",
-      create: 'false',
-      update: 'false',
-      delete: 'false',
+      create: "false",
+      delete: "false",
+      update: "false",
     },
   },
-};
+  profiles: {
+    allow: {
+      view: "true",
+      create: "false",
+      delete: "false",
+      update: "false",
+    },
+  },
+} satisfies InstantRules;
 
 export default rules;

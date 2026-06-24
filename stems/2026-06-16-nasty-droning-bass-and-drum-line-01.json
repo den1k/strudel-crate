@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-16-nasty-droning-bass-and-drum-line-01",
+  "title": "Rotgut Reese",
+  "prompt": "nasty droning bass and drum line",
+  "batch": "2026-06-16-nasty-droning-bass-and-drum-line",
+  "description": "A detuned supersaw reese that grinds in the sub-basement, its unison spread fattened and shoved through a stepped ladder filter and hard distortion so it snarls and growls. Over 32 cycles the bit depth collapses, the resonance and drive step upward, and a coarse downsampler eats the tone, so the drone rots from a tight grind into broken, smeared sludge before looping back.",
+  "meta": {
+    "bpm": 140,
+    "genre": "reese bass",
+    "mood": "menacing",
+    "key": "F minor",
+    "instruments": ["detuned supersaw reese bass"],
+    "energy": 5
+  },
+  "code": "setcpm(140/4)\nstack(\n  note(\"<f1 f1 ab1 c2>*4\").s(\"supersaw\").unison(5)\n    .detune(\"<0.18 0.3 0.24 0.42>/8\")\n    .crush(\"<16 12 9 6 5>/8\")\n    .coarse(\"<1 1 2 3>/16\")\n    .lpf(\"<420 620 380 880 520>/8\").resonance(\"<6 10 14 18>/16\").ftype(\"ladder\")\n    .lpenv(\"<2 4 6>/8\").lpattack(0.005).lpdecay(\"<0.18 0.1 0.28>/8\")\n    .distort(\"<1.1 1.8 1.4 2.4>/16\")\n    .shape(\"<0.2 0.35 0.5 0.4>/8\")\n    .vib(\"<0 4 0 7>/8\").vibmod(\"<0.1 0.4 0.2>/16\")\n    .attack(0.004).decay(0.2).sustain(0.7).release(0.06)\n    .pan(\"<0.4 0.6 0.45 0.55>/4\")\n    .speed(\"<1 1 1 0.5>/16\")\n    .sometimesBy(0.14, x => x.crush(4).distort(3))\n    .off(1/8, x => x.add(note(12)).gain(0.24).distort(1.5).lpf(900))\n    .gain(0.92)\n)",
+  "createdAt": "2026-06-16T21:34:53Z"
+}

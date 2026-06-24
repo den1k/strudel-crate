@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-16-uk-garage-dubstep-12",
+  "title": "Croydon Nocturne",
+  "prompt": "uk garage, dubstep",
+  "batch": "2026-06-16-uk-garage-dubstep",
+  "description": "A beatless minor-key pad and a hypnotic square arpeggio open into the dark, then a swung 2-step kit and deep rolling sub bass creep in. A chopped soul vocal flickers over off-beat dub chord stabs as filters slowly open and the space widens into reverb and delay.",
+  "meta": {
+    "bpm": 138,
+    "genre": "uk garage / dubstep",
+    "mood": "hypnotic, nocturnal, spacious",
+    "key": "C minor",
+    "instruments": ["swpad", "square arp", "sub bass", "CasioRZ1 kit", "chopped vocal (think)", "piano stabs"],
+    "energy": 4
+  },
+  "code": "setcpm(138/4)\narrange(\n  [16, stack(\n    note(\"<c2 ab1>/2\").s(\"sawtooth\").lpf(perlin.range(400,800).slow(8)).room(0.6).gain(0.5),\n    n(\"0 2 4 7\").scale(\"C3:minor\").s(\"square\").decay(0.1).sustain(0).lpf(700).gain(0.5).room(0.4).delay(0.3)\n  )],\n  [24, stack(\n    note(\"<c2 ab1>/2\").s(\"sawtooth\").lpf(perlin.range(500,1100).slow(8)).room(0.6).gain(0.5),\n    n(\"0 2 4 7 4 2\").scale(\"C3:minor\").s(\"square\").decay(0.12).sustain(0).lpf(perlin.range(700,1800).slow(7)).gain(0.55).delay(0.3).room(0.4).every(4, x => x.rev()),\n    s(\"hh*4\").bank(\"CasioRZ1\").gain(\"0.35 0.5 0.4 0.55\").swingBy(0.18,8).pan(perlin.range(0.3,0.7))\n  )],\n  [32, stack(\n    note(\"<c1 ab0 eb1 g0>\").s(\"sine\").lpf(420).gain(0.85),\n    s(\"bd ~ ~ [~ bd] ~ bd ~ ~\").bank(\"CasioRZ1\").gain(0.95),\n    s(\"~ ~ sd ~ ~ ~ sd ~\").bank(\"CasioRZ1\").gain(0.8).room(0.25),\n    s(\"hh(5,8,2)\").bank(\"CasioRZ1\").gain(0.45).swingBy(0.2,8).cut(1),\n    s(\"think\").chop(8).slice(8,\"0 2 1 4 0 5 2 7\").speed(\"<1 1.5 0.5>\").crush(7).gain(0.55).room(0.3).delay(\".4:.166:.5\"),\n    n(\"0 2 4 7 9\").scale(\"C3:minor\").s(\"square\").decay(0.1).sustain(0).lpf(perlin.range(900,2400).slow(9)).gain(0.5).delay(0.3).off(0.125, x => x.add(note(12)).gain(0.35))\n  )],\n  [16, stack(\n    note(\"<[c3,eb3,g3,bb3] [ab2,c3,eb3,g3]>\").s(\"piano\").gain(0.5).room(0.6).delay(0.4).vowel(\"<a e o>\"),\n    note(\"<c2 ab1>/2\").s(\"sawtooth\").lpf(perlin.range(500,1300).slow(8)).room(0.7).gain(0.5),\n    n(\"0 4 7\").scale(\"C3:minor\").s(\"square\").decay(0.15).sustain(0).lpf(1600).gain(0.45).delay(0.4).room(0.5)\n  )],\n  [28, stack(\n    note(\"<c1 ab0 eb1 g0>\").s(\"sine\").lpf(sine.range(300,900).slow(2)).gain(0.9).shape(0.3),\n    s(\"bd ~ ~ [~ bd] ~ bd ~ [bd ~]\").bank(\"CasioRZ1\").gain(0.95),\n    s(\"~ ~ sd ~ ~ ~ sd ~\").bank(\"CasioRZ1\").gain(0.8).room(0.25).every(4, x => x.ply(2)),\n    s(\"hh(7,8,2)\").bank(\"CasioRZ1\").gain(0.45).swingBy(0.2,8).cut(1).sometimesBy(0.25, x => x.speed(1.5)),\n    s(\"~ cp ~ ~\").bank(\"CasioRZ1\").gain(0.5).room(0.3),\n    s(\"think\").chop(8).slice(8,\"0 2 1 4 5 3 2 7\").speed(\"<1 1.5 0.5 2>\").crush(7).gain(0.55).room(0.3).delay(\".4:.166:.5\").every(8, x => x.rev()),\n    n(\"0 2 4 7 9 7 4 2\").scale(\"C3:minor\").s(\"square\").decay(0.1).sustain(0).lpf(perlin.range(1200,3000).slow(7)).gain(0.5).delay(0.3).off(0.125, x => x.add(note(12)).gain(0.35))\n  )],\n  [12, stack(\n    note(\"<c2 ab1>/2\").s(\"sawtooth\").lpf(perlin.range(400,700).slow(8)).room(0.7).gain(0.5),\n    n(\"0 2 4 7\").scale(\"C3:minor\").s(\"square\").decay(0.1).sustain(0).lpf(800).gain(0.45).room(0.5).delay(0.4),\n    s(\"hh*2\").bank(\"CasioRZ1\").gain(0.3).swingBy(0.18,8)\n  )]\n)",
+  "createdAt": "2026-06-16T21:19:20Z"
+}

@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-16-nasty-droning-bass-and-drum-line-06",
+  "title": "Vowelthroat Scream",
+  "prompt": "nasty droning bass and drum line",
+  "batch": "2026-06-16-nasty-droning-bass-and-drum-line",
+  "description": "A sawtooth formant voice held in the mid register, screaming and talking as it steps through vowels across the loop while a slow triangle LFO drags a resonant band-pass back and forth through its throat. Deep vibrato makes it seasick and a cavernous room tail gives it an alien hollow scream that never quite lands on a word.",
+  "meta": {
+    "bpm": 124,
+    "genre": "formant lead",
+    "mood": "screaming",
+    "key": "C minor",
+    "instruments": ["sawtooth formant lead"],
+    "energy": 4
+  },
+  "code": "setcpm(124/4)\nstack(\n  note(\"<c4 [c4 d4] f4 eb4 [g4 f4] eb4 c4 [d4 eb4]>/2\").s(\"sawtooth\")\n    .vowel(\"<a e i o e a o u>/2\")\n    .vib(tri.slow(13).range(2.5, 8)).vibmod(tri.slow(23).range(0.4, 1.6))\n    .bpf(tri.slow(16).range(420, 3200)).resonance(sine.slow(11).range(9, 18)).ftype(\"ladder\")\n    .lpenv(2.5).lpattack(0.01).lpdecay(0.18)\n    .attack(0.02).decay(0.2).sustain(0.7).release(0.12)\n    .shape(tri.slow(19).range(0.12, 0.42)).crush(sine.slow(29).range(16, 7))\n    .pan(sine.slow(7).range(0.32, 0.68))\n    .sometimesBy(0.14, x => x.speed(-1))\n    .off(1/6, x => x.add(note(12)).vowel(\"<u o>/2\").gain(0.24).room(0.6))\n    .room(sine.slow(32).range(0.45, 0.85)).roomsize(8)\n    .gain(0.82)\n)",
+  "createdAt": "2026-06-16T21:34:53Z"
+}

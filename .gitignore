@@ -20,3 +20,5 @@ palettes/*.json
 .claude/worktrees/
 # vendored sample banks (cache-on-save); re-fetchable, large binaries
 data/sample-cache/
+# rendered/cached audio; re-fetchable, large binaries
+data/audio-cache/

@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-16-nasty-droning-bass-and-drum-line-04",
+  "title": "Scrapyard Hail",
+  "prompt": "nasty droning bass and drum line",
+  "batch": "2026-06-16-nasty-droning-bass-and-drum-line",
+  "description": "A granular industrial percussion cloud built from one metal hit, chopped and scattered in stereo with perlin/rand-driven panning and speed flicker (including reverse). Over 16 cycles it morphs from a tight metallic clatter into a corroded, crushed, delay-smeared drone, modulating timbre, space, motion, and degradation.",
+  "meta": {
+    "bpm": 120,
+    "genre": "industrial sample-mangle percussion",
+    "mood": "nasty, corroded, mechanical",
+    "key": "atonal",
+    "instruments": ["mangled metal hit"],
+    "energy": 4
+  },
+  "code": "setcpm(120/4)\nstack(\n  s(\"metal*4\")\n    .chop(16)\n    .speed(\"<1 -1 0.5 -0.5 2>\")\n    .striate(perlin.slow(13).range(2, 8).floor())\n    .pan(perlin.slow(7).range(0, 1))\n    .gain(perlin.slow(11).range(0.45, 1.05))\n    .crush(saw.slow(23).range(8, 3))\n    .shape(sine.slow(16).range(0.1, 0.55))\n    .squiz(perlin.slow(29).range(0.8, 2.4))\n    .hpf(sine.slow(17).range(180, 900))\n    .lpf(perlin.slow(19).range(1400, 6500))\n    .resonance(sine.slow(11).range(4, 12))\n    .sometimesBy(0.22, x => x.speed(-1))\n    .degradeBy(perlin.slow(31).range(0.05, 0.35))\n    .delay(\"0.55:0.1875:0.78\")\n    .delaytime(perlin.slow(13).range(0.12, 0.28))\n    .delayfeedback(sine.slow(32).range(0.4, 0.82))\n    .gain(0.9)\n)",
+  "createdAt": "2026-06-16T21:34:53Z"
+}

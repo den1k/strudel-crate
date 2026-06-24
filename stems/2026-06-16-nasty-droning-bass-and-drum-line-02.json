@@ -1,0 +1,18 @@
+{
+  "id": "2026-06-16-nasty-droning-bass-and-drum-line-02",
+  "title": "Seasick Cavern Sub",
+  "prompt": "nasty droning bass and drum line",
+  "batch": "2026-06-16-nasty-droning-bass-and-drum-line",
+  "description": "A hollow FM sine sub-bass drones in the basement octaves while a slow, deep vibrato makes the pitch lurch and wobble like a seasick organism. A slow saw LFO drags a resonant band-pass filter on a long upward journey over 29 cycles, opening the cavern wider and wider before snapping back, all soaked in room reverb and long delay so the tone breathes inside a vast stone chamber.",
+  "meta": {
+    "bpm": 124,
+    "genre": "fm sub bass",
+    "mood": "hollow",
+    "key": "C minor",
+    "instruments": ["fm sine sub bass"],
+    "energy": 3
+  },
+  "code": "setcpm(124/4)\nstack(\n  note(\"<c1 c1 eb1 g0>*4\").s(\"sine\")\n    .fm(sine.slow(13).range(3, 12)).fmh(\"<1.5 0.5 1 2>/8\")\n    .penv(\"<5 -4 9 -6>/4\").pattack(0.003).pdecay(sine.slow(11).range(0.05, 0.22))\n    .vib(\"<3 5 7>/8\").vibmod(sine.slow(23).range(0.4, 0.95))\n    .bpf(saw.slow(29).range(90, 1700)).resonance(15).ftype(\"ladder\")\n    .lpenv(2).lpattack(0.006).lpdecay(0.18)\n    .attack(0.004).decay(0.22).sustain(0.6).release(0.1)\n    .shape(sine.slow(19).range(0.12, 0.42)).coarse(\"<1 1 2>/16\")\n    .pan(sine.slow(7).range(0.32, 0.68))\n    .sometimesBy(0.1, x => x.speed(-1))\n    .off(1/8, x => x.add(note(12)).gain(0.22).delay(\"0.5:0.5:0.7\"))\n    .room(0.55).gain(0.88)\n)"
+,
+  "createdAt": "2026-06-16T21:34:53Z"
+}

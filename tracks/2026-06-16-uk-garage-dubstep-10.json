@@ -1,0 +1,17 @@
+{
+  "id": "2026-06-16-uk-garage-dubstep-10",
+  "title": "Valley Between Two Halves",
+  "prompt": "uk garage, dubstep",
+  "batch": "2026-06-16-uk-garage-dubstep",
+  "description": "A half-time dubstep frame at 140 carried by emotive felt-piano chords and a wobbling sub. It opens dreamy, swells into a swung garage half, sinks into a long dark breakdown valley, then rises again heavier before fading on room and delay.",
+  "meta": {
+    "bpm": 140,
+    "genre": "uk garage / dubstep",
+    "mood": "dreamy, dark, dubby, nocturnal",
+    "key": "C minor",
+    "instruments": ["OberheimDMX kit", "felt piano", "sub bass wobble", "chopped vocal (think)", "swpad"],
+    "energy": 3
+  },
+  "createdAt": "2026-06-16T21:19:20Z",
+  "code": "setcpm(140/4)\narrange(\n  [16, stack(\n    note(\"<[c3,eb3,g3,bb3] [ab2,c3,eb3,g3] [bb2,d3,f3,ab3] [g2,bb2,d3,f3]>\").s(\"piano\").room(0.5).gain(0.7).lpf(1400),\n    s(\"bd ~ ~ ~ sd ~ ~ ~\").bank(\"OberheimDMX\").gain(0.8)\n  )],\n  [32, stack(\n    note(\"<[c3,eb3,g3,bb3] [ab2,c3,eb3,g3] [bb2,d3,f3,ab3] [g2,bb2,d3,f3]>\").s(\"piano\").room(0.45).gain(0.7).off(0.125, x => x.add(note(12)).gain(0.4)),\n    s(\"bd ~ ~ ~ sd ~ ~ ~\").bank(\"OberheimDMX\").gain(0.9),\n    s(\"hh(5,8,2)\").bank(\"OberheimDMX\").gain(0.5).swingBy(0.18, 8),\n    note(\"<c1 ab0 bb0 g0>\").s(\"sine\").lpf(sine.slow(2).range(150, 800)).shape(0.3).gain(0.9)\n  )],\n  [32, stack(\n    note(\"<[c3,eb3,g3,bb3] [ab2,c3,eb3,g3] [bb2,d3,f3,ab3] [g2,bb2,d3,f3]>\").s(\"piano\").room(0.4).gain(0.75).off(0.125, x => x.add(note(12)).gain(0.4)),\n    s(\"bd ~ ~ ~ sd ~ ~ ~\").bank(\"OberheimDMX\").gain(0.95),\n    s(\"hh(5,8,2)\").bank(\"OberheimDMX\").gain(0.5).swingBy(0.18, 8).cut(1),\n    s(\"~ rim ~ rim*3\").bank(\"OberheimDMX\").gain(0.45).swingBy(0.12, 8),\n    note(\"<c1 ab0 bb0 g0>\").s(\"sine\").lpf(sine.slow(1.5).range(120, 1100)).shape(0.4).crush(8).gain(0.95),\n    s(\"think\").chop(8).speed(\"<1 1 0.5 1.5>\").gain(0.5).room(0.3).every(4, x => x.rev())\n  )],\n  [24, stack(\n    note(\"<[c3,eb3,g3,bb3] [ab2,c3,eb3,g3] [bb2,d3,f3,ab3] [g2,bb2,d3,f3]>\").s(\"piano\").room(0.7).gain(0.7).delay(\".4:.166:.6\").lpf(sine.slow(8).range(700, 2000)),\n    s(\"swpad\").n(2).gain(0.5).room(0.6).slow(2),\n    note(\"<c1 ab0>\").s(\"sine\").lpf(400).gain(0.7).room(0.3)\n  )],\n  [28, stack(\n    note(\"<[c3,eb3,g3,bb3] [ab2,c3,eb3,g3] [bb2,d3,f3,ab3] [g2,bb2,d3,f3]>\").s(\"piano\").room(0.4).gain(0.75).off(0.125, x => x.add(note(12)).gain(0.45)),\n    s(\"bd ~ ~ ~ sd ~ ~ ~\").bank(\"OberheimDMX\").gain(1.0),\n    s(\"hh(7,8,2)\").bank(\"OberheimDMX\").gain(0.5).swingBy(0.2, 8).cut(1),\n    s(\"~ rim ~ rim*3\").bank(\"OberheimDMX\").gain(0.5).swingBy(0.12, 8),\n    note(\"<c1 ab0 bb0 g0>\").s(\"sine\").lpf(sine.slow(1).range(110, 1300)).shape(0.45).crush(8).gain(1.0).every(8, x => x.ply(2)),\n    s(\"think\").chop(8).speed(\"<1 0.5 1.5 1>\").gain(0.55).room(0.3).sometimesBy(0.25, x => x.speed(2))\n  )],\n  [12, stack(\n    note(\"<[c3,eb3,g3,bb3] [ab2,c3,eb3,g3]>\").s(\"piano\").room(0.6).gain(0.65).delay(\".5:.166:.5\").lpf(1300),\n    s(\"bd ~ ~ ~ sd ~ ~ ~\").bank(\"OberheimDMX\").gain(0.7),\n    note(\"<c1 ab0>\").s(\"sine\").lpf(350).gain(0.6).room(0.4)\n  )]\n)"
+}
