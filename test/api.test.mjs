@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import request from 'supertest';
-import { mkdtemp } from 'node:fs/promises';
+import { mkdtemp, writeFile, mkdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fakeAdmin } from './fake-admin.mjs';
@@ -265,5 +265,38 @@ describe('play API', () => {
     const limited = createApp({ adminDb, namespaces: ['tracks', 'stems'], requireAuth, playLimiter: () => false });
     const res = await request(limited).post('/api/tracks/demo-01/play');
     expect(res.status).toBe(429);
+  });
+});
+
+describe('audio export API', () => {
+  it('GET /api/:ns/:id/audio.:fmt streams the file with a download filename', async () => {
+    const d = await mkdtemp(join(tmpdir(), 'audio-api-'));
+    await mkdir(join(d, 'tracks'), { recursive: true });
+    const p = join(d, 'tracks', 't1.mp3');
+    await writeFile(p, 'MP3BYTES');
+    const audioExport = {
+      getOrRender: async (ns, id, fmt) =>
+        ns === 'tracks' && id === 'demo-01' && fmt === 'mp3' ? { path: p, filename: 'demo-01.mp3' } : null,
+    };
+    const app2 = createApp({ adminDb, namespaces: ['tracks', 'stems'], requireAuth, requireUser, audioExport });
+    const res = await request(app2).get('/api/tracks/demo-01/audio.mp3');
+    expect(res.status).toBe(200);
+    expect(res.headers['content-type']).toContain('audio/mpeg');
+    expect(res.headers['content-disposition']).toContain('filename="demo-01.mp3"');
+    expect(res.body.toString()).toBe('MP3BYTES');
+  });
+
+  it('404s when the item cannot be rendered/resolved', async () => {
+    const audioExport = { getOrRender: async () => null };
+    const app2 = createApp({ adminDb, namespaces: ['tracks', 'stems'], requireAuth, requireUser, audioExport });
+    const res = await request(app2).get('/api/tracks/missing/audio.wav');
+    expect(res.status).toBe(404);
+  });
+
+  it('404s an unsupported format', async () => {
+    const audioExport = { getOrRender: async () => null };
+    const app2 = createApp({ adminDb, namespaces: ['tracks', 'stems'], requireAuth, requireUser, audioExport });
+    const res = await request(app2).get('/api/tracks/demo-01/audio.flac');
+    expect(res.status).toBe(404);
   });
 });
