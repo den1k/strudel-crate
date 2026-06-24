@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { mkdtemp, writeFile, stat, utimes, readFile } from 'node:fs/promises';
+import { mkdtemp, writeFile, stat, utimes, readFile, mkdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createAudioCache } from '../server/audio-cache.mjs';
@@ -38,15 +38,17 @@ describe('createAudioCache', () => {
   });
 
   it('prune evicts least-recently-accessed files until under maxBytes', async () => {
-    // three 100-byte files, cap at 250 bytes → one (the oldest atime) must go
+    // Write three 100-byte files directly (bypassing store()'s auto-prune) so we
+    // control atimes before pruning. Cap 250 → the single oldest-atime file goes.
     const cache = createAudioCache({ dir, maxBytes: 250 });
+    await mkdir(join(dir, 'tracks'), { recursive: true });
     const big = Buffer.alloc(100, 1);
-    await cache.store('tracks', 'old', 'wav', big);
-    await cache.store('tracks', 'mid', 'wav', big);
-    await cache.store('tracks', 'new', 'wav', big);
-    // make 'old' the least-recently-accessed
-    const t0 = new Date('2020-01-01T00:00:00Z');
-    await utimes(join(dir, 'tracks', 'old.wav'), t0, t0);
+    for (const id of ['old', 'mid', 'new']) {
+      await writeFile(join(dir, 'tracks', `${id}.wav`), big);
+    }
+    await utimes(join(dir, 'tracks', 'old.wav'), new Date('2020-01-01T00:00:00Z'), new Date('2020-01-01T00:00:00Z'));
+    await utimes(join(dir, 'tracks', 'mid.wav'), new Date('2021-01-01T00:00:00Z'), new Date('2021-01-01T00:00:00Z'));
+    await utimes(join(dir, 'tracks', 'new.wav'), new Date('2022-01-01T00:00:00Z'), new Date('2022-01-01T00:00:00Z'));
     const freed = await cache.prune();
     expect(freed).toBe(100);
     expect(await cache.cachedPath('tracks', 'old', 'wav')).toBeNull();
