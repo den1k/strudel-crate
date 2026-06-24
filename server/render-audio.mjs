@@ -50,7 +50,7 @@ export function createRenderer({
     if (browser) return browser;
     browser = await launch({
       executablePath: chromePath,
-      headless: 'new',
+      headless: true,
       args: ['--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu'],
     });
     browser.on('disconnected', () => { browser = null; });
