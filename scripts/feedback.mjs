@@ -22,6 +22,15 @@ if (process.argv[1] && process.argv[1] === fileURLToPath(import.meta.url)) {
   // the env, so a job only ever sees its own author's lessons. Manual CLI runs
   // (no profile id) fall back to the full digest for debugging.
   const profileId = process.env.CRATE_AUTHOR_PROFILE_ID;
+  // Inside a runner job (CRATE_JOB_ID is set) the author profile id must be
+  // present. Falling back to the all-users digest there would leak one user's
+  // lessons into another's generation — exactly what per-user scoping prevents —
+  // so fail loud instead. A missing profile id is only legitimate for a manual
+  // CLI run (no job), which gets the full digest for debugging.
+  if (process.env.CRATE_JOB_ID && !profileId) {
+    console.error('feedback: CRATE_AUTHOR_PROFILE_ID missing inside job — refusing to leak all-user lessons');
+    process.exit(2);
+  }
   const items = profileId
     ? await queryItemsByAuthor(adminDb, ns, profileId)
     : await queryItems(adminDb, ns);
