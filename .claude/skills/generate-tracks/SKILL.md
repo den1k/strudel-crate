@@ -26,7 +26,9 @@ designed fresh for every batch; never reuse a previous batch's kit.
 
 2. **Collect feedback:** run `node scripts/feedback.mjs`. This is the cross-track
    lessons digest only — per-song ratings and notes stay with their own song and are
-   never included. Capture the output — it is injected into every agent prompt. If it
+   never included. Lessons are per-user: the digest is scoped to the requesting
+   user's own songs, so one user's lessons never steer another's generations.
+   Capture the output — it is injected into every agent prompt. If it
    says "No lessons yet", inject the literal text "none yet".
 
    Then run `node scripts/kit-feedback.mjs` and capture its output as `{kit_digest}`.

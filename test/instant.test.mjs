@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { fakeAdmin } from './fake-admin.mjs';
 import {
   ensureProfile, getProfile, setArtistName, itemSlugs, itemsBySlug, itemsByJob, insertItem, recordPlay, setRating,
-  setNotes, itemOwnerProfileId,
+  setNotes, itemOwnerProfileId, queryItemsByAuthor,
 } from '../server/instant.mjs';
 
 describe('ensureProfile', () => {
@@ -52,6 +52,33 @@ describe('itemsByJob', () => {
     ] });
     const rows = await itemsByJob(db, 'stems', 'j1');
     expect(rows.map((r) => r.slug)).toEqual(['a', 'c']);
+  });
+});
+
+describe('queryItemsByAuthor', () => {
+  it('returns only items linked to the given author profile (lessons stay per-user)', async () => {
+    const db = fakeAdmin({ tracks: [
+      { slug: 'a', lesson: 'mine', author: [{ id: 'p1' }] },
+      { slug: 'b', lesson: 'theirs', author: [{ id: 'p2' }] },
+      { slug: 'c', lesson: 'mine too', author: [{ id: 'p1' }] },
+      { slug: 'd', lesson: 'unowned', author: [] },
+    ] });
+    const rows = await queryItemsByAuthor(db, 'tracks', 'p1');
+    expect(rows.map((r) => r.slug)).toEqual(['a', 'c']);
+  });
+
+  it('tolerates author returned as a single object rather than a list', async () => {
+    const db = fakeAdmin({ stems: [
+      { slug: 'a', author: { id: 'p1' } },
+      { slug: 'b', author: { id: 'p2' } },
+    ] });
+    const rows = await queryItemsByAuthor(db, 'stems', 'p1');
+    expect(rows.map((r) => r.slug)).toEqual(['a']);
+  });
+
+  it('returns nothing for an author with no items', async () => {
+    const db = fakeAdmin({ tracks: [{ slug: 'a', author: [{ id: 'p1' }] }] });
+    expect(await queryItemsByAuthor(db, 'tracks', 'pX')).toEqual([]);
   });
 });
 
