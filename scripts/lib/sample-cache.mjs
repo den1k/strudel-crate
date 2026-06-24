@@ -11,7 +11,7 @@
 //
 // The webapp can serve banks/<slug>/strudel.json and load it with samples(); the
 // relative _base + mirrored layout means cached banks are self-contained.
-import { mkdir, writeFile, readFile, access } from 'node:fs/promises';
+import { mkdir, writeFile, readFile, access, rm } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -99,15 +99,20 @@ export async function cacheBank(source, opts = {}) {
     return { ok: false, error: `bank ${source} exceeds the ${maxFiles}-file bound (${paths.length}) — too many samples to vendor` };
   }
 
+  // A failure here aborts the whole bank. strudel.json is written last, so a
+  // half-vendored bank has samples but no manifest — clean up the partial dir so
+  // it isn't left as an orphan (the index would otherwise have to skip it, and
+  // it just wastes disk). Callers fall back to upstream for an uncached bank.
+  const abort = async (error) => { await rm(bankDir, { recursive: true, force: true }); return { ok: false, error }; };
   for (const rel of paths) {
     const url = base ? new URL(rel, base).href : rel;
     let buf;
     try {
       const res = await fetchImpl(url);
-      if (res.ok === false) return { ok: false, error: `sample HTTP ${res.status}: ${url}` };
+      if (res.ok === false) return abort(`sample HTTP ${res.status}: ${url}`);
       buf = Buffer.from(await res.arrayBuffer());
     } catch (err) {
-      return { ok: false, error: `sample fetch failed (${url}): ${err.message}` };
+      return abort(`sample fetch failed (${url}): ${err.message}`);
     }
     const dest = join(bankDir, rel);
     await mkdir(dirname(dest), { recursive: true });

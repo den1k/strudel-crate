@@ -175,10 +175,18 @@ export function createApp(opts = {}) {
   // lists cached bank slugs; /sample-cache/banks/<slug>/... serves the vendored files.
   if (opts.sampleCacheDir) {
     app.get('/sample-cache/index.json', wrap(async (_req, res) => {
-      const { readdir } = await import('node:fs/promises');
-      let slugs = [];
-      try { slugs = await readdir(join(opts.sampleCacheDir, 'banks')); } catch { /* none cached yet */ }
-      res.json({ slugs });
+      const { readdir, access } = await import('node:fs/promises');
+      const banksDir = join(opts.sampleCacheDir, 'banks');
+      let dirs = [];
+      try { dirs = await readdir(banksDir); } catch { /* none cached yet */ }
+      // Only advertise banks that actually have a strudel.json manifest. A vendor
+      // that failed partway leaves sample files but no manifest; advertising such
+      // an orphan makes the client rewrite samples() to a local URL that 404s
+      // instead of falling back to the working upstream github bank.
+      const checks = await Promise.all(dirs.map(async (slug) => {
+        try { await access(join(banksDir, slug, 'strudel.json')); return slug; } catch { return null; }
+      }));
+      res.json({ slugs: checks.filter(Boolean) });
     }));
     app.use('/sample-cache', express.static(opts.sampleCacheDir));
   }

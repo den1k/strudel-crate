@@ -34,4 +34,21 @@ describe('sample cache routes', () => {
     expect(manifest.status).toBe(200);
     expect(manifest.body._base).toBe('./');
   });
+
+  it('excludes partially-vendored banks that lack a strudel.json manifest', async () => {
+    // A vendor that failed partway leaves sample files but no manifest. Such an
+    // orphan must NOT be advertised as cached, or the client rewrites samples()
+    // to a local URL that 404s instead of falling back to upstream github.
+    const orphan = 'github-mot4i-garden';
+    await mkdir(join(cacheDir, 'banks', orphan, 'garden_cp'), { recursive: true });
+    await writeFile(join(cacheDir, 'banks', orphan, 'garden_cp', 'clap01.wav'), 'fake');
+
+    const good = 'github-fake-bank';
+    await mkdir(join(cacheDir, 'banks', good), { recursive: true });
+    await writeFile(join(cacheDir, 'banks', good, 'strudel.json'), JSON.stringify({ _base: './' }));
+
+    const index = await request(app).get('/sample-cache/index.json');
+    expect(index.body.slugs).toContain(good);
+    expect(index.body.slugs).not.toContain(orphan);
+  });
 });

@@ -104,6 +104,23 @@ describe('cacheBank + manifests (filesystem)', () => {
     expect(m.slugs).toEqual([bankSlug('github:fake/bank'), bankSlug('github:other/bank')]);
   });
 
+  it('removes the partial bank dir when a sample fetch fails (no orphan)', async () => {
+    // Manifest references two samples; the second 404s upstream (real-world: a
+    // manifest listing files that no longer exist in the repo).
+    const manifest = { _base: 'https://fake.test/banks/', kit: ['kit/a.wav', 'kit/missing.wav'] };
+    const flakyFetch = async (url) => {
+      if (url.includes('.json')) return { ok: true, status: 200, json: async () => manifest };
+      if (url.includes('missing')) return { ok: false, status: 404 };
+      return { ok: true, status: 200, arrayBuffer: async () => new TextEncoder().encode('RIFF').buffer };
+    };
+    const slug = bankSlug('github:fake/flaky');
+    const res = await cacheBank('github:fake/flaky', { cacheDir: dir, fetchImpl: flakyFetch });
+    expect(res.ok).toBe(false);
+    // The bank dir must not survive as an orphan (samples present, no manifest).
+    await expect(stat(join(dir, 'banks', slug))).rejects.toThrow();
+    expect(await isBankCached('github:fake/flaky', { cacheDir: dir })).toBe(false);
+  });
+
   it('bounds the number of samples downloaded per bank', async () => {
     const bigManifest = {
       _base: 'https://fake.test/banks/',
