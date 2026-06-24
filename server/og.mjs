@@ -58,7 +58,7 @@ export function cardHash(item) {
 
 // Absolute URL of a song's card image (entity id + content hash for cache-bust).
 export function cardImageUrl(origin, ns, item) {
-  return `${origin}/api/${ns}/${encodeURIComponent(item.entityId)}/card.png?v=${cardHash(item)}`;
+  return `${origin}/api/${ns}/${encodeURIComponent(item.entityId)}/card.jpg?v=${cardHash(item)}`;
 }
 
 // Build the Open Graph + Twitter <meta> block. Every value is escaped; empty
@@ -72,7 +72,7 @@ export function metaTagsHtml({ title, description, image, url, type = 'website',
     ['og:url', url],
     ['og:image', image],
     ['og:image:secure_url', image],
-    ['og:image:type', 'image/png'],
+    ['og:image:type', 'image/jpeg'],
     ['og:image:width', '1200'],
     ['og:image:height', '630'],
     ['og:image:alt', imageAlt ?? title],
@@ -115,7 +115,7 @@ export function brandMetaTags(origin) {
   return metaTagsHtml({
     title: `${BRAND} — AI-generated music you can remix in code`,
     description: 'A crate of AI-generated Strudel tracks. Play, remix, and export — all in the browser.',
-    image: `${origin}/og/home.png`,
+    image: `${origin}/og/home.jpg`,
     url: `${origin}/`,
     type: 'website',
     imageAlt: BRAND,

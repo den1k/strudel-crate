@@ -13,7 +13,7 @@ describe('render-card constants', () => {
 //   CRATE_RENDER_IT=1 npx vitest run test/render-card.test.mjs
 const IT = process.env.CRATE_RENDER_IT === '1';
 describe.runIf(IT)('render-card integration', () => {
-  it('renders a song card to a non-empty PNG', async () => {
+  it('renders a song card to a non-empty JPEG', async () => {
     const { createCardRenderer } = await import('../server/render-card.mjs');
     const { songCardHtml } = await import('../server/og-card.mjs');
     const renderer = createCardRenderer({});
@@ -23,8 +23,8 @@ describe.runIf(IT)('render-card integration', () => {
         code: 's("bd*4")', meta: { genre: 'techno', bpm: 130, key: 'Amin' },
       }));
       expect(buf.length).toBeGreaterThan(2000);
-      // PNG magic number.
-      expect(buf.subarray(0, 4).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47]))).toBe(true);
+      // JPEG magic number (SOI marker).
+      expect(Buffer.from(buf.subarray(0, 3)).equals(Buffer.from([0xff, 0xd8, 0xff]))).toBe(true);
     } finally {
       await renderer.close();
     }

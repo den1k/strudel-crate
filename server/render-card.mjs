@@ -1,5 +1,5 @@
 // server/render-card.mjs
-// Renders an OG card PNG by loading a self-contained HTML doc (server/og-card.mjs)
+// Renders an OG card JPEG by loading a self-contained HTML doc (server/og-card.mjs)
 // in headless Chrome at 1200×630 and screenshotting it. Mirrors render-audio.mjs:
 // lazy launch, serial render lock, idle-close. setContent (not a served URL)
 // keeps the card template self-contained; we await document.fonts.ready so the
@@ -43,7 +43,8 @@ export function createCardRenderer({
       await page.setContent(html, { waitUntil: 'networkidle0', timeout: 30000 });
       await page.evaluate(() => document.fonts.ready);
       return await page.screenshot({
-        type: 'png',
+        type: 'jpeg',
+        quality: 90,
         clip: { x: 0, y: 0, width: CARD_W, height: CARD_H },
       });
     } finally {

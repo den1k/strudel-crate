@@ -61,7 +61,7 @@ describe('cardHash + cardImageUrl', () => {
   });
   it('builds an absolute, cache-busted url', () => {
     const url = cardImageUrl('https://crate.vimsical.com', 'tracks', item);
-    expect(url).toBe(`https://crate.vimsical.com/api/tracks/e-123/card.png?v=${cardHash(item)}`);
+    expect(url).toBe(`https://crate.vimsical.com/api/tracks/e-123/card.jpg?v=${cardHash(item)}`);
   });
 });
 
@@ -97,12 +97,12 @@ describe('songMetaTags / brandMetaTags', () => {
     const html = songMetaTags(item, 'tracks', 'https://crate.vimsical.com');
     expect(html).toContain('Neon Rinse — STRUDEL/CRATE');
     expect(html).toContain('og:type" content="music.song"');
-    expect(html).toContain('/api/tracks/e-123/card.png?v=');
+    expect(html).toContain('/api/tracks/e-123/card.jpg?v=');
   });
   it('brand tags point at the home card', () => {
     const html = brandMetaTags('https://crate.vimsical.com');
     expect(html).toContain('STRUDEL/CRATE');
-    expect(html).toContain('https://crate.vimsical.com/og/home.png');
+    expect(html).toContain('https://crate.vimsical.com/og/home.jpg');
     expect(html).toContain('og:url" content="https://crate.vimsical.com/"');
   });
 });
