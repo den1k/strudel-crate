@@ -69,6 +69,28 @@ function manifestSamplePaths(manifest) {
 }
 
 /**
+ * Return a copy of `manifest` keeping only sample paths present in `keep`
+ * (a Set of relative paths). Used after a vendor that skipped 404'd samples so
+ * the cached manifest lists only files we actually wrote. Preserves `_`-prefixed
+ * metadata and the original value shape (string stays string, array stays array).
+ */
+export function pruneManifestPaths(manifest, keep) {
+  const out = {};
+  for (const [key, val] of Object.entries(manifest)) {
+    if (key.startsWith('_')) { out[key] = val; continue; }
+    if (Array.isArray(val)) {
+      const filtered = val.filter((p) => typeof p === 'string' && keep.has(p));
+      if (filtered.length) out[key] = filtered;
+    } else if (typeof val === 'string') {
+      if (keep.has(val)) out[key] = val;
+    } else {
+      out[key] = val;
+    }
+  }
+  return out;
+}
+
+/**
  * Vendor a bank locally: fetch its manifest + every referenced sample, rewrite
  * the manifest's _base to "./", and write it all under banks/<slug>/. Idempotent:
  * a bank that is already fully cached is skipped without refetching samples.

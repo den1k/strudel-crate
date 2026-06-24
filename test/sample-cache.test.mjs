@@ -10,6 +10,7 @@ import {
   isBankCached,
   writeTrackManifest,
   readTrackManifest,
+  pruneManifestPaths,
 } from '../scripts/lib/sample-cache.mjs';
 
 describe('bankSlug', () => {
@@ -134,5 +135,32 @@ describe('cacheBank + manifests (filesystem)', () => {
     const res = await cacheBank('github:fake/big', { cacheDir: dir, fetchImpl: bigFetch, maxFiles: 10 });
     expect(res.ok).toBe(false);
     expect(res.error).toMatch(/too many|exceeds|bound/i);
+  });
+});
+
+describe('pruneManifestPaths', () => {
+  it('drops paths not in the keep set and removes emptied keys', () => {
+    const manifest = {
+      _base: 'https://x/',
+      cp: ['cp/a.wav', 'cp/b.wav'],
+      bd: ['bd/gone.wav'],
+      hh: 'hh/closed.wav',
+    };
+    const out = pruneManifestPaths(manifest, new Set(['cp/a.wav', 'hh/closed.wav']));
+    expect(out._base).toBe('https://x/');     // metadata preserved
+    expect(out.cp).toEqual(['cp/a.wav']);     // partially kept array filtered
+    expect(out.bd).toBeUndefined();           // fully-missing array key dropped
+    expect(out.hh).toBe('hh/closed.wav');     // kept string stays a string
+  });
+
+  it('drops a string key whose only path was skipped', () => {
+    const out = pruneManifestPaths({ kick: 'kick/x.wav' }, new Set());
+    expect(out.kick).toBeUndefined();
+  });
+
+  it('preserves non-string, non-array values verbatim', () => {
+    const out = pruneManifestPaths({ _base: './', _meta: { bpm: 120 }, n: 5 }, new Set());
+    expect(out._meta).toEqual({ bpm: 120 });
+    expect(out.n).toBe(5);
   });
 });
