@@ -5,7 +5,6 @@ import { getAudioContext } from '@strudel/webaudio';
 import { mountEditor, getEditor, cyclePosition, seekEditor } from './editor.js';
 import { bootStrudel } from './strudel-boot.js';
 import { exportSpec } from './export-spec.js';
-import { exportTrack, isExporting } from './export.js';
 import { groupVersions } from './versions.js';
 import { mmss, hasTimeline, fractionToCycle, progressFraction, isFinished } from './transport.js';
 import { idFromPath, songUrl } from './song-url.js';
@@ -141,19 +140,15 @@ function renderSong(item, ns, family, ready) {
         : fmt === 'mp3'
           ? 'download mp3 192kbps'
           : 'download per-sound 24-bit stems (zip)';
-    btn.addEventListener('click', async () => {
-      if (isExporting()) return;
-      document.querySelectorAll('button.export').forEach((el) => (el.disabled = true));
-      const label = btn.textContent;
-      try {
-        await exportTrack(item, fmt, { onStatus: (s) => (btn.textContent = s) });
-      } catch (err) {
-        console.error(err);
-        showToast('export failed');
-      } finally {
-        btn.textContent = label;
-        document.querySelectorAll('button.export').forEach((el) => (el.disabled = false));
-      }
+    btn.addEventListener('click', () => {
+      // Server renders+caches; the browser downloads the file. No client render.
+      const url = `/api/${ns}/${item.entityId}/audio.${fmt}`;
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = '';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
     });
     exportRow.appendChild(btn);
   }
