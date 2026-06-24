@@ -1,11 +1,21 @@
 import { StrudelMirror } from '@strudel/codemirror';
 import { transpiler } from '@strudel/transpiler';
-import { getAudioContext, webaudioOutput } from '@strudel/webaudio';
+import { getAudioContext, webaudioOutput, resetGlobalEffects } from '@strudel/webaudio';
 import { readCycle, applySeek } from './transport.js';
 
 const editors = new Map(); // trackId -> StrudelMirror
 
 export const getEditor = (trackId) => editors.get(trackId) ?? null;
+
+// Cut every sound that's still ringing out. A scheduler's stop() only halts
+// *new* events; samples, long notes, and reverb tails already dispatched to
+// WebAudio keep playing to their natural end — so switching or pausing a song
+// bleeds the old audio over. Tearing down and rebuilding superdough's output
+// graph silences them instantly (this is what the Strudel REPL's "panic" does).
+// Global by design: the app plays one song at a time, so flushing every voice
+// on stop/switch is exactly the intent. Safe before resume — re-evaluating a
+// paused track schedules fresh voices into the rebuilt graph.
+export const panic = () => resetGlobalEffects();
 
 export const isStarted = (trackId) =>
   editors.get(trackId)?.repl.scheduler.started ?? false;

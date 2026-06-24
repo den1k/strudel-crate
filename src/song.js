@@ -2,7 +2,7 @@
 // runtime (strudel-boot), the StrudelMirror editor (editor.js) and the pure
 // transport helpers (transport.js) so playback matches the list pages.
 import { getAudioContext } from '@strudel/webaudio';
-import { mountEditor, getEditor, cyclePosition, seekEditor } from './editor.js';
+import { mountEditor, getEditor, cyclePosition, seekEditor, panic } from './editor.js';
 import { bootStrudel } from './strudel-boot.js';
 import { exportSpec } from './export-spec.js';
 import { groupVersions } from './versions.js';
@@ -339,6 +339,7 @@ function wirePlayback(item, playBtn, editorWrap, ready) {
     pausedCycle = Number.isFinite(cycle) ? cycle : 0;
     playingNow = false;
     getEditor(item.id)?.stop();
+    panic(); // cut tails still ringing out so pause is truly silent
     stopSeekLoop();
     showTransport(false);
   }
@@ -349,6 +350,7 @@ function wirePlayback(item, playBtn, editorWrap, ready) {
     pausedCycle = null;
     playingNow = false;
     getEditor(item.id)?.stop(); // onToggle clears UI; this covers not-yet-evaluated
+    panic(); // cut tails still ringing out so stop is truly silent
     stopSeekLoop();
     showTransport(false);
   }

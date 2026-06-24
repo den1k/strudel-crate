@@ -1,5 +1,5 @@
 import { getAudioContext } from '@strudel/webaudio';
-import { mountEditor, getEditor, isStarted, cyclePosition, seekEditor } from './editor.js';
+import { mountEditor, getEditor, isStarted, cyclePosition, seekEditor, panic } from './editor.js';
 import { nextPlayingId } from './playing-state.js';
 import { groupVersions } from './versions.js';
 import { exportSpec } from './export-spec.js';
@@ -233,6 +233,9 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
   // --- playback (one StrudelMirror per track; solo mode keeps it exclusive) --
   async function play(track) {
     clearTimeout(playTimer);
+    // Switching from another song? remember it so we can hard-stop its audio
+    // (not just its scheduler) before the new one starts — see below.
+    const prevId = state.playingId;
     // Resuming a paused song? grab its resume point before clearing the cue.
     const resumeCycle = state.cuedId === track.id ? state.pausedCycle : null;
     // Starting playback consumes any cued/paused song (incl. this one).
@@ -255,6 +258,16 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
     await ready; // audio context unlocks via this click
     if (state.playingId !== track.id) return; // user moved on while samples loaded
     await getAudioContext().resume(); // post-export contexts start suspended
+    // Switching songs: stop the previous scheduler and flush every voice still
+    // ringing out (samples, long notes, reverb tails) BEFORE the new pattern
+    // schedules, so the old song can't bleed into the new one. Solo mode would
+    // stop the old scheduler too, but only after the new one starts — leaving a
+    // window where stale voices keep sounding. Order matters: stop first so the
+    // old scheduler can't refill the graph, then panic, then evaluate.
+    if (prevId && prevId !== track.id) {
+      getEditor(prevId)?.stop();
+      panic();
+    }
     // editor mounts hidden inside the closed <details>; the user opens it
     // explicitly when they want to watch the code (keeps cards compact)
     const editor = ensureEditor(track);
@@ -284,6 +297,7 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
     state.cuedSpec = state.playingSpec;
     state.pausedCycle = Number.isFinite(cycle) ? cycle : 0;
     getEditor(id)?.stop();
+    panic(); // cut tails still ringing out so pause is truly silent
     state.playingId = null;
     state.playingSpec = null;
     stopSeekLoop();
@@ -298,6 +312,7 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
   function stop() {
     clearTimeout(playTimer);
     getEditor(state.playingId)?.stop(); // onToggle clears state; next line covers the not-yet-evaluated case
+    panic(); // cut tails still ringing out so stop is truly silent
     state.playingId = null;
     state.playingSpec = null;
     state.cuedId = null;
