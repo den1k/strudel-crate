@@ -16,7 +16,14 @@ export function buildDigest(tracks) {
 }
 
 if (process.argv[1] && process.argv[1] === fileURLToPath(import.meta.url)) {
-  const { adminDb, queryItems } = await import('./lib/instant.mjs');
+  const { adminDb, queryItems, queryItemsByAuthor } = await import('./lib/instant.mjs');
   const ns = process.argv[2] === 'stems' ? 'stems' : 'tracks';
-  console.log(buildDigest(await queryItems(adminDb, ns)));
+  // Lessons are per-user: the runner stamps the generating user's profile id into
+  // the env, so a job only ever sees its own author's lessons. Manual CLI runs
+  // (no profile id) fall back to the full digest for debugging.
+  const profileId = process.env.CRATE_AUTHOR_PROFILE_ID;
+  const items = profileId
+    ? await queryItemsByAuthor(adminDb, ns, profileId)
+    : await queryItems(adminDb, ns);
+  console.log(buildDigest(items));
 }

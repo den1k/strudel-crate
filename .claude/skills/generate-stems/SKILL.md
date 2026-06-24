@@ -21,7 +21,9 @@ Quality bar: original, transformed sound; nothing that sounds like a stock prese
 
 2. **Collect feedback:** run `node scripts/feedback.mjs stems`. This is the
    cross-track lessons digest only — per-stem ratings and notes stay with their own
-   stem and are never included. Capture the output — it is injected into every agent
+   stem and are never included. Lessons are per-user: the digest is scoped to the
+   requesting user's own stems, so one user's lessons never steer another's
+   generations. Capture the output — it is injected into every agent
    prompt. If it says "No lessons yet", inject the literal text "none yet".
 
 3. **Compute the batch id:** `YYYY-MM-DD-<slug>` where slug = the prompt lowercased,

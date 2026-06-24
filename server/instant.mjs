@@ -133,6 +133,19 @@ export async function queryItems(adminDb, namespace) {
   return res[namespace];
 }
 
+// Only the items authored by `profileId`. Lessons are per-song feedback, so the
+// cross-track lessons digest must be scoped to the generating user's OWN songs —
+// otherwise one user's lessons would steer everyone's future generations.
+// Filters in JS (author included via the link) so it works whether Instant
+// returns the has-one author as a single object or a one-element list.
+export async function queryItemsByAuthor(adminDb, namespace, profileId) {
+  const res = await adminDb.query({ [namespace]: { author: {} } });
+  return res[namespace].filter((item) => {
+    const author = Array.isArray(item.author) ? item.author[0] : item.author;
+    return author?.id === profileId;
+  });
+}
+
 // Record a play of <namespace>/<slug>. Always bumps the item's total playCount
 // (read-modify-write — under concurrent plays an increment can be lost; accepted
 // at this scale). When `user` is given, upserts that user's per-item plays
