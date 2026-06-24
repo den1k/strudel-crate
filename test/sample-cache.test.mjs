@@ -10,6 +10,8 @@ import {
   isBankCached,
   writeTrackManifest,
   readTrackManifest,
+  pruneManifestPaths,
+  cacheTrackSamples,
 } from '../scripts/lib/sample-cache.mjs';
 
 describe('bankSlug', () => {
@@ -104,21 +106,52 @@ describe('cacheBank + manifests (filesystem)', () => {
     expect(m.slugs).toEqual([bankSlug('github:fake/bank'), bankSlug('github:other/bank')]);
   });
 
-  it('removes the partial bank dir when a sample fetch fails (no orphan)', async () => {
-    // Manifest references two samples; the second 404s upstream (real-world: a
-    // manifest listing files that no longer exist in the repo).
-    const manifest = { _base: 'https://fake.test/banks/', kit: ['kit/a.wav', 'kit/missing.wav'] };
+  it('aborts and removes the dir on a transient (non-404) sample failure', async () => {
+    const manifest = { _base: 'https://fake.test/banks/', kit: ['kit/a.wav', 'kit/flaky.wav'] };
     const flakyFetch = async (url) => {
       if (url.includes('.json')) return { ok: true, status: 200, json: async () => manifest };
-      if (url.includes('missing')) return { ok: false, status: 404 };
+      if (url.includes('flaky')) return { ok: false, status: 500 }; // transient → must abort
       return { ok: true, status: 200, arrayBuffer: async () => new TextEncoder().encode('RIFF').buffer };
     };
     const slug = bankSlug('github:fake/flaky');
     const res = await cacheBank('github:fake/flaky', { cacheDir: dir, fetchImpl: flakyFetch });
     expect(res.ok).toBe(false);
-    // The bank dir must not survive as an orphan (samples present, no manifest).
     await expect(stat(join(dir, 'banks', slug))).rejects.toThrow();
     expect(await isBankCached('github:fake/flaky', { cacheDir: dir })).toBe(false);
+  });
+
+  it('skips 404 samples, caches the rest, and prunes them from the manifest', async () => {
+    const manifest = { _base: 'https://fake.test/banks/', cp: ['cp/a.wav', 'cp/missing.wav'] };
+    const fetch404 = async (url) => {
+      if (url.includes('.json')) return { ok: true, status: 200, json: async () => manifest };
+      if (url.includes('missing')) return { ok: false, status: 404 };
+      return { ok: true, status: 200, arrayBuffer: async () => new TextEncoder().encode('RIFF').buffer };
+    };
+    const slug = bankSlug('github:fake/holey');
+    const res = await cacheBank('github:fake/holey', { cacheDir: dir, fetchImpl: fetch404 });
+    expect(res.ok).toBe(true);
+    expect(res.files).toBe(1);
+    expect(res.skipped).toEqual(['cp/missing.wav']);
+    // The fetched file is on disk; the 404'd one is not.
+    expect((await stat(join(dir, 'banks', slug, 'cp/a.wav'))).size).toBeGreaterThan(0);
+    await expect(stat(join(dir, 'banks', slug, 'cp/missing.wav'))).rejects.toThrow();
+    // The cached manifest lists only the kept path.
+    const cached = JSON.parse(await readFile(join(dir, 'banks', slug, 'strudel.json'), 'utf8'));
+    expect(cached._base).toBe('./');
+    expect(cached.cp).toEqual(['cp/a.wav']);
+  });
+
+  it('aborts (no cache) when every referenced sample 404s', async () => {
+    const manifest = { _base: 'https://fake.test/banks/', cp: ['cp/x.wav', 'cp/y.wav'] };
+    const allGone = async (url) =>
+      url.includes('.json')
+        ? { ok: true, status: 200, json: async () => manifest }
+        : { ok: false, status: 404 };
+    const slug = bankSlug('github:fake/empty');
+    const res = await cacheBank('github:fake/empty', { cacheDir: dir, fetchImpl: allGone });
+    expect(res.ok).toBe(false);
+    expect(res.error).toMatch(/all 2 samples 404/i);
+    await expect(stat(join(dir, 'banks', slug))).rejects.toThrow();
   });
 
   it('bounds the number of samples downloaded per bank', async () => {
@@ -134,5 +167,45 @@ describe('cacheBank + manifests (filesystem)', () => {
     const res = await cacheBank('github:fake/big', { cacheDir: dir, fetchImpl: bigFetch, maxFiles: 10 });
     expect(res.ok).toBe(false);
     expect(res.error).toMatch(/too many|exceeds|bound/i);
+  });
+
+  it('cacheTrackSamples reports skipped samples per bank', async () => {
+    const manifest = { _base: 'https://fake.test/banks/', cp: ['cp/a.wav', 'cp/missing.wav'] };
+    const fetch404 = async (url) => {
+      if (url.includes('.json')) return { ok: true, status: 200, json: async () => manifest };
+      if (url.includes('missing')) return { ok: false, status: 404 };
+      return { ok: true, status: 200, arrayBuffer: async () => new TextEncoder().encode('RIFF').buffer };
+    };
+    const code = `samples('github:fake/holey')\n`;
+    const out = await cacheTrackSamples('track-skip', code, { cacheDir: dir, fetchImpl: fetch404 });
+    expect(out.ok).toBe(true);
+    expect(out.banks[0].skipped).toEqual(['cp/missing.wav']);
+  });
+});
+
+describe('pruneManifestPaths', () => {
+  it('drops paths not in the keep set and removes emptied keys', () => {
+    const manifest = {
+      _base: 'https://x/',
+      cp: ['cp/a.wav', 'cp/b.wav'],
+      bd: ['bd/gone.wav'],
+      hh: 'hh/closed.wav',
+    };
+    const out = pruneManifestPaths(manifest, new Set(['cp/a.wav', 'hh/closed.wav']));
+    expect(out._base).toBe('https://x/');     // metadata preserved
+    expect(out.cp).toEqual(['cp/a.wav']);     // partially kept array filtered
+    expect(out.bd).toBeUndefined();           // fully-missing array key dropped
+    expect(out.hh).toBe('hh/closed.wav');     // kept string stays a string
+  });
+
+  it('drops a string key whose only path was skipped', () => {
+    const out = pruneManifestPaths({ kick: 'kick/x.wav' }, new Set());
+    expect(out.kick).toBeUndefined();
+  });
+
+  it('preserves non-string, non-array values verbatim', () => {
+    const out = pruneManifestPaths({ _base: './', _meta: { bpm: 120 }, n: 5 }, new Set());
+    expect(out._meta).toEqual({ bpm: 120 });
+    expect(out.n).toBe(5);
   });
 });

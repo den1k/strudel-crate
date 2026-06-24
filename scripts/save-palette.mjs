@@ -30,6 +30,7 @@ async function main() {
     for (const source of sources) {
       const r = await cacheBank(source);
       if (!r.ok) console.error(`WARN ${palette.batch} — cache miss for ${source}: ${r.error}`);
+      if (r.ok && r.skipped?.length) console.error(`WARN ${palette.batch} — vendored ${source} minus ${r.skipped.length} missing sample(s)`);
     }
     if (sources.length) await writeTrackManifest(`palette-${palette.batch}`, sources);
   } catch (err) {
