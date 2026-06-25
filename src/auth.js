@@ -245,7 +245,17 @@ function mountProfileModal(db) {
     if (accessUnsub) return;
     accessUnsub = db.subscribeQuery(
       { allowlist: { $: { order: { addedAt: 'desc' } } } },
-      (res) => { if (res.data) renderAllowlist(res.data.allowlist ?? [], adminEmail); },
+      (res) => {
+        if (res.error) {
+          accessList.replaceChildren();
+          const li = document.createElement('li');
+          li.className = 'access-row';
+          li.textContent = `could not load: ${res.error.message}`;
+          accessList.appendChild(li);
+          return;
+        }
+        if (res.data) renderAllowlist(res.data.allowlist ?? [], adminEmail);
+      },
     );
   }
 
