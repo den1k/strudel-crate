@@ -5,8 +5,12 @@
 // /api/* request via a fetch wrapper, so the existing fetch call sites need no
 // changes. The server verifies the token AND an email allowlist — client-side
 // gating alone is bypassable, so the server is the real gate.
+import { id } from '@instantdb/core';
 import { db } from './db.js';
 import { familyCount } from './versions.js';
+import { normalizeEmail } from './email.js';
+
+const ADMIN_EMAIL = 'kalavox@gmail.com';
 
 let token = null; // signed-in user's refresh token, or null when signed out
 
@@ -190,6 +194,14 @@ function mountProfileModal(db) {
           </div>
         </form>
       </section>
+      <section class="profile-access" hidden>
+        <h3>access <span class="lessons-hint">— who can generate &amp; rate</span></h3>
+        <ul class="access-list"></ul>
+        <form class="access-add">
+          <input type="email" name="email" placeholder="add email…" autocomplete="off" />
+          <button type="submit" class="access-add-btn">add</button>
+        </form>
+      </section>
       <button class="profile-signout" type="button">sign out</button>
     </div>`;
   document.body.appendChild(el);
@@ -202,7 +214,68 @@ function mountProfileModal(db) {
   const signOutBtn = el.querySelector('.profile-signout');
   let onNameChange = () => {};
 
-  const close = () => { el.hidden = true; savedEl.hidden = true; };
+  const accessSection = el.querySelector('.profile-access');
+  const accessList = el.querySelector('.access-list');
+  const accessAdd = el.querySelector('.access-add');
+  let accessUnsub = null;
+
+  function renderAllowlist(rows, adminEmail) {
+    accessList.replaceChildren();
+    for (const row of rows) {
+      const li = document.createElement('li');
+      li.className = 'access-row';
+      const span = document.createElement('span');
+      span.textContent = row.email;
+      li.appendChild(span);
+      if (row.email !== adminEmail) {          // can't remove yourself
+        const del = document.createElement('button');
+        del.type = 'button';
+        del.className = 'access-del';
+        del.setAttribute('aria-label', `remove ${row.email}`);
+        del.textContent = '×';
+        del.onclick = () => db.transact(db.tx.allowlist[row.id].delete());
+        li.appendChild(del);
+      }
+      accessList.appendChild(li);
+    }
+  }
+
+  function startAccessAdmin(adminEmail) {
+    accessSection.hidden = false;
+    if (accessUnsub) return;
+    accessUnsub = db.subscribeQuery(
+      { allowlist: { $: { order: { addedAt: 'desc' } } } },
+      (res) => {
+        if (res.error) {
+          accessList.replaceChildren();
+          const li = document.createElement('li');
+          li.className = 'access-row';
+          li.textContent = `could not load: ${res.error.message}`;
+          accessList.appendChild(li);
+          return;
+        }
+        if (res.data) renderAllowlist(res.data.allowlist ?? [], adminEmail);
+      },
+    );
+  }
+
+  function stopAccessAdmin() {
+    accessSection.hidden = true;
+    if (accessUnsub) { accessUnsub(); accessUnsub = null; }
+    accessList.replaceChildren();
+  }
+
+  accessAdd.onsubmit = (e) => {
+    e.preventDefault();
+    const email = normalizeEmail(accessAdd.elements.email.value);
+    if (!email) { flash(accessAdd.elements.email); return; }
+    db.transact(db.tx.allowlist[id()].create({
+      email, addedAt: new Date().toISOString(), addedBy: ADMIN_EMAIL,
+    }));
+    accessAdd.elements.email.value = '';
+  };
+
+  const close = () => { el.hidden = true; savedEl.hidden = true; stopAccessAdmin(); };
   el.querySelector('.auth-x').onclick = close;
   el.onclick = (e) => { if (e.target === el) close(); };
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !el.hidden) close(); });
@@ -370,6 +443,8 @@ function mountProfileModal(db) {
       onNameChange = cb || (() => {});
       emailEl.textContent = user?.email ?? '';
       statsEl.textContent = '…';
+      if ((user?.email || '').toLowerCase() === ADMIN_EMAIL) startAccessAdmin(ADMIN_EMAIL);
+      else stopAccessAdmin();
       el.hidden = false;
       const profileId = await loadProfile();
       input.focus();

@@ -57,6 +57,11 @@ const _schema = i.schema({
       value: i.number(),           // 1-5
       updatedAt: i.string(),       // ISO 8601
     }),
+    allowlist: i.entity({
+      email: i.string().unique().indexed(),  // lowercased
+      addedAt: i.string().indexed(),          // ISO 8601
+      addedBy: i.string(),                    // admin email, light audit trail
+    }),
   },
   links: {
     tracksAuthor: {

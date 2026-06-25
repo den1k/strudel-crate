@@ -9,6 +9,7 @@ import { createRunner, liveProduced } from './runner.mjs';
 import { itemsByJob } from './instant.mjs';
 import { createCardRenderer } from './render-card.mjs';
 import { createCardCache } from './card-cache.mjs';
+import { createAllowlist } from './allowlist.mjs';
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const distDir = join(repoRoot, 'dist');
@@ -16,17 +17,17 @@ const distDir = join(repoRoot, 'dist');
 // Local `npm run dev` doesn't get systemd's EnvironmentFile — load .env ourselves.
 try { process.loadEnvFile(join(repoRoot, '.env')); } catch { /* prod: env already set */ }
 
-const allowedEmails = (process.env.CRATE_ALLOWED_EMAILS ?? '')
-  .split(',').map((s) => s.trim().toLowerCase()).filter(Boolean);
-
 const { INSTANT_APP_ID, INSTANT_ADMIN_TOKEN } = process.env;
 const adminDb = INSTANT_APP_ID && INSTANT_ADMIN_TOKEN
   ? initAdmin({ appId: INSTANT_APP_ID, adminToken: INSTANT_ADMIN_TOKEN })
   : null;
 if (!adminDb) console.warn('[crate] Instant admin not configured — writes will fail');
 
-const requireAuth = buildRequireAuth({ adminDb, allowedEmails });
-const resolveUser = buildResolveUser({ adminDb, allowedEmails });
+const adminEmail = (process.env.CRATE_ADMIN_EMAIL ?? 'kalavox@gmail.com').toLowerCase();
+const { isAllowed } = createAllowlist({ adminDb, adminEmail });
+
+const requireAuth = buildRequireAuth({ adminDb, isAllowed });
+const resolveUser = buildResolveUser({ adminDb, isAllowed });
 const requireUser = buildRequireUser({ adminDb });
 const jobStore = createJobStore({ jobsDir: join(repoRoot, 'data', 'jobs') });
 
@@ -55,7 +56,7 @@ const progressFor = async (job) => {
 const app = createApp({
   adminDb,
   namespaces: ['tracks', 'stems'],
-  jobStore, runner, progressFor, requireAuth, resolveUser, requireUser, allowedEmails,
+  jobStore, runner, progressFor, requireAuth, resolveUser, requireUser, isAllowed,
   distDir: existsSync(distDir) ? distDir : undefined,
   sampleCacheDir: join(repoRoot, 'data', 'sample-cache'),
   cardRenderer,
