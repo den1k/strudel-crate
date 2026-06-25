@@ -11,6 +11,7 @@ import { songUrl } from './song-url.js';
 import { aggregateAvg, isTopAggregate, myRatingOf, isOwnedBy } from './ratings.js';
 import { readViewParams, buildSearch } from './view-url.js';
 import { saveListState, loadListState } from './list-state.js';
+import { wireExports } from './export-buttons.js';
 
 const $ = (sel, el = document) => el.querySelector(sel);
 
@@ -562,27 +563,7 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
 
       const exportRow = document.createElement('div');
       exportRow.className = 'exports';
-      for (const fmt of splitStems ? ['wav', 'mp3', 'stems'] : ['wav', 'mp3']) {
-        const btn = document.createElement('button');
-        btn.className = 'export';
-        btn.textContent = `↓︎ ${fmt}`;
-        btn.title =
-          fmt === 'wav'
-            ? 'download lossless wav'
-            : fmt === 'mp3'
-              ? 'download mp3 192kbps'
-              : 'download per-sound 24-bit stems (zip)';
-        btn.addEventListener('click', () => {
-          const url = `/api/${collection}/${track.entityId}/audio.${fmt}`;
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = '';
-          document.body.appendChild(a);
-          a.click();
-          a.remove();
-        });
-        exportRow.appendChild(btn);
-      }
+      wireExports({ container: exportRow, track, splitStems });
       const shareBtn = document.createElement('button');
       shareBtn.className = 'export share';
       shareBtn.textContent = '⤴︎ share';

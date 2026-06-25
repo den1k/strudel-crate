@@ -9,6 +9,7 @@ import { groupVersions } from './versions.js';
 import { mmss, hasTimeline, fractionToCycle, progressFraction, isFinished } from './transport.js';
 import { idFromPath, songUrl } from './song-url.js';
 import { db } from './db.js';
+import { wireExports } from './export-buttons.js';
 
 const $ = (sel, el = document) => el.querySelector(sel);
 const NAMESPACES = ['tracks', 'stems'];
@@ -131,28 +132,7 @@ function renderSong(item, ns, family, ready) {
   const exportRow = document.createElement('div');
   exportRow.className = 'exports song-exports';
   const splitStems = ns === 'tracks';
-  for (const fmt of splitStems ? ['wav', 'mp3', 'stems'] : ['wav', 'mp3']) {
-    const btn = document.createElement('button');
-    btn.className = 'export';
-    btn.textContent = `↓︎ ${fmt}`;
-    btn.title =
-      fmt === 'wav'
-        ? 'download lossless wav'
-        : fmt === 'mp3'
-          ? 'download mp3 192kbps'
-          : 'download per-sound 24-bit stems (zip)';
-    btn.addEventListener('click', () => {
-      // Server renders+caches; the browser downloads the file. No client render.
-      const url = `/api/${ns}/${item.entityId}/audio.${fmt}`;
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = '';
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-    });
-    exportRow.appendChild(btn);
-  }
+  wireExports({ container: exportRow, track: item, splitStems });
   const share = document.createElement('button');
   share.className = 'export song-share';
   share.textContent = '⤴︎ share';
