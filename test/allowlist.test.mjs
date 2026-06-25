@@ -56,6 +56,7 @@ describe('createAllowlist', () => {
     expect(await al.isAllowed('a@x.com')).toBe(true);
     t = 2000; db.fail = true;
     expect(await al.isAllowed('a@x.com')).toBe(true); // stale-but-good
+    expect(db.queries).toBe(2);
     expect(await al.isAllowed('nope@x.com')).toBe(false);
   });
 

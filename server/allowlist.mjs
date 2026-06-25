@@ -20,6 +20,9 @@ export function createAllowlist({ adminDb, adminEmail, ttlMs = 60000, now = Date
     if (!adminDb) return;
     if (now() - loadedAt < ttlMs) return;
     if (!inflight) {
+      // On failure: keep the last-good `set` untouched (callers still get correct
+      // answers) and advance loadedAt so we retry no sooner than one TTL later —
+      // avoids hammering Instant during an outage. .finally clears the dedup latch.
       inflight = load()
         .catch(() => { /* keep last good set; retry next call past TTL */ loadedAt = now(); })
         .finally(() => { inflight = null; });
