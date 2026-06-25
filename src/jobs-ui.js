@@ -1,7 +1,7 @@
 // DOM wiring for UI-triggered generation: a generate panel that POSTs jobs, a
 // poller that drives browser notifications, and a nav log dropdown. Pure logic
 // is imported from notifications.js.
-import { deepLink, unreadCount, newlyFinished, notificationText, progressText } from './notifications.js';
+import { deepLink, unreadCount, newlyFinished, notificationText, progressText, retryBody } from './notifications.js';
 
 const $ = (sel) => document.querySelector(sel);
 const SEEN_KEY = 'strudel-jobs-last-seen';
@@ -26,6 +26,10 @@ export function mountJobsUI({ collection, onBatchDone }) {
   let lastJobs = [];
   let activeJob = null; // the running job, else the next queued one, else null
   const startedAt = Date.now();
+  // Failed-job ids the user has re-queued this session. The log re-renders from
+  // scratch every poll (innerHTML), so this survives those rebuilds to keep the
+  // retried row showing "re-queued" instead of flipping back to a live button.
+  const retriedIds = new Set();
 
   // text + a state class ('busy' | 'err' | '') so the stylesheet can color/animate it
   function setStatus(text, state = '') {
@@ -84,8 +88,18 @@ export function mountJobsUI({ collection, onBatchDone }) {
         const label = `${j.newItems?.length ?? 0} ${j.collection} — ${j.prompt}`;
         return `<a href="${deepLink(j)}" title="${escapeHtml(j.summary || '')}">${escapeHtml(label)}</a>`;
       }
+      // failed / interrupted — show the reason and a retry affordance. The
+      // button is omitted for non-retryable jobs (unknown shape); already
+      // re-queued failures show a disabled marker instead.
       const reason = j.error || j.prompt;
-      return `<span class="failed">${escapeHtml(`${j.status}: ${reason}`)}</span>`;
+      const text = `<span class="job-row-text">${escapeHtml(`${j.status}: ${reason}`)}</span>`;
+      let action = '';
+      if (retriedIds.has(j.id)) {
+        action = '<span class="job-requeued" title="a new run was queued">re-queued ↑</span>';
+      } else if (retryBody(j)) {
+        action = `<button type="button" class="job-retry" data-id="${escapeHtml(j.id)}" title="run this job again">↻ retry</button>`;
+      }
+      return `<div class="job-row failed">${text}${action}</div>`;
     }).join('');
     logEl.innerHTML = (activeHtml + finishedHtml) || '<span class="empty">no jobs yet</span>';
   }
@@ -104,6 +118,40 @@ export function mountJobsUI({ collection, onBatchDone }) {
     if (!logEl.hidden && lastJobs[0]) {
       localStorage.setItem(SEEN_KEY, lastJobs[0].id);
       renderBadge(lastJobs);
+    }
+  });
+
+  // Retry a failed/interrupted job: re-POST its original request. Delegated so it
+  // survives the log's per-poll innerHTML rebuilds. Optimistically marks the row
+  // re-queued (persisted in retriedIds); rolls back + flashes on a POST error.
+  logEl.addEventListener('click', async (e) => {
+    const btn = e.target.closest('.job-retry');
+    if (!btn) return;
+    const id = btn.dataset.id;
+    const job = lastJobs.find((j) => j.id === id);
+    const body = retryBody(job);
+    if (!body) return;
+
+    retriedIds.add(id);
+    renderLog(lastJobs); // flip to "re-queued ↑" immediately
+    setStatus('retrying…', 'busy');
+    try {
+      const res = await fetch('/api/jobs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        retriedIds.delete(id);
+        renderLog(lastJobs);
+        setStatus(res.status === 401 ? 'sign in to retry' : 'retry rejected', 'err');
+        return;
+      }
+      setStatus('running…', 'busy'); // next poll (≤3s) surfaces the new queued job
+    } catch {
+      retriedIds.delete(id);
+      renderLog(lastJobs);
+      setStatus('network error', 'err');
     }
   });
 

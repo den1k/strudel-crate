@@ -1,6 +1,6 @@
 // test/notifications.test.mjs
 import { describe, it, expect } from 'vitest';
-import { deepLink, unreadCount, newlyFinished, notificationText, formatElapsed, progressText } from '../src/notifications.js';
+import { deepLink, unreadCount, newlyFinished, notificationText, formatElapsed, progressText, retryBody } from '../src/notifications.js';
 
 const job = (id, extra = {}) => ({
   id, type: 'generate-stems', prompt: 'pads', collection: 'stems',
@@ -48,6 +48,32 @@ describe('notificationText', () => {
   });
   it('labels failures', () => {
     expect(notificationText(job('a', { status: 'failed' }))).toEqual({ title: 'Generation failed', body: 'pads' });
+  });
+});
+
+describe('retryBody', () => {
+  it('rebuilds a generate-tracks request with prompt + count', () => {
+    const j = job('a', { type: 'generate-tracks', collection: 'tracks', prompt: 'acid techno', count: 12, status: 'failed' });
+    expect(retryBody(j)).toEqual({ type: 'generate-tracks', prompt: 'acid techno', count: 12 });
+  });
+  it('rebuilds a generate-stems request', () => {
+    const j = job('a', { type: 'generate-stems', prompt: 'pads', count: 6, status: 'interrupted' });
+    expect(retryBody(j)).toEqual({ type: 'generate-stems', prompt: 'pads', count: 6 });
+  });
+  it('rebuilds a revise-from-notes request from the collection', () => {
+    const j = job('a', { type: 'revise-from-notes', collection: 'stems', prompt: 'stems', status: 'failed' });
+    expect(retryBody(j)).toEqual({ type: 'revise-from-notes', prompt: 'stems' });
+  });
+  it('rebuilds a remix request from collection + sourceSlug + instructions', () => {
+    const j = job('a', { type: 'remix', collection: 'tracks', sourceSlug: '2026-06-03-seed-01', prompt: 'darker, halftime', status: 'failed' });
+    expect(retryBody(j)).toEqual({ type: 'remix', namespace: 'tracks', slug: '2026-06-03-seed-01', instructions: 'darker, halftime' });
+  });
+  it('returns null for a remix missing its source', () => {
+    expect(retryBody(job('a', { type: 'remix', collection: 'tracks', sourceSlug: null, status: 'failed' }))).toBeNull();
+  });
+  it('returns null for unknown types and nullish input', () => {
+    expect(retryBody(job('a', { type: 'mystery', status: 'failed' }))).toBeNull();
+    expect(retryBody(null)).toBeNull();
   });
 });
 

@@ -394,10 +394,37 @@ body {
 .job-log a:hover { background: var(--acid); color: var(--bg); }
 .job-log a:hover::before { color: var(--bg); }
 .job-log .active { color: var(--acid); font-variant-numeric: tabular-nums; }
-.job-log .failed { color: var(--hot); }
-.job-log .failed::before { content: '✕ '; }
 .job-log .empty { color: var(--dim); }
-.job-log a:last-child, .job-log > span:last-child { border-bottom: 0; }
+.job-log a:last-child, .job-log > span:last-child, .job-log .job-row:last-child { border-bottom: 0; }
+
+/* failed / interrupted row: reason text on the left, a retry affordance on the
+   right. Shares the block padding/border of the other log entries. */
+.job-log .job-row {
+  display: flex; align-items: center; gap: 10px;
+  font-family: var(--mono); font-size: 12px; line-height: 1.4;
+  padding: 9px 12px; border-bottom: 1px solid var(--line);
+}
+.job-row.failed .job-row-text { flex: 1; min-width: 0; color: var(--hot); word-break: break-word; }
+.job-row.failed .job-row-text::before { content: '✕ '; }
+
+/* ghost button → inverts to acid on hover, mirroring the .job-log link hover */
+.job-retry {
+  flex: none; cursor: pointer;
+  font-family: var(--mono); font-size: 10px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.08em; white-space: nowrap;
+  color: var(--acid); background: transparent;
+  border: 1px solid var(--acid); padding: 4px 8px;
+  transition: background 0.12s ease, color 0.12s ease, box-shadow 0.12s ease, transform 0.06s ease;
+}
+.job-retry:hover { background: var(--acid); color: var(--bg); box-shadow: 0 0 12px rgb(200 245 60 / 0.45); }
+.job-retry:active { transform: translateY(1px); }
+.job-retry:focus-visible { outline: 1px solid var(--acid); outline-offset: 2px; }
+
+.job-requeued {
+  flex: none; white-space: nowrap;
+  font-family: var(--mono); font-size: 10px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.08em; color: var(--dim);
+}
 .job-log::-webkit-scrollbar { width: 9px; }
 .job-log::-webkit-scrollbar-thumb { background: var(--line); }
 .job-log::-webkit-scrollbar-track { background: transparent; }
