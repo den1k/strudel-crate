@@ -126,7 +126,9 @@ designed fresh for every batch; never reuse a previous batch's kit.
       far more than the guide names. Reach past the base palette: pick banks that
       fit the brief and load them with samples('<ref>'). Before you write a
       samples() load, grep data/banks.json for that bank to confirm its EXACT sound
-      names (the digest lists banks, not every sound). Prefer banks here over recall
+      names (the digest lists banks, not every sound). ALWAYS grep for the specific
+      bank name — NEVER Read data/banks.json wholesale; it is ~35K tokens and a full
+      read blows this agent's context budget. Prefer banks here over recall
       — a bank you only half-remember may not exist and will fail validation:
       {bank_digest}
    3. Run `mkdir -p staging`, then write staging/{batch}.json as a palette:
