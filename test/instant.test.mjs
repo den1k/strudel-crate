@@ -285,12 +285,21 @@ describe('itemOwnerProfileId', () => {
 });
 
 describe('setNotes', () => {
-  it('patches only the provided keys and echoes merged values', async () => {
-    const db = fakeAdmin({ tracks: [{ id: 't1', slug: 'demo-01', notes: 'old', lesson: 'keep' }] });
+  // notes stay a string on the item; lesson is now a linked `lessons` record
+  // (item.lessonRecord). See test/lessons.test.mjs for the lesson upsert/delete
+  // branches; here we cover notes-only behavior + the merged echo.
+  it('patches notes only and echoes the existing lesson record text', async () => {
+    const db = fakeAdmin({ tracks: [{ id: 't1', slug: 'demo-01', notes: 'old', author: [{ id: 'p' }], lessonRecord: [{ id: 'L1', text: 'keep' }] }] });
     const out = await setNotes(db, 'tracks', 'demo-01', { notes: 'new' });
     expect(out).toEqual({ notes: 'new', lesson: 'keep' });
     const tx = db._txs.find((t) => t.ns === 'tracks');
     expect(tx.update).toEqual({ notes: 'new' });
+    expect(db._txs.some((t) => t.ns === 'lessons')).toBe(false); // lesson untouched
+  });
+  it('echoes empty lesson when the song has no lesson record', async () => {
+    const db = fakeAdmin({ tracks: [{ id: 't1', slug: 'demo-01', notes: 'old', author: [{ id: 'p' }], lessonRecord: [] }] });
+    const out = await setNotes(db, 'tracks', 'demo-01', { notes: 'new' });
+    expect(out).toEqual({ notes: 'new', lesson: '' });
   });
   it('returns null for a missing item', async () => {
     const db = fakeAdmin({ tracks: [] });

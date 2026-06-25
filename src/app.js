@@ -396,12 +396,17 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
   // InstaQL returns a link as a list, so unwrap the single author either way.
   function mapRow(row) {
     const author = Array.isArray(row.author) ? row.author[0] : row.author;
+    // The per-song lesson now lives in the linked `lessons` record, not a string
+    // field. Surface its text as `lesson` so the song-card quick-add box still
+    // populates on load and existing call sites keep working.
+    const lessonRec = Array.isArray(row.lessonRecord) ? row.lessonRecord[0] : row.lessonRecord;
     return {
       ...row,
       id: row.slug,
       entityId: row.id, // globally-unique Instant id; the /song URL uses this, not the slug
       artistName: author?.artistName ?? null,
       authorProfileId: author?.id ?? null,
+      lesson: lessonRec?.text ?? '',
     };
   }
 
@@ -931,7 +936,7 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
     $('#tracks').innerHTML = `<p class="empty">Instant not configured — set VITE_INSTANT_APP_ID</p>`;
   } else {
     db.subscribeQuery(
-      { [namespace]: { author: {}, $: { order: { createdAt: 'desc' } } } },
+      { [namespace]: { author: {}, lessonRecord: {}, $: { order: { createdAt: 'desc' } } } },
       (res) => {
         if (res.error) {
           $('#tracks').innerHTML = `<p class="empty">could not load: ${res.error.message}</p>`;

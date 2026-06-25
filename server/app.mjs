@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { readFile } from 'node:fs/promises';
 import express from 'express';
 import { collectionFor } from './runner.mjs';
-import { setRating, setNotes, itemOwnerProfileId, ensureProfile, getProfile, setArtistName, recordPlay, resolvePublicItem } from './instant.mjs';
+import { setRating, setNotes, itemOwnerProfileId, ensureProfile, getProfile, setArtistName, recordPlay, resolvePublicItem, queryLessonsByProfile, createLesson, updateLesson, deleteLesson } from './instant.mjs';
 import { createPlayLimiter } from './rate-limit.mjs';
 import { songMetaTags, brandMetaTags, injectMeta, cardHash } from './og.mjs';
 import { songCardHtml, brandCardHtml } from './og-card.mjs';
@@ -84,6 +84,52 @@ function profileRoutes(app, adminDb, requireAuth) {
       return res.status(400).json({ error: 'artistName required (1-60 chars)' });
     }
     res.json(await setArtistName(adminDb, req.user, name));
+  }));
+
+  // --- Lessons manager: caller's own profile only -------------------------
+  const TARGETS = ['tracks', 'stems'];
+  const cleanText = (v) => (typeof v === 'string' ? v.trim() : null);
+
+  app.get('/api/lessons', requireAuth, wrap(async (req, res) => {
+    const profileId = await ensureProfile(adminDb, req.user);
+    res.json(await queryLessonsByProfile(adminDb, profileId));
+  }));
+
+  app.post('/api/lessons', requireAuth, wrap(async (req, res) => {
+    const { text, target } = req.body ?? {};
+    const t = cleanText(text);
+    if (!t) return res.status(400).json({ error: 'text required' });
+    if (!TARGETS.includes(target)) return res.status(400).json({ error: 'target must be tracks or stems' });
+    const profileId = await ensureProfile(adminDb, req.user);
+    res.json(await createLesson(adminDb, profileId, { text: t, target }));
+  }));
+
+  app.put('/api/lessons/:id', requireAuth, wrap(async (req, res) => {
+    const { text, target } = req.body ?? {};
+    const patch = {};
+    if (text !== undefined) {
+      const t = cleanText(text);
+      if (!t) return res.status(400).json({ error: 'text must be a non-empty string' });
+      patch.text = t;
+    }
+    if (target !== undefined) {
+      if (!TARGETS.includes(target)) return res.status(400).json({ error: 'target must be tracks or stems' });
+      patch.target = target;
+    }
+    if (Object.keys(patch).length === 0) return res.status(400).json({ error: 'nothing to update' });
+    const profileId = await ensureProfile(adminDb, req.user);
+    const out = await updateLesson(adminDb, profileId, req.params.id, patch);
+    if (out === null) return res.status(404).json({ error: 'not found' });
+    if (out === 'forbidden') return res.status(403).json({ error: 'not your lesson' });
+    res.json(out);
+  }));
+
+  app.delete('/api/lessons/:id', requireAuth, wrap(async (req, res) => {
+    const profileId = await ensureProfile(adminDb, req.user);
+    const out = await deleteLesson(adminDb, profileId, req.params.id);
+    if (out === null) return res.status(404).json({ error: 'not found' });
+    if (out === 'forbidden') return res.status(403).json({ error: 'not your lesson' });
+    res.json({ ok: true });
   }));
 }
 

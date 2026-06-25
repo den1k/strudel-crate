@@ -1,23 +1,29 @@
 // Digest of cross-track lessons, consumed by /generate-tracks agents.
 // A song's star rating and per-song notes apply ONLY to that song and are never
 // injected here — only lessons apply across the board.
+//
+// Lessons are first-class records (see instant.schema lessons entity): each has
+// `text`, a `target` ('tracks'|'stems'), and an optional `song` provenance
+// ({ namespace, slug, title } | null). buildDigest renders the provenance suffix
+// only when the lesson came from a song.
 import { fileURLToPath } from 'node:url';
 
-export function buildDigest(tracks) {
-  const lessons = tracks.filter((t) => t.lesson?.trim());
-  if (lessons.length === 0) {
+export function buildDigest(lessons) {
+  const present = lessons.filter((l) => l.text?.trim());
+  if (present.length === 0) {
     return 'No lessons yet — no cross-track feedback to apply.';
   }
   const lines = ['## Lessons for all future tracks'];
-  for (const t of lessons) {
-    lines.push(`- ${t.lesson.trim()} (from "${t.title}")`);
+  for (const l of present) {
+    const from = l.song?.title ? ` (from "${l.song.title}")` : '';
+    lines.push(`- ${l.text.trim()}${from}`);
   }
   return lines.join('\n');
 }
 
 if (process.argv[1] && process.argv[1] === fileURLToPath(import.meta.url)) {
-  const { adminDb, queryItems, queryItemsByAuthor } = await import('./lib/instant.mjs');
-  const ns = process.argv[2] === 'stems' ? 'stems' : 'tracks';
+  const { adminDb, queryLessonsByProfile, queryAllLessons } = await import('./lib/instant.mjs');
+  const target = process.argv[2] === 'stems' ? 'stems' : 'tracks';
   // Lessons are per-user: the runner stamps the generating user's profile id into
   // the env, so a job only ever sees its own author's lessons. Manual CLI runs
   // (no profile id) fall back to the full digest for debugging.
@@ -31,8 +37,8 @@ if (process.argv[1] && process.argv[1] === fileURLToPath(import.meta.url)) {
     console.error('feedback: CRATE_AUTHOR_PROFILE_ID missing inside job — refusing to leak all-user lessons');
     process.exit(2);
   }
-  const items = profileId
-    ? await queryItemsByAuthor(adminDb, ns, profileId)
-    : await queryItems(adminDb, ns);
-  console.log(buildDigest(items));
+  const lessons = profileId
+    ? await queryLessonsByProfile(adminDb, profileId, target)
+    : await queryAllLessons(adminDb, target);
+  console.log(buildDigest(lessons));
 }

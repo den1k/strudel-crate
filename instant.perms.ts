@@ -18,9 +18,6 @@ const rules = {
       delete: "false",
       update: "false",
     },
-    fields: {
-      lesson: "auth.id != null && auth.id in data.ref('author.user.id')",
-    },
   },
   tracks: {
     allow: {
@@ -29,11 +26,16 @@ const rules = {
       delete: "false",
       update: "false",
     },
-    fields: {
-      lesson: "auth.id != null && auth.id in data.ref('author.user.id')",
-    },
   },
   ratings: {
+    allow: {
+      view: "auth.id != null && auth.id in data.ref('profile.user.id')",
+      create: "false",
+      delete: "false",
+      update: "false",
+    },
+  },
+  lessons: {
     allow: {
       view: "auth.id != null && auth.id in data.ref('profile.user.id')",
       create: "false",
