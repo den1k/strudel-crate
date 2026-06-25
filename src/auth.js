@@ -176,6 +176,20 @@ function mountProfileModal(db) {
       <p class="profile-saved" role="status" hidden>saved ✓</p>
       <p class="profile-email"></p>
       <p class="profile-stats">…</p>
+      <section class="profile-lessons">
+        <h3>lessons <span class="lessons-hint">— applied to your future generations</span></h3>
+        <ul class="lessons-list"></ul>
+        <form class="lesson-add">
+          <textarea name="text" rows="2" maxlength="500" placeholder="new lesson — applies to every future batch…"></textarea>
+          <div class="lesson-add-row">
+            <div class="lesson-target" role="group" aria-label="applies to">
+              <button type="button" data-target="tracks" class="on">tracks</button>
+              <button type="button" data-target="stems">stems</button>
+            </div>
+            <button type="submit" class="lesson-add-btn">add</button>
+          </div>
+        </form>
+      </section>
       <button class="profile-signout" type="button">sign out</button>
     </div>`;
   document.body.appendChild(el);
@@ -226,6 +240,113 @@ function mountProfileModal(db) {
     return profileId;
   }
 
+  // --- lessons manager ----------------------------------------------------
+  const lessonsList = el.querySelector('.lessons-list');
+  const addForm = el.querySelector('.lesson-add');
+  const addText = addForm.elements.text;
+  let addTarget = 'tracks';
+
+  // A two-button tracks/stems toggle. `onPick` fires with the chosen target.
+  function wireTargetToggle(group, current, onPick) {
+    for (const b of group.querySelectorAll('button')) {
+      b.classList.toggle('on', b.dataset.target === current);
+      b.onclick = () => {
+        if (b.dataset.target === current) return;
+        current = b.dataset.target;
+        for (const x of group.querySelectorAll('button')) x.classList.toggle('on', x === b);
+        onPick(current);
+      };
+    }
+  }
+
+  function lessonRow(lesson) {
+    const li = document.createElement('li');
+    li.className = 'lesson-row';
+    li.dataset.id = lesson.id;
+    li.innerHTML = `
+      <textarea class="lesson-text" rows="2" maxlength="500"></textarea>
+      <div class="lesson-row-meta">
+        <div class="lesson-target" role="group" aria-label="applies to">
+          <button type="button" data-target="tracks">tracks</button>
+          <button type="button" data-target="stems">stems</button>
+        </div>
+        <span class="lesson-from"></span>
+        <button type="button" class="lesson-del" aria-label="delete lesson">×</button>
+      </div>`;
+    const ta = li.querySelector('.lesson-text');
+    ta.value = lesson.text;
+    const from = li.querySelector('.lesson-from');
+    if (lesson.song?.title) { from.textContent = `from "${lesson.song.title}"`; from.title = lesson.song.title; }
+
+    // debounced text autosave
+    let timer = null;
+    ta.addEventListener('input', () => {
+      clearTimeout(timer);
+      timer = setTimeout(async () => {
+        const text = ta.value.trim();
+        if (!text) return; // empty text isn't a valid update; use delete instead
+        try {
+          const res = await fetch(`/api/lessons/${lesson.id}`, {
+            method: 'PUT', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text }),
+          });
+          if (!res.ok) flash(ta);
+        } catch { flash(ta); }
+      }, 600);
+    });
+
+    wireTargetToggle(li.querySelector('.lesson-target'), lesson.target, async (target) => {
+      try {
+        const res = await fetch(`/api/lessons/${lesson.id}`, {
+          method: 'PUT', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ target }),
+        });
+        if (!res.ok) flash(ta);
+      } catch { flash(ta); }
+    });
+
+    li.querySelector('.lesson-del').onclick = async () => {
+      try {
+        const res = await fetch(`/api/lessons/${lesson.id}`, { method: 'DELETE' });
+        if (res.ok) li.remove(); else flash(ta);
+      } catch { flash(ta); }
+    };
+    return li;
+  }
+
+  function flash(node) {
+    node.classList.add('flash-error');
+    setTimeout(() => node.classList.remove('flash-error'), 600);
+  }
+
+  async function loadLessons() {
+    lessonsList.replaceChildren();
+    try {
+      const res = await fetch('/api/lessons');
+      if (!res.ok) return;
+      const lessons = await res.json();
+      for (const l of lessons) lessonsList.appendChild(lessonRow(l));
+    } catch { /* ignore */ }
+  }
+
+  wireTargetToggle(addForm.querySelector('.lesson-target'), addTarget, (t) => { addTarget = t; });
+  addForm.onsubmit = async (e) => {
+    e.preventDefault();
+    const text = addText.value.trim();
+    if (!text) return;
+    try {
+      const res = await fetch('/api/lessons', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, target: addTarget }),
+      });
+      if (res.ok) {
+        const lesson = await res.json();
+        lessonsList.insertBefore(lessonRow(lesson), lessonsList.firstChild);
+        addText.value = '';
+      } else flash(addText);
+    } catch { flash(addText); }
+  };
+
   async function loadStats(profileId) {
     statsEl.hidden = false;
     statsEl.textContent = '…';
@@ -252,7 +373,7 @@ function mountProfileModal(db) {
       el.hidden = false;
       const profileId = await loadProfile();
       input.focus();
-      await loadStats(profileId);
+      await Promise.all([loadStats(profileId), loadLessons()]);
     },
     close,
   };

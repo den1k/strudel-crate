@@ -42,7 +42,12 @@ export function buildArgv(job) {
     : job.type === 'remix'
       ? `/remix ${job.collection} ${job.sourceSlug} "${safePrompt}"`
       : `/${job.type} "${safePrompt}" ${job.count}`;
-  return ['-p', prompt, '--output-format', 'json', '--allowedTools', ALLOWED_TOOLS];
+  // Pin the orchestrator (planner) model. Sub-agents inherit this unless they
+  // override it per-dispatch — generate-tracks Stage 2 dispatches compose
+  // agents on Sonnet; everything else (kit design, stems, remix, revise) stays
+  // on this model. Override via CRATE_PLANNER_MODEL; default Opus.
+  const plannerModel = process.env.CRATE_PLANNER_MODEL || 'opus';
+  return ['-p', prompt, '--model', plannerModel, '--output-format', 'json', '--allowedTools', ALLOWED_TOOLS];
 }
 
 // Number of rows this job has produced so far (rows stamped with its jobId).

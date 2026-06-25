@@ -31,6 +31,26 @@ export function notificationText(job) {
   return { title: `${n} ${job.collection} ready`, body: job.prompt };
 }
 
+// Reconstruct the POST /api/jobs body that re-runs a finished job, from the
+// fields the server stamped on it. Returns null when the job can't be retried
+// (unknown type, or a remix missing its source). Mirrors the request shapes the
+// server validates in jobRoutes — see server/app.mjs.
+export function retryBody(job) {
+  if (!job) return null;
+  switch (job.type) {
+    case 'remix':
+      if (!job.sourceSlug || !job.collection) return null;
+      return { type: 'remix', namespace: job.collection, slug: job.sourceSlug, instructions: job.prompt };
+    case 'revise-from-notes':
+      return { type: 'revise-from-notes', prompt: job.collection };
+    case 'generate-tracks':
+    case 'generate-stems':
+      return { type: job.type, prompt: job.prompt, count: job.count };
+    default:
+      return null;
+  }
+}
+
 // "m:ss" elapsed string. Negative input (clock skew) clamps to 0:00.
 export function formatElapsed(ms) {
   const s = Math.max(0, Math.floor(ms / 1000));

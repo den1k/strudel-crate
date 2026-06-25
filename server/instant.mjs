@@ -90,21 +90,150 @@ export async function itemOwnerProfileId(adminDb, namespace, slug) {
   return item?.author?.[0]?.id ?? null;
 }
 
-// Patch notes/lesson on the item (only the keys present in `patch`). Returns the
-// merged { notes, lesson } or null when the slug doesn't exist. Caller is
+// Patch notes on the item and, when `patch.lesson` is present, upsert/delete the
+// song's linked lesson record (the song-card "quick-add"). `notes` still lives
+// as a string on the item; `lesson` is now a first-class `lessons` record linked
+// to the song + its author. Returns the merged { notes, lesson } (lesson is the
+// record's text, or '' when none) or null when the slug doesn't exist. Caller is
 // responsible for the owner check.
-export async function setNotes(adminDb, namespace, slug, patch) {
-  const res = await adminDb.query({ [namespace]: { $: { where: { slug } } } });
+//
+// `callerProfileId` (the signed-in writer's profile) is the fallback owner for a
+// newly-created lesson when the song has no author — e.g. an admin editing an
+// unowned legacy song. Without it the lesson would be created profile-less:
+// invisible to the manager, un-deletable, and never cascade-cleaned. For an
+// owned song the author IS the caller, so this changes nothing there.
+export async function setNotes(adminDb, namespace, slug, patch, callerProfileId = null) {
+  const res = await adminDb.query({
+    [namespace]: { author: {}, lessonRecord: {}, $: { where: { slug } } },
+  });
   const item = res[namespace][0];
   if (!item) return null;
-  const update = {};
-  if (patch.notes !== undefined) update.notes = patch.notes ?? '';
-  if (patch.lesson !== undefined) update.lesson = patch.lesson ?? '';
-  await adminDb.transact(adminDb.tx[namespace][item.id].update(update));
+
+  const txs = [];
+  if (patch.notes !== undefined) {
+    txs.push(adminDb.tx[namespace][item.id].update({ notes: patch.notes ?? '' }));
+  }
+
+  // has-one reverse links come back as a (possibly empty) list — normalize to a
+  // single record or null (an empty [] is truthy and would break the branches).
+  const existing = (Array.isArray(item.lessonRecord) ? item.lessonRecord[0] : item.lessonRecord) || null;
+  let lessonText = existing?.text ?? '';
+  if (patch.lesson !== undefined) {
+    const text = (patch.lesson ?? '').trim();
+    const now = new Date().toISOString();
+    if (!text) {
+      if (existing) txs.push(adminDb.tx.lessons[existing.id].delete());
+      lessonText = '';
+    } else if (existing) {
+      txs.push(adminDb.tx.lessons[existing.id].update({ text, updatedAt: now }));
+      lessonText = text;
+    } else {
+      const ownerId = item.author?.[0]?.id ?? callerProfileId;
+      const lessonId = id();
+      const links = { [namespace === 'tracks' ? 'track' : 'stem']: item.id };
+      if (ownerId) links.profile = ownerId;
+      txs.push(adminDb.tx.lessons[lessonId].update({
+        text, target: namespace, createdAt: now, updatedAt: now,
+      }).link(links));
+      lessonText = text;
+    }
+  }
+
+  if (txs.length) await adminDb.transact(txs);
   return {
-    notes: 'notes' in update ? update.notes : (item.notes ?? ''),
-    lesson: 'lesson' in update ? update.lesson : (item.lesson ?? ''),
+    notes: patch.notes !== undefined ? (patch.notes ?? '') : (item.notes ?? ''),
+    lesson: lessonText,
   };
+}
+
+// --- Lessons manager: CRUD scoped to a profile -----------------------------
+// A lesson is { id, text, target, createdAt, updatedAt, song } where song is
+// { namespace, slug, title } or null. All helpers take an explicit profileId and
+// the caller (route) is responsible for resolving + matching it.
+
+function lessonSong(l) {
+  const track = Array.isArray(l.track) ? l.track[0] : l.track;
+  if (track) return { namespace: 'tracks', slug: track.slug, title: track.title };
+  const stem = Array.isArray(l.stem) ? l.stem[0] : l.stem;
+  if (stem) return { namespace: 'stems', slug: stem.slug, title: stem.title };
+  return null;
+}
+
+function lessonView(l) {
+  return {
+    id: l.id, text: l.text, target: l.target,
+    createdAt: l.createdAt, updatedAt: l.updatedAt, song: lessonSong(l),
+  };
+}
+
+// All of a profile's lessons, newest first. `target` (optional) filters to
+// 'tracks' | 'stems'.
+export async function queryLessonsByProfile(adminDb, profileId, target) {
+  const where = { 'profile.id': profileId };
+  if (target) where.target = target;
+  const { lessons } = await adminDb.query({
+    lessons: { track: {}, stem: {}, $: { where } },
+  });
+  return lessons
+    .map(lessonView)
+    .sort((a, b) => (b.createdAt ?? '').localeCompare(a.createdAt ?? ''));
+}
+
+// All lessons of a target type across every profile — debug-only fallback for
+// manual feedback CLI runs (never used inside a job; see feedback.mjs).
+export async function queryAllLessons(adminDb, target) {
+  const where = target ? { target } : {};
+  const { lessons } = await adminDb.query({
+    lessons: { track: {}, stem: {}, $: { where } },
+  });
+  return lessons.map(lessonView);
+}
+
+export async function createLesson(adminDb, profileId, { text, target }) {
+  const now = new Date().toISOString();
+  const lessonId = id();
+  await adminDb.transact(
+    adminDb.tx.lessons[lessonId]
+      .update({ text, target, createdAt: now, updatedAt: now })
+      .link({ profile: profileId }),
+  );
+  return { id: lessonId, text, target, createdAt: now, updatedAt: now, song: null };
+}
+
+// Returns the lesson's owning profile id (has-one comes back as a list), or null
+// when the lesson is missing.
+async function lessonOwnerProfileId(adminDb, lessonId) {
+  const { lessons } = await adminDb.query({
+    lessons: { profile: {}, $: { where: { id: lessonId } } },
+  });
+  const l = lessons[0];
+  if (!l) return undefined; // distinguish "missing" from "unowned"
+  return l.profile?.[0]?.id ?? null;
+}
+
+// Update text and/or target. Returns the updated view, null when missing, or
+// 'forbidden' when owned by a different profile.
+export async function updateLesson(adminDb, profileId, lessonId, patch) {
+  const owner = await lessonOwnerProfileId(adminDb, lessonId);
+  if (owner === undefined) return null;
+  if (owner !== profileId) return 'forbidden';
+  const update = { updatedAt: new Date().toISOString() };
+  if (patch.text !== undefined) update.text = patch.text;
+  if (patch.target !== undefined) update.target = patch.target;
+  await adminDb.transact(adminDb.tx.lessons[lessonId].update(update));
+  const { lessons } = await adminDb.query({
+    lessons: { track: {}, stem: {}, $: { where: { id: lessonId } } },
+  });
+  return lessons[0] ? lessonView(lessons[0]) : null;
+}
+
+// Delete a lesson. Returns true, null when missing, or 'forbidden'.
+export async function deleteLesson(adminDb, profileId, lessonId) {
+  const owner = await lessonOwnerProfileId(adminDb, lessonId);
+  if (owner === undefined) return null;
+  if (owner !== profileId) return 'forbidden';
+  await adminDb.transact(adminDb.tx.lessons[lessonId].delete());
+  return true;
 }
 
 export async function itemSlugs(adminDb, namespace) {
