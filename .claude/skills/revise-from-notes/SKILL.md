@@ -27,7 +27,10 @@ is a per-item request for change; the new version supersedes the noted one.
 4. **Get a timestamp** for the new versions: `date -u +%Y-%m-%dT%H:%M:%SZ`.
 
 5. **Fan out agents:** dispatch ALL agents for a wave in a SINGLE message
-   (parallel tool calls), waves of at most 8. **Substitute `<repo root>` below
+   (parallel tool calls), waves of at most 8. Dispatch each agent with NO model
+   override so it inherits the orchestrator's Opus model — revising a noted item
+   is taste-heavy, like the original generation, so it stays on the high tier
+   (only generate-tracks Stage-2 compose runs on Sonnet). **Substitute `<repo root>` below
    with the ABSOLUTE path of your current working directory (run `pwd` first).**
    In a git worktree that is the worktree path, NOT the main checkout — a relative
    or wrong path makes agents write files and `git commit` in the wrong checkout.
