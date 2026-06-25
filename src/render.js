@@ -4,6 +4,9 @@ import {
   resetGlobalEffects,
   initAudio,
   webaudioOutput,
+  getSound,
+  getSampleInfo,
+  loadBuffer,
 } from '@strudel/webaudio';
 import { evaluate } from '@strudel/transpiler';
 import { exportSpec, collectHaps, groupHapsBySound, stemFilenames } from './export-spec.js';
@@ -25,6 +28,49 @@ async function evalPattern(track) {
   return pattern;
 }
 
+// Preload all unique sample buffers in parallel before the sequential hap-scheduling loop.
+//
+// Why this matters: superdough fetches sample audio lazily when the first hap that
+// references a given URL is awaited in the loop.  Because the loop is sequential
+// (one `await webaudioOutput()` at a time), each unique sample URL is fetched *one
+// after another*.  Over a fast localhost the total wait is the SUM of all fetch
+// durations; over a CDN (GitHub raw, etc.) each fetch takes 200–2000 ms, so a
+// track with 5 unique samples serialises to 1–10 s of dead waiting *before*
+// `startRendering()` even begins — making short exports appear 3–5× slower than
+// the track's own duration.
+//
+// This function collects every distinct sample URL from the hap list and fires all
+// fetches + decodeAudioData calls in parallel.  superdough's `loadBuffer` already
+// deduplicates via a module-level URL→Promise cache, so a second `loadBuffer(url)`
+// call during the real hap loop immediately resolves from cache.  The parallel wait
+// is therefore max(fetch_times) rather than sum(fetch_times) — typically a 3–10×
+// wall-clock improvement for CDN-hosted banks.
+async function preloadSampleBuffers(haps, ac) {
+  const seenUrls = new Set();
+  const loads = [];
+  for (const hap of haps) {
+    const v = hap.value;
+    if (!v || typeof v !== 'object') continue;
+    let s = v.s;
+    if (!s || ['-', '~', '_'].includes(s)) continue;
+    // Mirror superdough's bank-prefix logic so we look up the right sound entry.
+    if (v.bank) s = `${v.bank}_${s}`;
+    const sound = getSound(s);
+    // Synth sounds have no .data.samples; only sample-based sounds do.
+    const bank = sound?.data?.samples;
+    if (!bank) continue;
+    try {
+      const { url } = getSampleInfo(v, bank);
+      if (!url || seenUrls.has(url)) continue;
+      seenUrls.add(url);
+      // Errors (404, CORS, etc.) are suppressed here — the real hap loop will
+      // handle them per-hap and emit the existing [export] hap skipped warning.
+      loads.push(loadBuffer(url, ac, s).catch(() => {}));
+    } catch (_) { /* unmappable sound — skip */ }
+  }
+  if (loads.length) await Promise.all(loads);
+}
+
 // Render a set of haps into a fresh, full-length OfflineAudioContext. Rebinds
 // superdough to that context (null the controller so it rebuilds on `ctx`;
 // everything imported from @strudel/webaudio keeps a SINGLE superdough instance
@@ -37,11 +83,36 @@ async function renderHapsToBuffer(haps, { cps, seconds, cycles }, onProgress) {
   resetGlobalEffects();
   setSuperdoughAudioController(null);
   await initAudio();
+
+  // Preload all sample buffers in parallel before the sequential hap loop.
+  await preloadSampleBuffers(haps, ctx);
+
   for (const hap of haps) {
     try {
       await webaudioOutput(hap, null, hap.duration / cps, cps, hap.whole.begin.valueOf() / cps);
     } catch (err) {
-      console.warn('[export] hap skipped:', err.message);
+      // superdough's node-pool (nodePools.mjs) retains GainNode / BiquadFilterNode
+      // objects across OfflineAudioContext instances.  On a second render the pool
+      // may return a node that belongs to the previous context; connecting it to the
+      // new context's graph throws this error.  Because getNodeFromPool() *pops* the
+      // stale node before returning it, each retry consumes one bad pool entry until
+      // the pool is exhausted for that key, at which point the factory creates a
+      // fresh node on the correct context.  We retry up to 8 times (more stale
+      // entries than any real track is likely to accumulate between renders).
+      if (err.message?.includes('different audio context')) {
+        let retryErr = err;
+        for (let attempt = 0; attempt < 8 && retryErr?.message?.includes('different audio context'); attempt++) {
+          try {
+            await webaudioOutput(hap, null, hap.duration / cps, cps, hap.whole.begin.valueOf() / cps);
+            retryErr = null;
+          } catch (e) {
+            retryErr = e;
+          }
+        }
+        if (retryErr) console.warn('[export] hap skipped:', retryErr.message);
+      } else {
+        console.warn('[export] hap skipped:', err.message);
+      }
     }
   }
   // Real per-cycle progress: the whole song is one monolithic startRendering(),
