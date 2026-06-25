@@ -87,28 +87,6 @@ function profileRoutes(app, adminDb, requireAuth) {
   }));
 }
 
-const AUDIO_TYPE = { wav: 'audio/wav', mp3: 'audio/mpeg', zip: 'application/zip' };
-
-// GET /api/:ns/:id/audio.:fmt — serve a cached export, rendering on miss.
-// Reads stay public (downloads mirror the public list/song pages).
-function audioRoutes(app, audioExport, namespaces) {
-  app.get('/api/:ns/:id/audio.:fmt', wrap(async (req, res) => {
-    const { ns, id, fmt } = req.params;
-    if (!namespaces.includes(ns)) return res.status(404).json({ error: 'not found' });
-    let out;
-    try {
-      out = await audioExport.getOrRender(ns, id, fmt);
-    } catch (err) {
-      return res.status(500).json({ error: 'render failed' });
-    }
-    if (!out) return res.status(404).json({ error: 'not found' });
-    const ext = out.filename.split('.').pop();
-    res.type(AUDIO_TYPE[ext] ?? 'application/octet-stream');
-    res.setHeader('Content-Disposition', `attachment; filename="${out.filename}"`);
-    res.sendFile(out.path);
-  }));
-}
-
 // Social-preview card JPEGs. /og/home.jpg is the static brand card; the per-song
 // route resolves the item, renders the code-as-art card on a cache miss, and
 // serves the cached JPEG. Reads stay public (they mirror the public song pages).
@@ -226,8 +204,6 @@ export function createApp(opts = {}) {
   }
 
   if (opts.jobStore && opts.runner) jobRoutes(app, opts.jobStore, opts.runner, opts.progressFor, requireAuth, adminDb);
-
-  if (opts.audioExport) audioRoutes(app, opts.audioExport, namespaces);
 
   if (opts.cardRenderer && opts.cardCache && adminDb) {
     cardRoutes(app, { adminDb, namespaces, cardRenderer: opts.cardRenderer, cardCache: opts.cardCache });

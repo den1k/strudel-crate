@@ -321,39 +321,6 @@ describe2('createRunner worker', () => {
     expect2((await jobStore.get('j1')).batch).toBeNull();
   });
 
-  it2('prewarms mp3 for each new item after a successful job', async () => {
-    const { spawn, children } = fakeSpawnFactory();
-    const admin = fakeAdmin({ profiles: [], stems: [], tracks: [] });
-    const warmed = [];
-    const audioExport = { prewarm: async (ns, slug, fmt) => { warmed.push(`${ns}:${slug}:${fmt}`); } };
-    const runner = createRunner({ repoRoot, jobStore, adminDb: admin, spawn, now: ticks, audioExport });
-    await jobStore.write(baseJob('j1'));
-    await runner.enqueue(baseJob('j1'));
-    await until(() => children.length === 1);
-    admin._store.stems.push(
-      { id: 's1', slug: 'a-01', batch: 'B', jobId: 'j1' },
-      { id: 's2', slug: 'a-02', batch: 'B', jobId: 'j1' },
-    );
-    children[0].emit('close', 0);
-    await until(async () => (await jobStore.get('j1')).status === 'done');
-    await until(() => warmed.length === 2);
-    expect2(warmed.sort()).toEqual(['stems:a-01:mp3', 'stems:a-02:mp3']);
-  });
-
-  it2('does not prewarm when the job failed', async () => {
-    const { spawn, children } = fakeSpawnFactory();
-    const admin = fakeAdmin({ profiles: [], stems: [], tracks: [] });
-    const warmed = [];
-    const audioExport = { prewarm: async (...a) => { warmed.push(a); } };
-    const runner = createRunner({ repoRoot, jobStore, adminDb: admin, spawn, now: ticks, audioExport });
-    await jobStore.write(baseJob('j1'));
-    await runner.enqueue(baseJob('j1'));
-    await until(() => children.length === 1);
-    children[0].emit('close', 1); // failure
-    await until(async () => (await jobStore.get('j1')).status === 'failed');
-    expect2(warmed).toEqual([]);
-  });
-
   it2('marks the job failed when Instant throws mid-run', async () => {
     const { spawn, children } = fakeSpawnFactory();
     const admin = fakeAdmin({ profiles: [], stems: [], tracks: [] });

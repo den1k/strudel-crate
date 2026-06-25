@@ -80,7 +80,6 @@ export function createRunner({
   spawn = nodeSpawn,
   now = () => new Date().toISOString(),
   maxConcurrent = 1,
-  audioExport = null,
 }) {
   const queue = [];
   let active = 0;
@@ -118,9 +117,6 @@ export function createRunner({
       if (code === 0) {
         patch.status = 'done';
         patch.summary = parseSummary(out);
-        // Background-warm the small MP3 for each new item so the first download
-        // is instant (WAV stays lazy). Fire-and-forget; never blocks the job.
-        if (audioExport) for (const slug of newItems) audioExport.prewarm(ns, slug, 'mp3');
       } else {
         patch.status = 'failed';
         const tail = (err ?? '').trim().slice(-500);
