@@ -26,7 +26,7 @@ const wrap = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).cat
 
 // One rating route per collection at /api/<name>/:id/rating (id = slug).
 // Listing is retired — the client reads Instant directly.
-function collectionRoutes(app, name, adminDb, requireUser, resolveUser, playLimiter, allowedEmails) {
+function collectionRoutes(app, name, adminDb, requireUser, resolveUser, playLimiter, isAllowed) {
   app.put(`/api/${name}/:id/rating`, requireUser, wrap(async (req, res) => {
     const { id } = req.params;
     if (!ID_RE.test(id)) return res.status(400).json({ error: 'invalid id' });
@@ -53,7 +53,7 @@ function collectionRoutes(app, name, adminDb, requireUser, resolveUser, playLimi
     const callerProfile = await ensureProfile(adminDb, req.user);
     const email = req.user?.email?.toLowerCase();
     const isOwner = owner != null && owner === callerProfile;
-    const isAdminOnUnowned = owner == null && email && allowedEmails.includes(email);
+    const isAdminOnUnowned = owner == null && email && (await isAllowed(email));
     if (!isOwner && !isAdminOnUnowned) return res.status(403).json({ error: 'not your song' });
 
     const out = await setNotes(adminDb, name, id, { notes, lesson }, callerProfile);
@@ -239,13 +239,13 @@ export function createApp(opts = {}) {
   const requireAuth = opts.requireAuth ?? ((_req, _res, next) => next());
   const resolveUser = opts.resolveUser ?? ((_req, _res, next) => next());
   const requireUser = opts.requireUser ?? ((_req, _res, next) => next());
-  const allowedEmails = opts.allowedEmails ?? [];
+  const isAllowed = opts.isAllowed ?? (async () => false);
   const playLimiter = opts.playLimiter ?? createPlayLimiter();
   const adminDb = opts.adminDb;
   const namespaces = opts.namespaces ?? ['tracks', 'stems'];
 
   if (adminDb) {
-    for (const name of namespaces) collectionRoutes(app, name, adminDb, requireUser, resolveUser, playLimiter, allowedEmails);
+    for (const name of namespaces) collectionRoutes(app, name, adminDb, requireUser, resolveUser, playLimiter, isAllowed);
     profileRoutes(app, adminDb, requireAuth);
   }
 

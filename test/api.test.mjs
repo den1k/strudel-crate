@@ -9,6 +9,7 @@ import { createJobStore } from '../server/jobs.mjs';
 
 const requireAuth = (req, _res, next) => { req.user = { id: 'u1', email: 'kalavox@gmail.com' }; next(); };
 const requireUser = (req, _res, next) => { req.user = { id: 'u1', email: 'kalavox@gmail.com' }; next(); };
+const mkAllow = (list) => async (e) => list.map((s) => s.toLowerCase()).includes((e || '').toLowerCase());
 
 let app, adminDb;
 beforeEach(() => {
@@ -22,7 +23,7 @@ beforeEach(() => {
     ratings: [],
     plays: [],
   });
-  app = createApp({ adminDb, namespaces: ['tracks', 'stems'], requireAuth, requireUser, allowedEmails: ['kalavox@gmail.com'] });
+  app = createApp({ adminDb, namespaces: ['tracks', 'stems'], requireAuth, requireUser, isAllowed: mkAllow(['kalavox@gmail.com']) });
 });
 
 describe('rating API', () => {
@@ -168,7 +169,7 @@ describe('remix jobs', () => {
     runner = { enqueue: async () => {} };
     jobApp = createApp({
       adminDb, namespaces: ['tracks', 'stems'], requireAuth, requireUser,
-      allowedEmails: ['kalavox@gmail.com'], jobStore: store, runner,
+      isAllowed: mkAllow(['kalavox@gmail.com']), jobStore: store, runner,
     });
   });
 
@@ -201,7 +202,7 @@ describe('remix jobs', () => {
 describe('notes API', () => {
   const asUser = (user, emails = ['kalavox@gmail.com']) =>
     createApp({ adminDb, namespaces: ['tracks', 'stems'],
-      requireAuth, allowedEmails: emails,
+      requireAuth, isAllowed: mkAllow(emails),
       requireUser: (req, _res, next) => { req.user = user; next(); } });
 
   it('owner can write notes + lesson', async () => {
