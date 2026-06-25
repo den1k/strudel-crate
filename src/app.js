@@ -633,6 +633,10 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
         ta.className = className;
         ta.placeholder = placeholder;
         ta.value = value ?? '';
+        // Stable identity so renderTracks() can carry the live node (with the
+        // user's in-progress text + cursor) across a rebuild — see renderTracks.
+        ta.dataset.editKey = track.id; // version id, unique per card
+        ta.dataset.field = field; // 'notes' | 'lesson'
         const save = debounce(async () => {
           try {
             await putNotes(track, { [field]: ta.value });
@@ -664,8 +668,40 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
     }
   }
 
+  // Lift the focused autosave textarea out of the list before a rebuild so the
+  // user's edit survives it. Returns the live node + its identity/cursor, or null.
+  function captureEditingField(main) {
+    const node = document.activeElement;
+    if (!node || node.tagName !== 'TEXTAREA' || !node.dataset.editKey || !main.contains(node)) {
+      return null;
+    }
+    return {
+      node, key: node.dataset.editKey, field: node.dataset.field,
+      start: node.selectionStart, end: node.selectionEnd,
+    };
+  }
+
+  // Splice the preserved live node back into its rebuilt slot, restoring focus
+  // and cursor. The freshly-built textarea (carrying possibly-stale saved text)
+  // is discarded in favour of the node holding the user's current keystrokes.
+  function restoreEditingField(main, editing) {
+    if (!editing) return;
+    const fresh = main.querySelector(
+      `textarea[data-edit-key="${CSS.escape(editing.key)}"][data-field="${editing.field}"]`,
+    );
+    if (!fresh) return;
+    fresh.replaceWith(editing.node);
+    editing.node.focus();
+    try { editing.node.setSelectionRange(editing.start, editing.end); } catch { /* detached */ }
+  }
+
   function renderTracks() {
     const main = $('#tracks');
+    // A live re-render — the Instant echo from this very autosave, or a rating/
+    // play update on any card — would replaceChildren() the whole list and
+    // destroy the textarea being typed in, dropping focus, cursor, and any
+    // characters typed during the save round-trip. Carry the live node across.
+    const editing = captureEditingField(main);
     main.replaceChildren();
     const families = visibleFamilies();
     if (families.length === 0) {
@@ -690,6 +726,7 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
       list.forEach((fam) => section.appendChild(trackCard(fam)));
       main.appendChild(section);
     }
+    restoreEditingField(main, editing);
   }
 
   function renderTransport() {
