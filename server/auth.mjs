@@ -1,7 +1,7 @@
 // The actual security gate for mutating routes: verify an Instant session token
 // and enforce the email allowlist. Kept as a pure factory (no module-level env or
 // side effects) so it can be unit-tested without booting the server.
-export function buildRequireAuth({ adminDb, allowedEmails }) {
+export function buildRequireAuth({ adminDb, isAllowed }) {
   if (!adminDb) {
     console.warn('[crate] Instant auth not configured — mutating routes are OPEN');
     return undefined;
@@ -13,7 +13,7 @@ export function buildRequireAuth({ adminDb, allowedEmails }) {
     try {
       const user = await adminDb.auth.verifyToken(token);
       const email = user?.email?.toLowerCase();
-      if (!email || !allowedEmails.includes(email)) return res.status(403).json({ error: 'account not allowed' });
+      if (!email || !(await isAllowed(email))) return res.status(403).json({ error: 'account not allowed' });
       req.user = user;
       next();
     } catch {
@@ -46,7 +46,7 @@ export function buildRequireUser({ adminDb }) {
 // Soft auth for public-but-personalized routes (e.g. play counts): if a valid,
 // allowlisted Bearer token is present, attach req.user; otherwise proceed
 // anonymously. NEVER rejects. Pass-through when adminDb is missing.
-export function buildResolveUser({ adminDb, allowedEmails }) {
+export function buildResolveUser({ adminDb, isAllowed }) {
   if (!adminDb) return (_req, _res, next) => next();
   return async (req, _res, next) => {
     const header = req.headers.authorization ?? '';
@@ -55,7 +55,7 @@ export function buildResolveUser({ adminDb, allowedEmails }) {
       try {
         const user = await adminDb.auth.verifyToken(token);
         const email = user?.email?.toLowerCase();
-        if (email && allowedEmails.includes(email)) req.user = user;
+        if (email && (await isAllowed(email))) req.user = user;
       } catch { /* ignore — proceed anonymously */ }
     }
     next();
