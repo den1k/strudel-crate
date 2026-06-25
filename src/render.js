@@ -31,7 +31,7 @@ async function evalPattern(track) {
 // — importing from `superdough/...` would create a second copy whose effect
 // nodes live on a different context and fail to connect). Two renders of the
 // same `seconds` produce time-aligned buffers (both start at t=0).
-async function renderHapsToBuffer(haps, { cps, seconds }) {
+async function renderHapsToBuffer(haps, { cps, seconds, cycles }, onProgress) {
   const ctx = new OfflineAudioContext(2, Math.ceil(seconds * SAMPLE_RATE), SAMPLE_RATE);
   setAudioContext(ctx);
   resetGlobalEffects();
@@ -44,14 +44,32 @@ async function renderHapsToBuffer(haps, { cps, seconds }) {
       console.warn('[export] hap skipped:', err.message);
     }
   }
+  // Real per-cycle progress: the whole song is one monolithic startRendering(),
+  // so to "see where it's at" we suspend the offline render at each cycle
+  // boundary, report, and resume. Suspend times must land on a 128-sample render
+  // quantum. We cap the checkpoint count so dense (≤512-cycle) renders don't
+  // schedule hundreds of suspends. Defensive: any failure just means fewer
+  // ticks; the render itself is unaffected.
+  if (onProgress && cycles > 1) {
+    const step = Math.max(1, Math.ceil(cycles / 100));
+    for (let c = step; c < cycles; c += step) {
+      const frame = Math.round((c / cps) * SAMPLE_RATE / 128) * 128;
+      const t = frame / SAMPLE_RATE;
+      if (t <= 0 || t >= seconds) continue;
+      ctx.suspend(t)
+        .then(() => { onProgress(c, cycles); ctx.resume(); })
+        .catch(() => {});
+    }
+  }
   return ctx.startRendering();
 }
 
 // Render a track to a single mixed Blob (wav 16-bit or mp3).
-export async function renderTrack(track, format) {
+export async function renderTrack(track, format, onProgress) {
   const pattern = await evalPattern(track);
   const spec = exportSpec(track);
-  const buffer = await renderHapsToBuffer(collectHaps(pattern, spec.cycles, spec.cps), spec);
+  const buffer = await renderHapsToBuffer(collectHaps(pattern, spec.cycles, spec.cps), spec, onProgress);
+  onProgress?.(spec.cycles, spec.cycles); // render done; encode/blob is the last sliver
   return format === 'wav'
     ? new Blob([encodeWav(buffer)], { type: 'audio/wav' })
     : new Blob(encodeMp3(buffer), { type: 'audio/mpeg' });

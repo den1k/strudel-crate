@@ -28,7 +28,7 @@ export function createExportClient({
   src = '/export-render.html',
   connect = defaultConnect,
   readyTimeoutMs = 30000,
-  renderTimeoutMs = 300000,
+  renderTimeoutMs = 1800000,
 } = {}) {
   let transport = null;
   let readyPromise = null;
