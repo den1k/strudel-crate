@@ -28,12 +28,27 @@ export function wireExports({ container, track, splitStems, client = getExportCl
       if (btn.dataset.busy) return;
       btn.dataset.busy = '1';
       btn.disabled = true;
+
+      // Start indeterminate (pulsing) until the first real progress tick lands;
+      // the first tick promotes the button to a determinate left-to-right fill
+      // bar. wav/mp3 report per render-cycle, stems report per stem — both drive
+      // the same bar. A format that emits no progress simply stays pulsing.
+      btn.classList.add('export-rendering', 'export-rendering--indeterminate');
       btn.textContent = `rendering ${fmt}…`;
+
       try {
         const blob = await client.render(
           { id: track.id, code: track.code, meta: track.meta },
           fmt,
-          { onProgress: ({ done, total }) => { if (total) btn.textContent = `stem ${done}/${total}…`; } },
+          {
+            onProgress: ({ done, total }) => {
+              if (!total) return;
+              btn.classList.remove('export-rendering--indeterminate');
+              const pct = Math.round((done / total) * 100);
+              btn.style.setProperty('--export-fill', `${pct}%`);
+              btn.textContent = `${fmt} ${pct}%`;
+            },
+          },
         );
         triggerBlobDownload(blob, exportFilename(track.id, fmt));
         btn.textContent = label;
@@ -42,6 +57,8 @@ export function wireExports({ container, track, splitStems, client = getExportCl
         setTimeout(() => { btn.textContent = label; }, 3000);
       } finally {
         btn.disabled = false;
+        btn.classList.remove('export-rendering', 'export-rendering--indeterminate');
+        btn.style.removeProperty('--export-fill');
         delete btn.dataset.busy;
       }
     });

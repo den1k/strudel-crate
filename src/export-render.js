@@ -28,7 +28,9 @@ window.addEventListener('message', async (e) => {
   try {
     await ready;
     const onProgress = (done, total) => parent.postMessage({ type: 'progress', id, done, total }, '*');
-    const blob = format === 'stems' ? await renderStemsZip(track, onProgress) : await renderTrack(track, format);
+    const blob = format === 'stems'
+      ? await renderStemsZip(track, onProgress)
+      : await renderTrack(track, format, onProgress);
     parent.postMessage({ type: 'done', id, blob }, '*');
   } catch (err) {
     parent.postMessage({ type: 'error', id, message: err.message }, '*');
