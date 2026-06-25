@@ -98,7 +98,10 @@ designed fresh for every batch; never reuse a previous batch's kit.
    base palette (the whole point is range — discover and load sounds that fit).
 
    Run ONE kit-design agent (or a small fan-out of one agent per voice if you want
-   parallelism — then assemble their `frag`s into one palette file). Its prompt:
+   parallelism — then assemble their `frag`s into one palette file). Dispatch this
+   agent with NO model override so it inherits the orchestrator's Opus model
+   (`model: opus` effectively) — kit/sound design is taste-heavy and stays on the
+   high tier. Its prompt:
 
    ```
    You are designing ONE bespoke instrument kit for a batch of Strudel tracks. Work
@@ -148,7 +151,10 @@ designed fresh for every batch; never reuse a previous batch's kit.
      per line, verbatim, so agents can paste/adapt each `frag` as a stack layer.
 
 6. **STAGE 2 — fan out compose agents:** dispatch ALL agents for a wave in a SINGLE
-   message (parallel tool calls), waves of at most 8. **Substitute `<repo root>`
+   message (parallel tool calls), waves of at most 8. **Dispatch every compose
+   agent on the cheaper Sonnet tier (`model: sonnet` on each Task call)** — they
+   implement an already-designed kit against a tight spec that the validator and
+   character gate enforce, so the high tier is not needed here. **Substitute `<repo root>`
    below with the ABSOLUTE path of your current working directory (run `pwd`
    first).** In a git worktree that is the worktree path, NOT the main checkout — a
    relative or wrong path makes agents write files and `git commit` in the wrong

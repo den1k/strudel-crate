@@ -68,6 +68,50 @@ describe('remix buildArgv', () => {
     const argv = buildArgv({ type: 'remix', collection: 'stems', sourceSlug: 's-01', prompt: 'a "b" c' });
     expect(argv[1]).toBe('/remix stems s-01 "a b c"');
   });
+  it('pins the planner model to opus by default', () => {
+    const prev = process.env.CRATE_PLANNER_MODEL;
+    delete process.env.CRATE_PLANNER_MODEL;
+    try {
+      const argv = buildArgv({ type: 'generate-tracks', prompt: 'dark techno', count: 12 });
+      const i = argv.indexOf('--model');
+      expect(i).toBeGreaterThan(-1);
+      expect(argv[i + 1]).toBe('opus');
+    } finally {
+      if (prev === undefined) delete process.env.CRATE_PLANNER_MODEL;
+      else process.env.CRATE_PLANNER_MODEL = prev;
+    }
+  });
+  it('honors CRATE_PLANNER_MODEL override', () => {
+    const prev = process.env.CRATE_PLANNER_MODEL;
+    process.env.CRATE_PLANNER_MODEL = 'sonnet';
+    try {
+      const argv = buildArgv({ type: 'generate-tracks', prompt: 'dark techno', count: 12 });
+      const i = argv.indexOf('--model');
+      expect(argv[i + 1]).toBe('sonnet');
+    } finally {
+      if (prev === undefined) delete process.env.CRATE_PLANNER_MODEL;
+      else process.env.CRATE_PLANNER_MODEL = prev;
+    }
+  });
+  it('keeps non-compose job types on the default opus planner model', () => {
+    const prev = process.env.CRATE_PLANNER_MODEL;
+    delete process.env.CRATE_PLANNER_MODEL;
+    try {
+      for (const job of [
+        { type: 'generate-stems', prompt: 'alien pads', count: 4 },
+        { type: 'remix', collection: 'tracks', sourceSlug: 'demo-01', prompt: 'darker' },
+        { type: 'revise-from-notes', prompt: 'stems' },
+      ]) {
+        const argv = buildArgv(job);
+        const i = argv.indexOf('--model');
+        expect(i).toBeGreaterThan(-1);
+        expect(argv[i + 1]).toBe('opus');
+      }
+    } finally {
+      if (prev === undefined) delete process.env.CRATE_PLANNER_MODEL;
+      else process.env.CRATE_PLANNER_MODEL = prev;
+    }
+  });
 });
 
 
