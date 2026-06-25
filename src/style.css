@@ -239,32 +239,57 @@ body {
   .track { grid-template-columns: 56px 1fr; grid-template-areas: 'play meta' 'play rate' 'code code' 'notes notes'; }
   .sig { display: none; } /* drop the byline when the masthead is tight */
 
-  /* Tighten the page gutters so cards and controls get real estate back. */
-  .masthead { gap: 14px 16px; padding: 16px 16px 12px; }
+  /* ── compact masthead ──────────────────────────────────────────────────
+     Desktop sits brand · nav · filters · user across one baseline row. On a
+     phone that wraps into a tall, busy stack that eats half the viewport.
+     Re-flow (via flex `order`, no markup change) into two tidy rows:
+        row 1 → [ brand ·············· nav · bell · user ]
+        row 2 → [ filters — one swipeable line ]
+     Each card/control gets its gutters back and the header stays shallow. */
+  .masthead {
+    align-items: center;        /* sizes diverge once the brand shrinks; center beats baseline */
+    gap: 10px 12px; padding: 11px 16px 9px;
+    border-bottom-width: 1px;   /* the 2px acid rule is heavy on a small screen */
+  }
+  .masthead h1 { font-size: 19px; }
   .batch { padding: 20px 16px 8px; }
-  .generate { padding: 14px 16px; }
 
-  /* The masthead packs brand · nav · filters · user on one row on desktop. On
-     a phone the filter cluster (two <select>s + the rating segment) is far
-     wider than the screen, and the batch/artist selects balloon to fit their
-     longest option text (full batch slugs) — forcing horizontal scroll. Give
-     the filters their own full-width line, let it wrap, and let each control
-     shrink so nothing spills past the viewport. */
-  .filters { width: 100%; flex-wrap: wrap; gap: 8px; }
-  .filters select { flex: 1 1 0; min-width: 0; } /* share a row; clip long option text */
-  .seg { flex-basis: 100%; }                      /* rating segment drops to its own row */
-  .seg button { flex: 1; }                        /* equal, thumb-sized tap targets */
+  /* nav + the notification bell hug the right edge, level with the brand. */
+  .nav { margin-left: auto; }
+  .nav a { padding: 6px 11px; }
+  .job-bell { padding: 0 10px; }
+
+  /* the user cluster (sign-in button / name chip) rides up beside the nav
+     instead of opening a third row. */
+  .user { order: 2; }
+  .user .auth-btn { margin-left: 0; padding: 6px 11px; }
+  .user-chip { max-width: 124px; padding: 6px 10px; }
+
+  /* filters drop to their own full-width line below the brand/nav row. The two
+     <select>s share one line; the rating segment takes the next so every
+     control stays visible (no hidden-behind-a-swipe) with thumb-sized targets.
+     Selects are capped so a long batch slug can't balloon the control. */
+  .filters { order: 3; width: 100%; flex-wrap: wrap; gap: 8px; }
+  .filters select { flex: 1 1 0; min-width: 0; }  /* share a row; clip long option text */
+  .seg { flex-basis: 100%; }                       /* rating segment drops to its own row */
+  .seg button { flex: 1; }                         /* equal, thumb-sized tap targets */
 
   /* Genre/mood chips set white-space:nowrap and a long one painted past the
      card's right edge (more horizontal scroll). Let them wrap when narrow. */
   .chips { width: 100%; }
   .chip { white-space: normal; }
 
+  /* generation console: the prompt claims its own line; count · Run · Revise
+     share the next so nothing is squeezed to an unusable width. */
+  .generate { padding: 12px 16px; gap: 8px; }
+  #gen-prompt { flex-basis: 100%; min-width: 0; }
+  .gen-status { margin-left: 0; }
+
   /* The transport is one flex row that overflows a phone's width, shoving the
      seek rail off-screen. Let it wrap, drop the non-essential warmup status,
      and give the rail its own full-width row so the song stays scrubbable. */
   body { padding-bottom: 116px; } /* taller transport (two rows) */
-  #transport { flex-wrap: wrap; gap: 12px 16px; }
+  #transport { flex-wrap: wrap; gap: 12px 16px; padding: 12px 16px; }
   .status { display: none; }
   #now-playing { flex: 1 1 0; } /* shrink so STOP shares its row, not a 3rd one */
   .seekbar { order: 3; flex-basis: 100%; } /* wraps below now-playing + STOP */
