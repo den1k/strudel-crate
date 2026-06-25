@@ -33,6 +33,7 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
   const elapsedEl = $('#elapsed');
   const totalEl = $('#total');
   let rafId = null;
+  let finishTimer = null;
   let scrubbing = false;
 
   const collection = namespace; // 'tracks' | 'stems'
@@ -197,6 +198,20 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
     rail.setAttribute('aria-valuenow', Math.round(fraction * 100));
   }
 
+  // End-of-song detection that survives an unfocused tab. rAF (below) is
+  // paused/throttled when the tab is hidden, but the Web Audio clock keeps
+  // running — so without this the song plays past its end until you refocus,
+  // then stops the instant the first tick runs. A timer keeps checking even
+  // when hidden (tabs playing audio are exempt from heavy timer throttling),
+  // so playback stops within ~0.5s of the real end regardless of focus.
+  function checkFinished() {
+    if (scrubbing || !hasTimeline(state.playingSpec)) return false;
+    const cycle = cyclePosition(state.playingId);
+    if (cycle == null) return false;
+    if (isFinished(cycle, state.playingSpec.cycles)) { stop(); return true; }
+    return false;
+  }
+
   function startSeekLoop() {
     if (rafId != null) return;
     const tick = () => {
@@ -211,11 +226,14 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
       paintSeek(progressFraction(cycle, spec.cycles), cycle / spec.cps);
     };
     rafId = requestAnimationFrame(tick);
+    if (finishTimer == null) finishTimer = setInterval(checkFinished, 500);
   }
 
   function stopSeekLoop() {
     if (rafId != null) cancelAnimationFrame(rafId);
     rafId = null;
+    if (finishTimer != null) clearInterval(finishTimer);
+    finishTimer = null;
     scrubbing = false;
     paintSeek(0, 0);
   }

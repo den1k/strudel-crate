@@ -245,6 +245,7 @@ function wirePlayback(item, playBtn, editorWrap, ready) {
   let spec = null;
   try { spec = exportSpec(item); } catch { spec = null; }
   let rafId = null;
+  let finishTimer = null;
   let scrubbing = false;
   let playingNow = false;   // synchronous "is playing" flag for the click toggles
   let pausedCycle = null;   // resume point while paused (null = idle, replays from 0)
@@ -280,6 +281,19 @@ function wirePlayback(item, playBtn, editorWrap, ready) {
     }
   }
 
+  // End-of-song detection that survives an unfocused tab. rAF (below) is
+  // paused/throttled when the tab is hidden, but the Web Audio clock keeps
+  // running — so without this the song plays past its end until you refocus,
+  // then stops the instant the first tick runs. A timer keeps checking even
+  // when hidden (tabs playing audio are exempt from heavy timer throttling),
+  // so playback stops within ~0.5s of the real end regardless of focus.
+  function checkFinished() {
+    if (scrubbing || !hasTimeline(spec)) return;
+    const cycle = cyclePosition(item.id);
+    if (cycle == null) return;
+    if (isFinished(cycle, spec.cycles)) stop();
+  }
+
   function startSeekLoop() {
     if (rafId != null) return;
     const tick = () => {
@@ -291,11 +305,14 @@ function wirePlayback(item, playBtn, editorWrap, ready) {
       paintSeek(progressFraction(cycle, spec.cycles), cycle / spec.cps);
     };
     rafId = requestAnimationFrame(tick);
+    if (finishTimer == null) finishTimer = setInterval(checkFinished, 500);
   }
 
   function stopSeekLoop() {
     if (rafId != null) cancelAnimationFrame(rafId);
     rafId = null;
+    if (finishTimer != null) clearInterval(finishTimer);
+    finishTimer = null;
     scrubbing = false;
     // Rail position is parked by showTransport (at the resume point or 0).
   }
