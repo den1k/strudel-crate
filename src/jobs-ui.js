@@ -121,6 +121,21 @@ export function mountJobsUI({ collection, onBatchDone }) {
     }
   });
 
+  // Dismiss the log on a tap/click outside it. Use `pointerdown` (not `click`):
+  // iOS Safari does not reliably deliver document-level `click` events for taps
+  // on non-interactive elements, so a click listener would never fire there.
+  // pointerdown covers mouse + touch and runs before the bell's own click, so
+  // taps on the bell are excluded here and handled by its toggle above.
+  document.addEventListener('pointerdown', (e) => {
+    if (logEl.hidden) return;
+    if (logEl.contains(e.target) || bell.contains(e.target)) return;
+    logEl.hidden = true;
+  });
+  // Escape also closes it, matching the profile modal.
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !logEl.hidden) logEl.hidden = true;
+  });
+
   // Retry a failed/interrupted job: re-POST its original request. Delegated so it
   // survives the log's per-poll innerHTML rebuilds. Optimistically marks the row
   // re-queued (persisted in retriedIds); rolls back + flashes on a POST error.
