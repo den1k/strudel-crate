@@ -51,6 +51,14 @@ const rules = {
       update: "false",
     },
   },
+  allowlist: {
+    allow: {
+      view: "auth.ref('$user.email')[0] == 'kalavox@gmail.com'",
+      create: "auth.ref('$user.email')[0] == 'kalavox@gmail.com'",
+      delete: "auth.ref('$user.email')[0] == 'kalavox@gmail.com'",
+      update: "false",
+    },
+  },
 } satisfies InstantRules;
 
 export default rules;
