@@ -96,7 +96,13 @@ export async function itemOwnerProfileId(adminDb, namespace, slug) {
 // to the song + its author. Returns the merged { notes, lesson } (lesson is the
 // record's text, or '' when none) or null when the slug doesn't exist. Caller is
 // responsible for the owner check.
-export async function setNotes(adminDb, namespace, slug, patch) {
+//
+// `callerProfileId` (the signed-in writer's profile) is the fallback owner for a
+// newly-created lesson when the song has no author — e.g. an admin editing an
+// unowned legacy song. Without it the lesson would be created profile-less:
+// invisible to the manager, un-deletable, and never cascade-cleaned. For an
+// owned song the author IS the caller, so this changes nothing there.
+export async function setNotes(adminDb, namespace, slug, patch, callerProfileId = null) {
   const res = await adminDb.query({
     [namespace]: { author: {}, lessonRecord: {}, $: { where: { slug } } },
   });
@@ -122,10 +128,10 @@ export async function setNotes(adminDb, namespace, slug, patch) {
       txs.push(adminDb.tx.lessons[existing.id].update({ text, updatedAt: now }));
       lessonText = text;
     } else {
-      const authorId = item.author?.[0]?.id ?? null;
+      const ownerId = item.author?.[0]?.id ?? callerProfileId;
       const lessonId = id();
       const links = { [namespace === 'tracks' ? 'track' : 'stem']: item.id };
-      if (authorId) links.profile = authorId;
+      if (ownerId) links.profile = ownerId;
       txs.push(adminDb.tx.lessons[lessonId].update({
         text, target: namespace, createdAt: now, updatedAt: now,
       }).link(links));

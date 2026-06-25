@@ -99,6 +99,16 @@ describe('setNotes quick-add (song-linked lesson upsert/delete)', () => {
     expect(db._txs.find((o) => o.ns === 'lessons' && o.id === 'L9').delete).toBe(true);
   });
 
+  it('falls back to the caller profile when the song has no author (no orphan lesson)', async () => {
+    // unowned legacy song edited by an admin — author is absent, so the lesson
+    // must still be linked to the caller's profile, never created profile-less.
+    const db = fakeAdmin({ tracks: [{ id: 'T1', slug: 'song-1', notes: '', author: [], lessonRecord: [] }] });
+    const out = await setNotes(db, 'tracks', 'song-1', { lesson: 'admin lesson' }, 'admin-profile');
+    expect(out.lesson).toBe('admin lesson');
+    const op = db._txs.find((o) => o.ns === 'lessons');
+    expect(op.link).toMatchObject({ track: 'T1', profile: 'admin-profile' });
+  });
+
   it('leaves the lesson record untouched when only notes change', async () => {
     const db = fakeAdmin({ tracks: [trackRow({ lessonRecord: [{ id: 'L9', text: 'keep' }] })] });
     const out = await setNotes(db, 'tracks', 'song-1', { notes: 'just a note' });

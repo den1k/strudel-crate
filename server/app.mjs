@@ -56,7 +56,7 @@ function collectionRoutes(app, name, adminDb, requireUser, resolveUser, playLimi
     const isAdminOnUnowned = owner == null && email && allowedEmails.includes(email);
     if (!isOwner && !isAdminOnUnowned) return res.status(403).json({ error: 'not your song' });
 
-    const out = await setNotes(adminDb, name, id, { notes, lesson });
+    const out = await setNotes(adminDb, name, id, { notes, lesson }, callerProfile);
     if (!out) return res.status(404).json({ error: 'not found' });
     res.json(out);
   }));
