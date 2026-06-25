@@ -16,4 +16,7 @@ describe('generate-tracks skill model tiering', () => {
     // model. We assert the explicit inherit note exists.
     expect(skill).toMatch(/Stage 1[\s\S]*inherit[\s\S]*Opus|no model override[\s\S]*Opus/i);
   });
+  it('puts compose on Sonnet exactly once (Stage-1 kit design is not on Sonnet)', () => {
+    expect((skill.match(/model: sonnet/g) || []).length).toBe(1);
+  });
 });

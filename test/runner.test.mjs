@@ -93,6 +93,25 @@ describe('remix buildArgv', () => {
       else process.env.CRATE_PLANNER_MODEL = prev;
     }
   });
+  it('keeps non-compose job types on the default opus planner model', () => {
+    const prev = process.env.CRATE_PLANNER_MODEL;
+    delete process.env.CRATE_PLANNER_MODEL;
+    try {
+      for (const job of [
+        { type: 'generate-stems', prompt: 'alien pads', count: 4 },
+        { type: 'remix', collection: 'tracks', sourceSlug: 'demo-01', prompt: 'darker' },
+        { type: 'revise-from-notes', prompt: 'stems' },
+      ]) {
+        const argv = buildArgv(job);
+        const i = argv.indexOf('--model');
+        expect(i).toBeGreaterThan(-1);
+        expect(argv[i + 1]).toBe('opus');
+      }
+    } finally {
+      if (prev === undefined) delete process.env.CRATE_PLANNER_MODEL;
+      else process.env.CRATE_PLANNER_MODEL = prev;
+    }
+  });
 });
 
 
