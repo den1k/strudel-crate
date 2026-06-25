@@ -60,7 +60,7 @@ export async function renderTrack(track, format) {
 // Render one full-length, time-aligned 24-bit WAV per distinct sound, bundled
 // into a single .zip. Each stem is the whole song length starting at bar 1, so
 // dropping the folder into a DAW lines the parts up automatically.
-export async function renderStemsZip(track) {
+export async function renderStemsZip(track, onProgress) {
   const pattern = await evalPattern(track);
   const spec = exportSpec(track);
   const groups = groupHapsBySound(collectHaps(pattern, spec.cycles, spec.cps));
@@ -69,6 +69,7 @@ export async function renderStemsZip(track) {
   for (let i = 0; i < groups.length; i++) {
     const buffer = await renderHapsToBuffer(groups[i].haps, spec);
     files.push({ name: names[i], data: new Uint8Array(encodeWav(buffer, 24)) });
+    onProgress?.(i + 1, groups.length);
   }
   return new Blob([zipStore(files)], { type: 'application/zip' });
 }
