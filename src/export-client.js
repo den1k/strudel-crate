@@ -24,25 +24,49 @@ function defaultConnect(src) {
   };
 }
 
-export function createExportClient({ src = '/export-render.html', connect = defaultConnect } = {}) {
+export function createExportClient({
+  src = '/export-render.html',
+  connect = defaultConnect,
+  readyTimeoutMs = 30000,
+  renderTimeoutMs = 300000,
+} = {}) {
   let transport = null;
   let readyPromise = null;
   const cache = new Map();    // key -> Blob (session memo)
   const inflight = new Map(); // key -> Promise<Blob>
-  const waiters = new Map();  // key -> { resolve, reject, onProgress }
+  const waiters = new Map();  // key -> { resolve, reject, onProgress, timer }
+
+  // Serial chain: only one render cycle (post→done/error) outstanding at a time.
+  let chain = Promise.resolve();
 
   function ensure() {
     if (transport) return readyPromise;
     transport = connect(src);
-    readyPromise = new Promise((resolve) => {
+    readyPromise = new Promise((resolve, reject) => {
+      const timer = setTimeout(() => {
+        // Reset so a later call can retry from scratch.
+        transport = null;
+        readyPromise = null;
+        reject(new Error('export iframe did not become ready in time'));
+      }, readyTimeoutMs);
+
       transport.onMessage((data) => {
         if (!data || data.type == null) return;
-        if (data.type === 'ready') { resolve(); return; }
+        if (data.type === 'ready') { clearTimeout(timer); resolve(); return; }
         const w = waiters.get(data.id);
         if (!w) return;
         if (data.type === 'progress') { w.onProgress?.({ done: data.done, total: data.total }); return; }
-        if (data.type === 'done') { waiters.delete(data.id); w.resolve(data.blob); return; }
-        if (data.type === 'error') { waiters.delete(data.id); w.reject(new Error(data.message || 'render failed')); }
+        if (data.type === 'done') {
+          clearTimeout(w.timer);
+          waiters.delete(data.id);
+          w.resolve(data.blob);
+          return;
+        }
+        if (data.type === 'error') {
+          clearTimeout(w.timer);
+          waiters.delete(data.id);
+          w.reject(new Error(data.message || 'render failed'));
+        }
       });
     });
     return readyPromise;
@@ -52,15 +76,34 @@ export function createExportClient({ src = '/export-render.html', connect = defa
     const key = `${track.id}:${fmt}`;
     if (cache.has(key)) return Promise.resolve(cache.get(key));
     if (inflight.has(key)) return inflight.get(key);
-    const p = (async () => {
-      await ensure();
-      const blob = await new Promise((resolve, reject) => {
-        waiters.set(key, { resolve, reject, onProgress });
-        transport.post({ type: 'render', id: key, track, format: fmt });
-      });
+
+    // Eagerly set up the transport + ready listener so messages emitted
+    // before our chain slot fires are still captured.
+    const readyP = ensure();
+
+    // Enqueue the actual post behind the serial chain.
+    const run = chain.then(() => readyP).then(() => new Promise((resolve, reject) => {
+      const timer = setTimeout(() => {
+        waiters.delete(key);
+        reject(new Error(`render timed out: ${key}`));
+      }, renderTimeoutMs);
+
+      waiters.set(key, { resolve, reject, onProgress, timer });
+      transport.post({ type: 'render', id: key, track, format: fmt });
+    })).then((blob) => {
       cache.set(key, blob);
       return blob;
-    })().finally(() => inflight.delete(key));
+    });
+
+    // p is what callers hold. Attach a no-op catch synchronously so Node never
+    // sees `run` as an unhandled rejection (p's finally is async, too late).
+    const p = run.finally(() => inflight.delete(key));
+    // eslint-disable-next-line no-unused-expressions
+    p.catch(() => {});  // suppress unhandled-rejection on run/p immediately
+
+    // Keep chain alive past failures so the next render can proceed.
+    chain = p.catch(() => {});
+
     inflight.set(key, p);
     return p;
   }

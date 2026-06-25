@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { createExportClient, exportFilename } from '../src/export-client.js';
 
 function fakeConnect() {
@@ -70,5 +70,74 @@ describe('createExportClient', () => {
     const again = await client.render(track, 'wav');
     expect(again).toBe(blob);
     expect(f.renders().length).toBe(1);
+  });
+
+  it('serializes distinct renders: only ONE render message at a time', async () => {
+    const f = fakeConnect();
+    const client = createExportClient({ connect: () => f.transport });
+
+    const p1 = client.render(track, 'wav');
+    const p2 = client.render(track, 'mp3');
+
+    f.emit({ type: 'ready' });
+
+    // Only the first render should be posted initially.
+    await vi.waitFor(() => expect(f.renders().length).toBe(1));
+    expect(f.renders()[0].format).toBe('wav');
+
+    // The second render must NOT have been posted yet.
+    expect(f.renders().length).toBe(1);
+
+    // Complete the first render.
+    const blob1 = new Blob(['wav-data']);
+    f.emit({ type: 'done', id: 'song-1:wav', blob: blob1 });
+    await p1;
+
+    // Now the second render should be posted.
+    await vi.waitFor(() => expect(f.renders().length).toBe(2));
+    expect(f.renders()[1].format).toBe('mp3');
+
+    const blob2 = new Blob(['mp3-data']);
+    f.emit({ type: 'done', id: 'song-1:mp3', blob: blob2 });
+    await expect(p2).resolves.toBe(blob2);
+  });
+
+  it('rejects on ready timeout and allows retry', async () => {
+    vi.useFakeTimers();
+    try {
+      const f = fakeConnect();
+      const client = createExportClient({ connect: () => f.transport, readyTimeoutMs: 100 });
+
+      const promise = client.render(track, 'wav');
+      // Never emit ready — advance past the timeout.
+      await vi.advanceTimersByTimeAsync(200);
+
+      await expect(promise).rejects.toThrow('did not become ready');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('rejects on render timeout', async () => {
+    vi.useFakeTimers();
+    try {
+      const f = fakeConnect();
+      const client = createExportClient({ connect: () => f.transport, renderTimeoutMs: 100 });
+
+      const promise = client.render(track, 'wav');
+
+      // Emit ready synchronously (within fake timers).
+      f.emit({ type: 'ready' });
+
+      // Wait for the render message to be posted.
+      await vi.waitFor(() => expect(f.renders().length).toBe(1));
+
+      // Never emit done/error — advance past the render timeout.
+      await vi.advanceTimersByTimeAsync(200);
+
+      await expect(promise).rejects.toThrow('render timed out');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
