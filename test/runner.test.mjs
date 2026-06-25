@@ -1,6 +1,6 @@
 // test/runner.test.mjs
 import { describe, it, expect } from 'vitest';
-import { buildArgv, collectionFor, liveProduced, majorityBatch } from '../server/runner.mjs';
+import { buildArgv, collectionFor, liveProduced, majorityBatch, modelUsageLine } from '../server/runner.mjs';
 
 describe('collectionFor', () => {
   it('maps generate types to their dir', () => {
@@ -10,6 +10,27 @@ describe('collectionFor', () => {
   it('uses the prompt as the collection for revise', () => {
     expect(collectionFor('revise-from-notes', 'stems')).toBe('stems');
     expect(collectionFor('revise-from-notes', 'tracks')).toBe('tracks');
+  });
+});
+
+describe('modelUsageLine', () => {
+  const envelope = (modelUsage) => JSON.stringify({ result: 'ok', modelUsage });
+
+  it('lists each model with its output tokens — reveals compose ran on Sonnet', () => {
+    const line = modelUsageLine(envelope({
+      'claude-opus-4-8[1m]': { outputTokens: 1200, costUSD: 0.4 },
+      'claude-sonnet-4-6': { outputTokens: 9000, costUSD: 0.3 },
+    }));
+    expect(line).toContain('claude-opus-4-8[1m]: 1200 out-tok');
+    expect(line).toContain('claude-sonnet-4-6: 9000 out-tok');
+  });
+
+  it('returns empty string when modelUsage is absent', () => {
+    expect(modelUsageLine(JSON.stringify({ result: 'ok' }))).toBe('');
+  });
+
+  it('returns empty string on non-JSON output', () => {
+    expect(modelUsageLine('not json at all')).toBe('');
   });
 });
 

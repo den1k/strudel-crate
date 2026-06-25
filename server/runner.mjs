@@ -78,6 +78,25 @@ function parseSummary(stdout) {
   }
 }
 
+// Per-model usage from the claude -p JSON envelope (top-level `modelUsage`,
+// keyed by model name; inner values are camelCase: outputTokens, costUSD, …).
+// The runner otherwise keeps only `result`, so without this a batch report can't
+// reveal which models actually ran — the load-bearing check that generate-tracks
+// compose agents landed on Sonnet (a `claude-sonnet-*` key with real output
+// tokens) rather than silently falling back to the Opus planner. Returns "" when
+// the field is absent or the output is unparseable.
+export function modelUsageLine(stdout) {
+  try {
+    const mu = JSON.parse(stdout).modelUsage;
+    if (!mu || typeof mu !== 'object') return '';
+    return Object.entries(mu)
+      .map(([model, u]) => `${model}: ${u?.outputTokens ?? '?'} out-tok`)
+      .join('; ');
+  } catch {
+    return '';
+  }
+}
+
 export { nodeSpawn, parseSummary, ALLOWED_TOOLS };
 
 export function createRunner({
@@ -122,6 +141,11 @@ export function createRunner({
       if (code === 0) {
         patch.status = 'done';
         patch.summary = parseSummary(out);
+        // Surface which models the batch actually used, so a track run reveals
+        // whether compose agents ran on Sonnet (vs silently falling back to the
+        // Opus planner). "" when the envelope lacks modelUsage.
+        const models = modelUsageLine(out);
+        if (models) patch.summary += `\n\nModels used: ${models}`;
       } else {
         patch.status = 'failed';
         const tail = (err ?? '').trim().slice(-500);
