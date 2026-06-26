@@ -80,8 +80,14 @@ async function preloadSampleBuffers(haps, ac) {
 async function renderHapsToBuffer(haps, { cps, seconds, cycles }, onProgress) {
   const ctx = new OfflineAudioContext(2, Math.ceil(seconds * SAMPLE_RATE), SAMPLE_RATE);
   setAudioContext(ctx);
-  resetGlobalEffects();
+  // Null the controller BEFORE resetGlobalEffects(): after a previous render its
+  // OfflineAudioContext is CLOSED, and the module-level controller still points
+  // at it. resetGlobalEffects() rebuilds effect nodes on the controller's
+  // context — if that's the closed one it throws InvalidStateError (browser
+  // only), wedging the controller so every later export fails ("works once, then
+  // dead"). Nulling first forces a rebuild on the fresh `ctx`.
   setSuperdoughAudioController(null);
+  resetGlobalEffects();
   await initAudio();
 
   // Preload all sample buffers in parallel before the sequential hap loop.
