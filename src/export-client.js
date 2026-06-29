@@ -1,7 +1,12 @@
 // In-browser twin of server/render-audio.mjs: drives a hidden iframe running
 // export-render.html (its own JS realm + audio context, so renders never touch
 // live playback) over the same postMessage protocol, and downloads the Blob.
+import { segmentPlan, concatSegmentPCM } from './segment.js';
+import { encodeWav, encodeMp3 } from './encoders.js';
+import { exportSpec } from './export-spec.js';
+
 const EXT = { wav: 'wav', mp3: 'mp3', stems: 'zip' };
+const MAX_SEGMENTS = 8;
 
 export function exportFilename(slug, fmt) {
   return `${slug}.${EXT[fmt] ?? fmt}`;
@@ -126,4 +131,51 @@ export function triggerBlobDownload(blob, filename) {
   a.click();
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 10000);
+}
+
+// Render wav/mp3 by splitting the track across a pool of iframes (one segment
+// each), concatenating the PCM, and encoding in this (parent) realm. Falls back
+// to nothing here — callers decide when to use this vs the single-iframe render.
+export async function renderParallel(track, fmt, { onProgress, segmentCount, connect = defaultConnect } = {}) {
+  const cores = (typeof navigator !== 'undefined' && navigator.hardwareConcurrency) || 4;
+  const want = Math.max(1, Math.min(segmentCount || cores, MAX_SEGMENTS));
+  const spec = exportSpec(track);
+  const plan = segmentPlan(spec, want, 4);
+  const segs = plan.segments;
+
+  // One transport (iframe) per segment, all concurrent. Each transport reports
+  // 'ready' before we post; render-segment replies with transferable PCM.
+  const pool = segs.map(() => connect('/export-render.html'));
+  let done = 0;
+  try {
+    const parts = await Promise.all(segs.map((segment, i) => new Promise((resolve, reject) => {
+      const t = pool[i];
+      let ready = false;
+      const off = t.onMessage((data) => {
+        if (!data || data.type == null) return;
+        if (data.type === 'ready') {
+          if (ready) return; ready = true;
+          t.post({ type: 'render-segment', id: segment.index, segment, track });
+          return;
+        }
+        if (data.id !== segment.index) return;
+        if (data.type === 'segment-done') {
+          off();
+          done += 1;
+          onProgress?.(done, segs.length);
+          resolve({ index: data.index, channels: [data.ch0, data.ch1] });
+        } else if (data.type === 'error') {
+          off();
+          reject(new Error(data.message || 'segment render failed'));
+        }
+      });
+    })));
+    parts.sort((a, b) => a.index - b.index);
+    const buffer = concatSegmentPCM(parts, plan);
+    return fmt === 'wav'
+      ? new Blob([encodeWav(buffer)], { type: 'audio/wav' })
+      : new Blob(encodeMp3(buffer), { type: 'audio/mpeg' });
+  } finally {
+    for (const t of pool) t.destroy();
+  }
 }

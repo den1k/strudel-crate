@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { createExportClient, exportFilename } from '../src/export-client.js';
+import { createExportClient, exportFilename, renderParallel } from '../src/export-client.js';
 
 function fakeConnect() {
   const ctx = { posts: [], handler: null, destroyed: false };
@@ -139,5 +139,42 @@ describe('createExportClient', () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+});
+
+function fakeConnectFactory() {
+  // each connect() returns an independent fake iframe transport
+  return (/* src */) => {
+    const handlers = new Set();
+    return {
+      post: (msg) => {
+        if (msg.type === 'render-segment') {
+          const len = msg.segment.keepLengthSamples;
+          const ch0 = new Float32Array(len).fill(msg.segment.index + 1);
+          const ch1 = new Float32Array(len).fill(-(msg.segment.index + 1));
+          // reply async
+          queueMicrotask(() => {
+            for (const h of handlers) h({ type: 'segment-done', id: msg.id, index: msg.segment.index, length: len, ch0, ch1 });
+          });
+        }
+      },
+      onMessage: (h) => { handlers.add(h); queueMicrotask(() => { for (const g of handlers) g({ type: 'ready' }); }); return () => handlers.delete(h); },
+      destroy: () => {},
+    };
+  };
+}
+
+describe('renderParallel', () => {
+  it('splits, dispatches, concatenates in order, and returns a wav Blob', async () => {
+    const track = { code: 's("bd*4")', meta: { bpm: 120 } };
+    const progress = [];
+    const blob = await renderParallel(track, 'wav', {
+      segmentCount: 4,
+      connect: fakeConnectFactory(),
+      onProgress: (d, t) => progress.push([d, t]),
+    });
+    expect(blob.type).toBe('audio/wav');
+    expect(blob.size).toBeGreaterThan(44); // header + data
+    expect(progress.at(-1)).toEqual([4, 4]);
   });
 });
