@@ -12,6 +12,7 @@ import { evaluate } from '@strudel/transpiler';
 import { exportSpec, collectHaps, groupHapsBySound, stemFilenames } from './export-spec.js';
 import { encodeWav, encodeMp3 } from './encoders.js';
 import { zipStore } from './zip.js';
+import { segmentPlan } from './segment.js';
 
 const SAMPLE_RATE = 44100;
 
@@ -71,31 +72,22 @@ async function preloadSampleBuffers(haps, ac) {
   if (loads.length) await Promise.all(loads);
 }
 
-// Render a set of haps into a fresh, full-length OfflineAudioContext. Rebinds
-// superdough to that context (null the controller so it rebuilds on `ctx`;
-// everything imported from @strudel/webaudio keeps a SINGLE superdough instance
-// — importing from `superdough/...` would create a second copy whose effect
-// nodes live on a different context and fail to connect). Two renders of the
-// same `seconds` produce time-aligned buffers (both start at t=0).
-async function renderHapsToBuffer(haps, { cps, seconds, cycles }, onProgress) {
-  const ctx = new OfflineAudioContext(2, Math.ceil(seconds * SAMPLE_RATE), SAMPLE_RATE);
+// Shared context setup + hap scheduling for one OfflineAudioContext. Each hap is
+// scheduled at (its absolute onset) minus timeOffsetSec, so a segment that
+// renders starting partway through the track lands its haps correctly at the
+// segment context's t=0. See render.js header comment re: realm-global superdough.
+async function scheduleAndRender(ctx, haps, cps, timeOffsetSec) {
   setAudioContext(ctx);
-  // Null the controller BEFORE resetGlobalEffects(): after a previous render its
-  // OfflineAudioContext is CLOSED, and the module-level controller still points
-  // at it. resetGlobalEffects() rebuilds effect nodes on the controller's
-  // context — if that's the closed one it throws InvalidStateError (browser
-  // only), wedging the controller so every later export fails ("works once, then
-  // dead"). Nulling first forces a rebuild on the fresh `ctx`.
+  // Null controller BEFORE resetGlobalEffects (closed-context throw guard — see
+  // the long-form note that was here previously and the regression test).
   setSuperdoughAudioController(null);
   resetGlobalEffects();
   await initAudio();
-
-  // Preload all sample buffers in parallel before the sequential hap loop.
   await preloadSampleBuffers(haps, ctx);
-
   for (const hap of haps) {
+    const when = hap.whole.begin.valueOf() / cps - timeOffsetSec;
     try {
-      await webaudioOutput(hap, null, hap.duration / cps, cps, hap.whole.begin.valueOf() / cps);
+      await webaudioOutput(hap, null, hap.duration / cps, cps, when);
     } catch (err) {
       // superdough's node-pool (nodePools.mjs) retains GainNode / BiquadFilterNode
       // objects across OfflineAudioContext instances.  On a second render the pool
@@ -108,12 +100,8 @@ async function renderHapsToBuffer(haps, { cps, seconds, cycles }, onProgress) {
       if (err.message?.includes('different audio context')) {
         let retryErr = err;
         for (let attempt = 0; attempt < 8 && retryErr?.message?.includes('different audio context'); attempt++) {
-          try {
-            await webaudioOutput(hap, null, hap.duration / cps, cps, hap.whole.begin.valueOf() / cps);
-            retryErr = null;
-          } catch (e) {
-            retryErr = e;
-          }
+          try { await webaudioOutput(hap, null, hap.duration / cps, cps, when); retryErr = null; }
+          catch (e) { retryErr = e; }
         }
         if (retryErr) console.warn('[export] hap skipped:', retryErr.message);
       } else {
@@ -121,24 +109,31 @@ async function renderHapsToBuffer(haps, { cps, seconds, cycles }, onProgress) {
       }
     }
   }
+  return ctx.startRendering();
+}
+
+// Render a set of haps into a fresh, full-length OfflineAudioContext (timeOffset 0).
+async function renderHapsToBuffer(haps, { cps, seconds, cycles }, onProgress) {
+  const ctx = new OfflineAudioContext(2, Math.ceil(seconds * SAMPLE_RATE), SAMPLE_RATE);
   // Real per-cycle progress: the whole song is one monolithic startRendering(),
   // so to "see where it's at" we suspend the offline render at each cycle
   // boundary, report, and resume. Suspend times must land on a 128-sample render
   // quantum. We cap the checkpoint count so dense (≤512-cycle) renders don't
   // schedule hundreds of suspends. Defensive: any failure just means fewer
   // ticks; the render itself is unaffected.
+  // NOTE: suspends must be registered on ctx BEFORE startRendering() runs inside
+  // scheduleAndRender. Since scheduleAndRender awaits async setup before calling
+  // startRendering, suspends registered synchronously here are valid.
   if (onProgress && cycles > 1) {
     const step = Math.max(1, Math.ceil(cycles / 100));
     for (let c = step; c < cycles; c += step) {
       const frame = Math.round((c / cps) * SAMPLE_RATE / 128) * 128;
       const t = frame / SAMPLE_RATE;
       if (t <= 0 || t >= seconds) continue;
-      ctx.suspend(t)
-        .then(() => { onProgress(c, cycles); ctx.resume(); })
-        .catch(() => {});
+      ctx.suspend(t).then(() => { onProgress(c, cycles); ctx.resume(); }).catch(() => {});
     }
   }
-  return ctx.startRendering();
+  return scheduleAndRender(ctx, haps, cps, 0);
 }
 
 // Render a track to a single mixed Blob (wav 16-bit or mp3).
@@ -150,6 +145,36 @@ export async function renderTrack(track, format, onProgress) {
   return format === 'wav'
     ? new Blob([encodeWav(buffer)], { type: 'audio/wav' })
     : new Blob(encodeMp3(buffer), { type: 'audio/mpeg' });
+}
+
+// Render a single time-segment of a track to keep-region PCM. Queries the
+// pattern up to the segment's last cycle, keeps every hap that is still SOUNDING
+// at or after the warm-up start (onset OR sustain reaches into the render window),
+// renders into a warm-up-padded OfflineAudioContext, then slices off the warm-up
+// so the returned PCM tiles exactly with its neighbours.
+//
+// The filter is by overlap, not onset: a long-sustaining note (e.g. a pad) whose
+// onset precedes the warm-up window must still be included or it would vanish from
+// later segments. Such a note schedules at a (possibly negative) `when` and starts
+// within the discarded warm-up region, so the kept region hears it sustaining.
+// RESIDUAL LIMITATION (empirically measured): a free-running oscillator's PHASE
+// depends on absolute time since its start, which the warm-up cannot reconstruct,
+// so a sustained synth note can have a small phase discontinuity at segment
+// boundaries (~0.05 RMS on a pure-synth pad; inaudible mid-segment, a faint blip
+// possible at boundaries). Typical tracks (short-decay drums/bass/melody, reverb/
+// delay tails) are unaffected — validated at ratio 1.02 vs a single render. This
+// is strictly better than the alternative of dropping the note entirely.
+export async function renderSegment(track, segment) {
+  const pattern = await evalPattern(track);
+  const haps = collectHaps(pattern, segment.queryEndCycle, segment.cps)
+    .filter((h) => (h.whole.begin.valueOf() + h.duration) / segment.cps > segment.renderStartSec);
+  const ctx = new OfflineAudioContext(2, segment.renderLengthSamples, SAMPLE_RATE);
+  const buf = await scheduleAndRender(ctx, haps, segment.cps, segment.renderStartSec);
+  const a = segment.keepOffsetSamples;
+  const b = a + segment.keepLengthSamples;
+  const ch0 = buf.getChannelData(0).slice(a, b);
+  const ch1 = buf.getChannelData(1).slice(a, b);
+  return { index: segment.index, length: ch0.length, channels: [ch0, ch1] };
 }
 
 // Render one full-length, time-aligned 24-bit WAV per distinct sound, bundled

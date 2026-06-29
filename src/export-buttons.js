@@ -1,4 +1,4 @@
-import { getExportClient, exportFilename, triggerBlobDownload } from './export-client.js';
+import { getExportClient, exportFilename, triggerBlobDownload, exportTrack } from './export-client.js';
 import { isDesktop } from './device.js';
 
 const TITLES = {
@@ -37,7 +37,7 @@ export function wireExports({ container, track, splitStems, client = getExportCl
       btn.textContent = `rendering ${fmt}…`;
 
       try {
-        const blob = await client.render(
+        const blob = await exportTrack(
           { id: track.id, code: track.code, meta: track.meta },
           fmt,
           {

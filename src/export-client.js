@@ -1,7 +1,17 @@
 // In-browser twin of server/render-audio.mjs: drives a hidden iframe running
 // export-render.html (its own JS realm + audio context, so renders never touch
 // live playback) over the same postMessage protocol, and downloads the Blob.
+import { segmentPlan, concatSegmentPCM } from './segment.js';
+import { encodeWav, encodeMp3 } from './encoders.js';
+import { exportSpec } from './export-spec.js';
+
 const EXT = { wav: 'wav', mp3: 'mp3', stems: 'zip' };
+const MAX_SEGMENTS = 8;
+// Per-segment deadlines for the parallel path (mirror createExportClient's
+// readyTimeoutMs/renderTimeoutMs). A segment renders only its slice, so the
+// render budget can be shorter than the single-iframe whole-track timeout.
+const PARALLEL_READY_TIMEOUT_MS = 30000;
+const PARALLEL_RENDER_TIMEOUT_MS = 600000;
 
 export function exportFilename(slug, fmt) {
   return `${slug}.${EXT[fmt] ?? fmt}`;
@@ -117,6 +127,23 @@ export function createExportClient({
 let singleton = null;
 export function getExportClient() { return (singleton ??= createExportClient()); }
 
+const PARALLEL_MIN_SECONDS = 20;
+
+export function exportTrack(track, fmt, { onProgress } = {}) {
+  if (fmt === 'stems') return getExportClient().render(track, 'stems', { onProgress });
+  const cores = (typeof navigator !== 'undefined' && navigator.hardwareConcurrency) || 1;
+  const long = exportSpec(track).seconds >= PARALLEL_MIN_SECONDS;
+  if (long && cores > 1) {
+    // renderParallel reports progress positionally; the single/stems path and the
+    // export-buttons handler use object style ({ done, total }). Adapt here so the
+    // progress bar works identically on the parallel path.
+    return renderParallel(track, fmt, {
+      onProgress: onProgress ? (done, total) => onProgress({ done, total }) : undefined,
+    });
+  }
+  return getExportClient().render(track, fmt, { onProgress });
+}
+
 export function triggerBlobDownload(blob, filename) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -126,4 +153,66 @@ export function triggerBlobDownload(blob, filename) {
   a.click();
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 10000);
+}
+
+// Render wav/mp3 by splitting the track across a pool of iframes (one segment
+// each), concatenating the PCM, and encoding in this (parent) realm. Falls back
+// to nothing here — callers decide when to use this vs the single-iframe render.
+export async function renderParallel(track, fmt, { onProgress, segmentCount, connect = defaultConnect } = {}) {
+  const cores = (typeof navigator !== 'undefined' && navigator.hardwareConcurrency) || 4;
+  const want = Math.max(1, Math.min(segmentCount || cores, MAX_SEGMENTS));
+  const spec = exportSpec(track);
+  const plan = segmentPlan(spec, want, 4);
+  const segs = plan.segments;
+
+  // One transport (iframe) per segment, all concurrent. Each transport reports
+  // 'ready' before we post; render-segment replies with transferable PCM.
+  // Each segment carries its own ready + render deadlines (mirroring the single
+  // iframe path's readyTimeoutMs/renderTimeoutMs): without them a child iframe
+  // that never loads or never replies would leave Promise.all pending forever,
+  // hanging the export with no recovery short of a page reload.
+  const pool = segs.map(() => connect('/export-render.html'));
+  let done = 0;
+  try {
+    const parts = await Promise.all(segs.map((segment, i) => new Promise((resolve, reject) => {
+      const t = pool[i];
+      let ready = false;
+      let timer = setTimeout(() => {
+        off();
+        reject(new Error(`export iframe did not become ready in time (segment ${segment.index})`));
+      }, PARALLEL_READY_TIMEOUT_MS);
+      const off = t.onMessage((data) => {
+        if (!data || data.type == null) return;
+        if (data.type === 'ready') {
+          if (ready) return; ready = true;
+          clearTimeout(timer);
+          timer = setTimeout(() => {
+            off();
+            reject(new Error(`segment render timed out (segment ${segment.index})`));
+          }, PARALLEL_RENDER_TIMEOUT_MS);
+          t.post({ type: 'render-segment', id: segment.index, segment, track });
+          return;
+        }
+        if (data.id !== segment.index) return;
+        if (data.type === 'segment-done') {
+          clearTimeout(timer);
+          off();
+          done += 1;
+          onProgress?.(done, segs.length);
+          resolve({ index: data.index, channels: [data.ch0, data.ch1] });
+        } else if (data.type === 'error') {
+          clearTimeout(timer);
+          off();
+          reject(new Error(data.message || 'segment render failed'));
+        }
+      });
+    })));
+    parts.sort((a, b) => a.index - b.index);
+    const buffer = concatSegmentPCM(parts, plan);
+    return fmt === 'wav'
+      ? new Blob([encodeWav(buffer)], { type: 'audio/wav' })
+      : new Blob(encodeMp3(buffer), { type: 'audio/mpeg' });
+  } finally {
+    for (const t of pool) t.destroy();
+  }
 }
