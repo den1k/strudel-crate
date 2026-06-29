@@ -122,6 +122,16 @@ export function createExportClient({
 let singleton = null;
 export function getExportClient() { return (singleton ??= createExportClient()); }
 
+const PARALLEL_MIN_SECONDS = 20;
+
+export function exportTrack(track, fmt, { onProgress } = {}) {
+  if (fmt === 'stems') return getExportClient().render(track, 'stems', { onProgress });
+  const cores = (typeof navigator !== 'undefined' && navigator.hardwareConcurrency) || 1;
+  const long = exportSpec(track).seconds >= PARALLEL_MIN_SECONDS;
+  if (long && cores > 1) return renderParallel(track, fmt, { onProgress });
+  return getExportClient().render(track, fmt, { onProgress });
+}
+
 export function triggerBlobDownload(blob, filename) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');

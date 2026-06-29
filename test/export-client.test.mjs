@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { createExportClient, exportFilename, renderParallel } from '../src/export-client.js';
+import { createExportClient, exportFilename, renderParallel, exportTrack } from '../src/export-client.js';
 
 function fakeConnect() {
   const ctx = { posts: [], handler: null, destroyed: false };
@@ -163,6 +163,10 @@ function fakeConnectFactory() {
     };
   };
 }
+
+describe('exportTrack routing', () => {
+  it('is exported and is a function', () => { expect(typeof exportTrack).toBe('function'); });
+});
 
 describe('renderParallel', () => {
   it('splits, dispatches, concatenates in order, and returns a wav Blob', async () => {
