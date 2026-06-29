@@ -1,23 +1,23 @@
 ## Loadable sample banks discovered on GitHub
 These are REAL, loadable Strudel banks (crawled from public repos). Reach past the base palette: load one with `samples('<ref>')`. For a bank's exact sound names, grep `data/banks.json` before you write the `samples()` load.
 
-### drums (60)
+### drums (66)
+- tidalcycles/Dirt-Samples · https://raw.githubusercontent.com/tidalcycles/Dirt-Samples/master/strudel.json · 218
 - algorave-dave/samples · github:algorave-dave/samples · 7
 - eddyflux/crate · github:eddyflux/crate · 18
 - yaxu/spicule · github:yaxu/spicule · 75
 - tidalcycles/uzu-drumkit · github:tidalcycles/uzu-drumkit · 16
 - mot4i/garden · github:mot4i/garden · 13
-- rcarmo/apfelstrudel · https://raw.githubusercontent.com/rcarmo/apfelstrudel/main/public/vendor/strudel/samples/strudel.json · 50
-- …and 54 more — grep `data/banks.json`.
+- …and 60 more — grep `data/banks.json`.
 
-### bass (13)
-- tidalcycles/Dirt-Samples · https://raw.githubusercontent.com/tidalcycles/Dirt-Samples/master/strudel.json · 218
+### bass (10)
 - eddyflux/wax · github:eddyflux/wax · 21
 - cleary/samples-flbass · github:cleary/samples-flbass · 1
 - sonidosingapura/blu-mar-ten · github:sonidosingapura/blu-mar-ten · 6
-- junichishmz/genny · https://raw.githubusercontent.com/junichishmz/genny/main/public/samples/strudel.json · 236
 - prismograph/departure · github:prismograph/departure · 4
-- …and 7 more — grep `data/banks.json`.
+- karmaterminal/strudel-music · https://raw.githubusercontent.com/karmaterminal/strudel-music/main/samples/strudel.json · 60
+- dovbaeb/samples-strudel-pls · github:dovbaeb/samples-strudel-pls · 24
+- …and 4 more — grep `data/banks.json`.
 
 ### lead (9)
 - Bubobubobubobubo/Dough-Waveforms · github:Bubobubobubobubo/Dough-Waveforms · 65
@@ -46,14 +46,14 @@ These are REAL, loadable Strudel banks (crawled from public repos). Reach past t
 ### world (1)
 - nicolas-rabault/strudel-samples · github:nicolas-rabault/strudel-samples · 29
 
-### breaks (19)
+### breaks (18)
 - yaxu/clean-breaks · github:yaxu/clean-breaks · 32
 - switchangel/breaks · github:switchangel/breaks · 1
 - smaudd/joonies-dnb-collection-strudel · github:smaudd/joonies-dnb-collection-strudel · 2
 - Bubobubobubobubo/Dough-Amen · github:Bubobubobubobubo/Dough-Amen · 3
 - creativenucleus/strudel-m8-168-dnb-jungle · github:creativenucleus/strudel-m8-168-dnb-jungle · 8
 - sonidosingapura/rochormatic · github:sonidosingapura/rochormatic · 18
-- …and 13 more — grep `data/banks.json`.
+- …and 12 more — grep `data/banks.json`.
 
 ### fx (1)
 - Emanuel-de-Jong/L1C0-B3nLib_x86_EXE · https://raw.githubusercontent.com/Emanuel-de-Jong/L1C0-B3nLib_x86_EXE/main/assets/audio/strudel.json · 5
