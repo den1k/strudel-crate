@@ -7,6 +7,11 @@ import { exportSpec } from './export-spec.js';
 
 const EXT = { wav: 'wav', mp3: 'mp3', stems: 'zip' };
 const MAX_SEGMENTS = 8;
+// Per-segment deadlines for the parallel path (mirror createExportClient's
+// readyTimeoutMs/renderTimeoutMs). A segment renders only its slice, so the
+// render budget can be shorter than the single-iframe whole-track timeout.
+const PARALLEL_READY_TIMEOUT_MS = 30000;
+const PARALLEL_RENDER_TIMEOUT_MS = 600000;
 
 export function exportFilename(slug, fmt) {
   return `${slug}.${EXT[fmt] ?? fmt}`;
@@ -162,26 +167,41 @@ export async function renderParallel(track, fmt, { onProgress, segmentCount, con
 
   // One transport (iframe) per segment, all concurrent. Each transport reports
   // 'ready' before we post; render-segment replies with transferable PCM.
+  // Each segment carries its own ready + render deadlines (mirroring the single
+  // iframe path's readyTimeoutMs/renderTimeoutMs): without them a child iframe
+  // that never loads or never replies would leave Promise.all pending forever,
+  // hanging the export with no recovery short of a page reload.
   const pool = segs.map(() => connect('/export-render.html'));
   let done = 0;
   try {
     const parts = await Promise.all(segs.map((segment, i) => new Promise((resolve, reject) => {
       const t = pool[i];
       let ready = false;
+      let timer = setTimeout(() => {
+        off();
+        reject(new Error(`export iframe did not become ready in time (segment ${segment.index})`));
+      }, PARALLEL_READY_TIMEOUT_MS);
       const off = t.onMessage((data) => {
         if (!data || data.type == null) return;
         if (data.type === 'ready') {
           if (ready) return; ready = true;
+          clearTimeout(timer);
+          timer = setTimeout(() => {
+            off();
+            reject(new Error(`segment render timed out (segment ${segment.index})`));
+          }, PARALLEL_RENDER_TIMEOUT_MS);
           t.post({ type: 'render-segment', id: segment.index, segment, track });
           return;
         }
         if (data.id !== segment.index) return;
         if (data.type === 'segment-done') {
+          clearTimeout(timer);
           off();
           done += 1;
           onProgress?.(done, segs.length);
           resolve({ index: data.index, channels: [data.ch0, data.ch1] });
         } else if (data.type === 'error') {
+          clearTimeout(timer);
           off();
           reject(new Error(data.message || 'segment render failed'));
         }

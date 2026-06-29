@@ -9,7 +9,13 @@
 export function segmentPlan(spec, segmentCount, warmupSeconds = 4, sampleRate = 44100) {
   const { cps, cycles } = spec;
   const cycleToSample = (c) => Math.round((c / cps) * sampleRate);
-  const totalSamples = cycleToSample(cycles);
+  // Match the single-iframe path's length exactly: renderHapsToBuffer sizes its
+  // context as Math.ceil(seconds * SAMPLE_RATE) where seconds = cycles / cps. Use
+  // the same ceil here so a track exports to an identical sample count whether it
+  // takes the single or parallel path. Interior cycle boundaries stay on the
+  // round() grid; only the final boundary is pinned to totalSamples (below), which
+  // keeps tiling exact (kept lengths still sum to totalSamples).
+  const totalSamples = Math.ceil((cycles / cps) * sampleRate);
   const warmupSamples = Math.round(warmupSeconds * sampleRate);
   const n = Math.max(1, Math.min(segmentCount, cycles));
   const segments = [];
@@ -18,7 +24,9 @@ export function segmentPlan(spec, segmentCount, warmupSeconds = 4, sampleRate = 
     const endCycle = Math.floor(((i + 1) * cycles) / n);
     if (endCycle <= startCycle) continue;
     const keepStartSample = cycleToSample(startCycle);
-    const keepEndSample = cycleToSample(endCycle);
+    // The segment ending the track ends exactly at totalSamples (ceil grid); all
+    // others end on the round() grid. Keeps cross-path length identical AND tiling exact.
+    const keepEndSample = endCycle === cycles ? totalSamples : cycleToSample(endCycle);
     const renderStartSample = Math.max(0, keepStartSample - warmupSamples);
     segments.push({
       index: segments.length,

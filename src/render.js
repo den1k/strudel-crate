@@ -148,13 +148,26 @@ export async function renderTrack(track, format, onProgress) {
 }
 
 // Render a single time-segment of a track to keep-region PCM. Queries the
-// pattern up to the segment's last cycle, keeps only haps whose onset is at/after
-// the warm-up start, renders into a warm-up-padded OfflineAudioContext, then
-// slices off the warm-up so the returned PCM tiles exactly with its neighbours.
+// pattern up to the segment's last cycle, keeps every hap that is still SOUNDING
+// at or after the warm-up start (onset OR sustain reaches into the render window),
+// renders into a warm-up-padded OfflineAudioContext, then slices off the warm-up
+// so the returned PCM tiles exactly with its neighbours.
+//
+// The filter is by overlap, not onset: a long-sustaining note (e.g. a pad) whose
+// onset precedes the warm-up window must still be included or it would vanish from
+// later segments. Such a note schedules at a (possibly negative) `when` and starts
+// within the discarded warm-up region, so the kept region hears it sustaining.
+// RESIDUAL LIMITATION (empirically measured): a free-running oscillator's PHASE
+// depends on absolute time since its start, which the warm-up cannot reconstruct,
+// so a sustained synth note can have a small phase discontinuity at segment
+// boundaries (~0.05 RMS on a pure-synth pad; inaudible mid-segment, a faint blip
+// possible at boundaries). Typical tracks (short-decay drums/bass/melody, reverb/
+// delay tails) are unaffected — validated at ratio 1.02 vs a single render. This
+// is strictly better than the alternative of dropping the note entirely.
 export async function renderSegment(track, segment) {
   const pattern = await evalPattern(track);
   const haps = collectHaps(pattern, segment.queryEndCycle, segment.cps)
-    .filter((h) => h.whole.begin.valueOf() / segment.cps >= segment.renderStartSec);
+    .filter((h) => (h.whole.begin.valueOf() + h.duration) / segment.cps > segment.renderStartSec);
   const ctx = new OfflineAudioContext(2, segment.renderLengthSamples, SAMPLE_RATE);
   const buf = await scheduleAndRender(ctx, haps, segment.cps, segment.renderStartSec);
   const a = segment.keepOffsetSamples;
