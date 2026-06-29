@@ -128,7 +128,14 @@ export function exportTrack(track, fmt, { onProgress } = {}) {
   if (fmt === 'stems') return getExportClient().render(track, 'stems', { onProgress });
   const cores = (typeof navigator !== 'undefined' && navigator.hardwareConcurrency) || 1;
   const long = exportSpec(track).seconds >= PARALLEL_MIN_SECONDS;
-  if (long && cores > 1) return renderParallel(track, fmt, { onProgress });
+  if (long && cores > 1) {
+    // renderParallel reports progress positionally; the single/stems path and the
+    // export-buttons handler use object style ({ done, total }). Adapt here so the
+    // progress bar works identically on the parallel path.
+    return renderParallel(track, fmt, {
+      onProgress: onProgress ? (done, total) => onProgress({ done, total }) : undefined,
+    });
+  }
   return getExportClient().render(track, fmt, { onProgress });
 }
 
