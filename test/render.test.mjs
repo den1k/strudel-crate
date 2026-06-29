@@ -55,6 +55,14 @@ describe('scheduleAndRender extraction', () => {
     // the scheduling call must subtract a time offset, not hardcode absolute time
     expect(src).toMatch(/timeOffsetSec/);
   });
+  it('clamps the schedule time to >= 0 so superdough never drops a past-scheduled note', async () => {
+    // Regression guard: a long note kept by renderSegment's overlap filter has a
+    // negative raw time in non-first segments; superdough drops anything scheduled
+    // before ctx.currentTime ("cannot schedule sounds in the past"), silencing the
+    // note in every later segment. The when computation must clamp to 0.
+    const src = await readFile(fileURLToPath(new URL('../src/render.js', import.meta.url)), 'utf8');
+    expect(src).toMatch(/const when = Math\.max\(0,/);
+  });
 });
 
 describe('renderTrack', () => {

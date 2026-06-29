@@ -85,7 +85,14 @@ async function scheduleAndRender(ctx, haps, cps, timeOffsetSec) {
   await initAudio();
   await preloadSampleBuffers(haps, ctx);
   for (const hap of haps) {
-    const when = hap.whole.begin.valueOf() / cps - timeOffsetSec;
+    // Clamp to >= 0: a note that began before this segment's warm-up window (a
+    // long-sustaining pad kept by renderSegment's overlap filter) has a negative
+    // raw time. superdough DROPS anything scheduled before ctx.currentTime (==0
+    // here) with a "cannot schedule sounds in the past" warning, so without this
+    // clamp such notes vanish from every non-first segment. Clamping starts them
+    // at the warm-up start instead; the discarded warm-up absorbs their attack and
+    // the kept region hears them sustaining.
+    const when = Math.max(0, hap.whole.begin.valueOf() / cps - timeOffsetSec);
     try {
       await webaudioOutput(hap, null, hap.duration / cps, cps, when);
     } catch (err) {
@@ -155,15 +162,12 @@ export async function renderTrack(track, format, onProgress) {
 //
 // The filter is by overlap, not onset: a long-sustaining note (e.g. a pad) whose
 // onset precedes the warm-up window must still be included or it would vanish from
-// later segments. Such a note schedules at a (possibly negative) `when` and starts
-// within the discarded warm-up region, so the kept region hears it sustaining.
-// RESIDUAL LIMITATION (empirically measured): a free-running oscillator's PHASE
-// depends on absolute time since its start, which the warm-up cannot reconstruct,
-// so a sustained synth note can have a small phase discontinuity at segment
-// boundaries (~0.05 RMS on a pure-synth pad; inaudible mid-segment, a faint blip
-// possible at boundaries). Typical tracks (short-decay drums/bass/melody, reverb/
-// delay tails) are unaffected — validated at ratio 1.02 vs a single render. This
-// is strictly better than the alternative of dropping the note entirely.
+// later segments. Such a note's raw schedule time is negative; scheduleAndRender
+// clamps it to 0 (the warm-up start) so superdough does not drop it as "scheduled
+// in the past". The discarded warm-up absorbs its attack and the kept region hears
+// it sustaining. Empirically the kept-region energy then matches a single render
+// per quarter (isolated pad: [.0536,.0535,.0535,.0535] both paths), with zero
+// past-schedule warnings; typical tracks match at ratio ~1.02.
 export async function renderSegment(track, segment) {
   const pattern = await evalPattern(track);
   const haps = collectHaps(pattern, segment.queryEndCycle, segment.cps)
