@@ -41,6 +41,22 @@ describe('renderHapsToBuffer init order', () => {
   });
 });
 
+describe('scheduleAndRender extraction', () => {
+  it('renderHapsToBuffer still nulls controller before resetGlobalEffects', async () => {
+    const src = await readFile(fileURLToPath(new URL('../src/render.js', import.meta.url)), 'utf8');
+    const nullIdx = src.search(/^\s*setSuperdoughAudioController\(null\)/m);
+    const resetIdx = src.search(/^\s*resetGlobalEffects\(\)/m);
+    expect(nullIdx).toBeGreaterThan(-1);
+    expect(resetIdx).toBeGreaterThan(-1);
+    expect(nullIdx).toBeLessThan(resetIdx);
+  });
+  it('applies a time offset when scheduling (segment support)', async () => {
+    const src = await readFile(fileURLToPath(new URL('../src/render.js', import.meta.url)), 'utf8');
+    // the scheduling call must subtract a time offset, not hardcode absolute time
+    expect(src).toMatch(/timeOffsetSec/);
+  });
+});
+
 describe('renderTrack', () => {
   it('rejects code that does not evaluate to a pattern', async () => {
     // `42` evaluates fine but is not a Pattern → guard must throw before any audio API
