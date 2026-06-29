@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { initStrudelEnv } from '../scripts/strudel-env.mjs';
-import { renderTrack } from '../src/render.js';
+import { renderTrack, renderSegment } from '../src/render.js';
 
 beforeAll(() => initStrudelEnv());
 
@@ -68,4 +68,8 @@ describe('renderTrack', () => {
   it('throws on evaluation failure without touching the audio context', async () => {
     await expect(renderTrack({ code: 'note("c3"', meta: { bpm: 120 } }, 'wav')).rejects.toThrow();
   });
+});
+
+describe('renderSegment', () => {
+  it('is exported', () => { expect(typeof renderSegment).toBe('function'); });
 });

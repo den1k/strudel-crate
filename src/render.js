@@ -12,6 +12,7 @@ import { evaluate } from '@strudel/transpiler';
 import { exportSpec, collectHaps, groupHapsBySound, stemFilenames } from './export-spec.js';
 import { encodeWav, encodeMp3 } from './encoders.js';
 import { zipStore } from './zip.js';
+import { segmentPlan } from './segment.js';
 
 const SAMPLE_RATE = 44100;
 
@@ -144,6 +145,23 @@ export async function renderTrack(track, format, onProgress) {
   return format === 'wav'
     ? new Blob([encodeWav(buffer)], { type: 'audio/wav' })
     : new Blob(encodeMp3(buffer), { type: 'audio/mpeg' });
+}
+
+// Render a single time-segment of a track to keep-region PCM. Queries the
+// pattern up to the segment's last cycle, keeps only haps whose onset is at/after
+// the warm-up start, renders into a warm-up-padded OfflineAudioContext, then
+// slices off the warm-up so the returned PCM tiles exactly with its neighbours.
+export async function renderSegment(track, segment) {
+  const pattern = await evalPattern(track);
+  const haps = collectHaps(pattern, segment.queryEndCycle, segment.cps)
+    .filter((h) => h.whole.begin.valueOf() / segment.cps >= segment.renderStartSec);
+  const ctx = new OfflineAudioContext(2, segment.renderLengthSamples, SAMPLE_RATE);
+  const buf = await scheduleAndRender(ctx, haps, segment.cps, segment.renderStartSec);
+  const a = segment.keepOffsetSamples;
+  const b = a + segment.keepLengthSamples;
+  const ch0 = buf.getChannelData(0).slice(a, b);
+  const ch1 = buf.getChannelData(1).slice(a, b);
+  return { index: segment.index, length: ch0.length, channels: [ch0, ch1] };
 }
 
 // Render one full-length, time-aligned 24-bit WAV per distinct sound, bundled
