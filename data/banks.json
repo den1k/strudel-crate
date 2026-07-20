@@ -226,7 +226,7 @@
     ],
     "description": "drums · 218 sounds · 808, 909, 808bd …",
     "stars": 331,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:algorave-dave/samples",
@@ -243,8 +243,37 @@
       "failsafe"
     ],
     "description": "drums · 7 sounds · cocaina, overgame, ecotone …",
-    "stars": 174,
-    "lastSeen": "2026-07-13"
+    "stars": 175,
+    "lastSeen": "2026-07-20"
+  },
+  {
+    "ref": "github:eddyflux/crate",
+    "repo": "eddyflux/crate",
+    "category": "drums",
+    "soundCount": 18,
+    "sounds": [
+      "crate_sd",
+      "crate_block",
+      "crate_bd",
+      "crate_bell",
+      "crate_djembe",
+      "crate_cr",
+      "crate_clave",
+      "crate_tb",
+      "crate_sh",
+      "crate_stick",
+      "crate_hh",
+      "crate_rim",
+      "crate_conga",
+      "crate_bongo",
+      "crate_cp",
+      "crate_perc",
+      "crate_oh",
+      "crate_rd"
+    ],
+    "description": "drums · 18 sounds · crate_sd, crate_block, crate_bd …",
+    "stars": 125,
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:yaxu/clean-breaks",
@@ -287,7 +316,7 @@
     ],
     "description": "breaks · 32 sounds · useme, sesame, do …",
     "stars": 95,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:switchangel/breaks",
@@ -299,50 +328,31 @@
     ],
     "description": "breaks · 1 sounds · breaks",
     "stars": 91,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
-    "ref": "https://raw.githubusercontent.com/timoncool/Bulka/main/examples/codemirror-repl/public/samples/clean-breaks/strudel.json",
+    "ref": "https://raw.githubusercontent.com/timoncool/Bulka/main/examples/codemirror-repl/public/samples/mridangam/strudel.json",
     "repo": "timoncool/Bulka",
-    "category": "breaks",
-    "soundCount": 32,
+    "category": "misc",
+    "soundCount": 13,
     "sounds": [
-      "useme",
-      "sesame",
-      "do",
-      "funkydrummer",
-      "mechanicalman",
-      "kool",
-      "sport",
-      "rill",
-      "think",
-      "king",
-      "around",
-      "riffin",
-      "apache",
-      "neworleans",
-      "hitormiss",
-      "action",
-      "hotline",
-      "swat",
-      "ripple",
-      "fireeater",
-      "hungup",
-      "newday",
-      "movement",
-      "boogiewoogie",
-      "delight",
-      "eeloil",
-      "impeach",
-      "marymary",
-      "amen",
-      "sneakin",
-      "squib",
-      "groove"
+      "gumki",
+      "ka",
+      "nam",
+      "ta",
+      "ki",
+      "dhin",
+      "na",
+      "chaapu",
+      "dhum",
+      "ardha",
+      "thom",
+      "dhi",
+      "tha"
     ],
-    "description": "breaks · 32 sounds · useme, sesame, do …",
+    "description": "misc · 13 sounds · gumki, ka, nam …",
     "stars": 41,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:yaxu/spicule",
@@ -428,7 +438,31 @@
     ],
     "description": "drums · 75 sounds · acid, airhorn, arc …",
     "stars": 36,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
+  },
+  {
+    "ref": "github:mot4i/garden",
+    "repo": "mot4i/garden",
+    "category": "drums",
+    "soundCount": 13,
+    "sounds": [
+      "garden_cp",
+      "garden_bd",
+      "garden_oh",
+      "garden_cr",
+      "garden_sn",
+      "garden_hh",
+      "garden_rim",
+      "garden_sd",
+      "garden_lt",
+      "fx",
+      "strings",
+      "loop",
+      "metal"
+    ],
+    "description": "drums · 13 sounds · garden_cp, garden_bd, garden_oh …",
+    "stars": 22,
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:tidalcycles/uzu-drumkit",
@@ -455,31 +489,7 @@
     ],
     "description": "drums · 16 sounds · bd, brk, cb …",
     "stars": 22,
-    "lastSeen": "2026-07-13"
-  },
-  {
-    "ref": "github:mot4i/garden",
-    "repo": "mot4i/garden",
-    "category": "drums",
-    "soundCount": 13,
-    "sounds": [
-      "garden_cp",
-      "garden_bd",
-      "garden_oh",
-      "garden_cr",
-      "garden_sn",
-      "garden_hh",
-      "garden_rim",
-      "garden_sd",
-      "garden_lt",
-      "fx",
-      "strings",
-      "loop",
-      "metal"
-    ],
-    "description": "drums · 13 sounds · garden_cp, garden_bd, garden_oh …",
-    "stars": 21,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:eddyflux/wax",
@@ -511,7 +521,7 @@
     ],
     "description": "bass · 21 sounds · atmosphere, teentonic, perrey …",
     "stars": 20,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "https://raw.githubusercontent.com/rcarmo/apfelstrudel/main/public/vendor/strudel/samples/strudel.json",
@@ -572,31 +582,7 @@
     ],
     "description": "drums · 50 sounds · ApfelKit_bass, ApfelKit_bd, ApfelKit_bell …",
     "stars": 15,
-    "lastSeen": "2026-07-13"
-  },
-  {
-    "ref": "github:cleary/samples-flbass",
-    "repo": "cleary/samples-flbass",
-    "category": "bass",
-    "soundCount": 1,
-    "sounds": [
-      "flbass"
-    ],
-    "description": "bass · 1 sounds · flbass",
-    "stars": 13,
-    "lastSeen": "2026-07-13"
-  },
-  {
-    "ref": "github:QuantumVillage/quantum-music",
-    "repo": "QuantumVillage/quantum-music",
-    "category": "misc",
-    "soundCount": 1,
-    "sounds": [
-      "lucy"
-    ],
-    "description": "misc · 1 sounds · lucy",
-    "stars": 13,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:Bubobubobubobubo/Dough-Waveforms",
@@ -671,8 +657,32 @@
       "wt_snippets"
     ],
     "description": "lead · 65 sounds · wt_stereo, wt_birds, wt_dbass …",
-    "stars": 12,
-    "lastSeen": "2026-07-13"
+    "stars": 13,
+    "lastSeen": "2026-07-20"
+  },
+  {
+    "ref": "github:cleary/samples-flbass",
+    "repo": "cleary/samples-flbass",
+    "category": "bass",
+    "soundCount": 1,
+    "sounds": [
+      "flbass"
+    ],
+    "description": "bass · 1 sounds · flbass",
+    "stars": 13,
+    "lastSeen": "2026-07-20"
+  },
+  {
+    "ref": "github:QuantumVillage/quantum-music",
+    "repo": "QuantumVillage/quantum-music",
+    "category": "misc",
+    "soundCount": 1,
+    "sounds": [
+      "lucy"
+    ],
+    "description": "misc · 1 sounds · lucy",
+    "stars": 13,
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:vasilymilovidov/samples",
@@ -691,7 +701,56 @@
     ],
     "description": "misc · 8 sounds · ir, kik, prc …",
     "stars": 11,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
+  },
+  {
+    "ref": "https://raw.githubusercontent.com/mlaass/nkido/master/web/static/samples/bpb_808_clean/strudel.json",
+    "repo": "mlaass/nkido",
+    "category": "drums",
+    "soundCount": 38,
+    "sounds": [
+      "bd",
+      "sd",
+      "hh",
+      "oh",
+      "cp",
+      "rim",
+      "tom",
+      "perc",
+      "cymbal",
+      "cowbell",
+      "conga",
+      "bd2",
+      "bd3",
+      "bd4",
+      "bd5",
+      "bd6",
+      "bd7",
+      "bd8",
+      "bd9",
+      "bd10",
+      "bd11",
+      "bd12",
+      "bd13",
+      "bd14",
+      "bd15",
+      "bd16",
+      "sd2",
+      "sd3",
+      "sd4",
+      "sd5",
+      "sd6",
+      "sd7",
+      "sd8",
+      "tomhi",
+      "tomlo",
+      "congahi",
+      "congalo",
+      "maracas"
+    ],
+    "description": "drums · 38 sounds · bd, sd, hh …",
+    "stars": 8,
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:jakesonderman/SHAKE-IT-OFF-REMIX",
@@ -714,7 +773,7 @@
     ],
     "description": "drums · 12 sounds · shakeItOff, breaks, clap …",
     "stars": 6,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:sonidosingapura/blu-mar-ten",
@@ -731,7 +790,19 @@
     ],
     "description": "bass · 6 sounds · bmt_bass, bmt_breaks, bmt_fx …",
     "stars": 6,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
+  },
+  {
+    "ref": "https://raw.githubusercontent.com/eduardoagarcia/strudel/main/samples/fx/strudel.json",
+    "repo": "eduardoagarcia/strudel",
+    "category": "misc",
+    "soundCount": 1,
+    "sounds": [
+      "cruush_static"
+    ],
+    "description": "misc · 1 sounds · cruush_static",
+    "stars": 5,
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:emrexdeger/strudelSamples",
@@ -757,7 +828,7 @@
     ],
     "description": "drums · 15 sounds · k, s, ch …",
     "stars": 5,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:smaudd/joonies-dnb-collection-strudel",
@@ -770,7 +841,7 @@
     ],
     "description": "breaks · 2 sounds · dnb_breaks, essentials",
     "stars": 5,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:switchangel/beginningtrance",
@@ -782,7 +853,20 @@
     ],
     "description": "vocal · 1 sounds · ctvox",
     "stars": 5,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
+  },
+  {
+    "ref": "github:tidalcycles/uzu-wavetables",
+    "repo": "tidalcycles/uzu-wavetables",
+    "category": "lead",
+    "soundCount": 2,
+    "sounds": [
+      "wt_digital",
+      "wt_vgame"
+    ],
+    "description": "lead · 2 sounds · wt_digital, wt_vgame",
+    "stars": 4,
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:heavy-lifting/a-maze",
@@ -819,7 +903,7 @@
     ],
     "description": "melodic · 26 sounds · tron, asteroid, track …",
     "stars": 3,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:salsicha/capoeira_strudel",
@@ -832,7 +916,31 @@
     ],
     "description": "misc · 2 sounds · hits, loops",
     "stars": 3,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
+  },
+  {
+    "ref": "github:yaxu/mrid",
+    "repo": "yaxu/mrid",
+    "category": "misc",
+    "soundCount": 13,
+    "sounds": [
+      "gumki",
+      "ka",
+      "nam",
+      "ta",
+      "ki",
+      "dhin",
+      "na",
+      "chaapu",
+      "dhum",
+      "ardha",
+      "thom",
+      "dhi",
+      "tha"
+    ],
+    "description": "misc · 13 sounds · gumki, ka, nam …",
+    "stars": 3,
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:Bubobubobubobubo/Dough-Amiga",
@@ -959,7 +1067,7 @@
     ],
     "description": "misc · 116 sounds · STA3, STA4, STB2 …",
     "stars": 2,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:Bubobubobubobubo/Dough-Fox",
@@ -1032,7 +1140,7 @@
     ],
     "description": "drums · 62 sounds · fclap, fdarkkick, fbeep …",
     "stars": 2,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:felixroos/samples",
@@ -1060,7 +1168,7 @@
     ],
     "description": "drums · 17 sounds · president_bd, president_sd, president_hh …",
     "stars": 2,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:jpopesculian/ep1320",
@@ -1129,7 +1237,7 @@
     ],
     "description": "vocal · 58 sounds · ep1320_bd, ep1320_sp, ep1320_sd …",
     "stars": 2,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:jpopesculian/medieval-sounds",
@@ -1269,7 +1377,254 @@
     ],
     "description": "drums · 129 sounds · anvil-hit, armor-thud, arrow-hit …",
     "stars": 2,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
+  },
+  {
+    "ref": "https://raw.githubusercontent.com/junichishmz/genny/main/public/samples/strudel.json",
+    "repo": "junichishmz/genny",
+    "category": "drums",
+    "soundCount": 236,
+    "sounds": [
+      "808",
+      "909",
+      "808bd",
+      "808cy",
+      "808hc",
+      "808ht",
+      "808lc",
+      "808lt",
+      "808mc",
+      "808mt",
+      "808oh",
+      "808sd",
+      "ab",
+      "acordeon",
+      "ade",
+      "ades2",
+      "ades3",
+      "ades4",
+      "alex",
+      "alphabet",
+      "altavoz",
+      "amencutup",
+      "armora",
+      "arp",
+      "arpy",
+      "auto",
+      "baa",
+      "baa2",
+      "bajo",
+      "bass",
+      "bass0",
+      "bass1",
+      "bass2",
+      "bass3",
+      "bassdm",
+      "bassfoo",
+      "battles",
+      "bd",
+      "bend",
+      "bev",
+      "bin",
+      "birds",
+      "birds3",
+      "bleep",
+      "blip",
+      "blue",
+      "bottle",
+      "breaks125",
+      "breaks152",
+      "breaks157",
+      "breaks165",
+      "breath",
+      "bubble",
+      "can",
+      "casio",
+      "cb",
+      "cbow",
+      "cc",
+      "chin",
+      "circus",
+      "clak",
+      "click",
+      "clubkick",
+      "co",
+      "coffee",
+      "coins",
+      "contratiempos",
+      "control",
+      "cosmicg",
+      "cp",
+      "cpluck",
+      "cr",
+      "crow",
+      "cuerdas",
+      "d",
+      "db",
+      "diphone",
+      "diphone2",
+      "dist",
+      "dork2",
+      "dorkbot",
+      "dr",
+      "dr2",
+      "dr55",
+      "dr_few",
+      "drum",
+      "drumtraks",
+      "e",
+      "east",
+      "efecto",
+      "electro1",
+      "em2",
+      "erk",
+      "f",
+      "feel",
+      "feelfx",
+      "fest",
+      "fire",
+      "flbass",
+      "flick",
+      "fm",
+      "foo",
+      "future",
+      "gab",
+      "gabba",
+      "gabbaloud",
+      "gabbalouder",
+      "glasstap",
+      "glitch",
+      "glitch2",
+      "gretsch",
+      "gtr",
+      "guira",
+      "h",
+      "hand",
+      "hardcore",
+      "hardkick",
+      "haw",
+      "hc",
+      "hh",
+      "hh27",
+      "hit",
+      "hmm",
+      "ho",
+      "hoover",
+      "house",
+      "ht",
+      "if",
+      "ifdrums",
+      "incoming",
+      "industrial",
+      "insect",
+      "invaders",
+      "jamblock",
+      "jazz",
+      "jungbass",
+      "jungle",
+      "juno",
+      "jvbass",
+      "kicklinn",
+      "koy",
+      "kurt",
+      "latibro",
+      "led",
+      "less",
+      "lighter",
+      "linnhats",
+      "lt",
+      "made",
+      "made2",
+      "mash",
+      "mash2",
+      "metal",
+      "miniyeah",
+      "monsterb",
+      "moog",
+      "mouth",
+      "mp3",
+      "msg",
+      "mt",
+      "mute",
+      "newnotes",
+      "noise",
+      "noise2",
+      "notes",
+      "numbers",
+      "oc",
+      "odx",
+      "off",
+      "outdoor",
+      "pad",
+      "padlong",
+      "pebbles",
+      "perc",
+      "peri",
+      "pluck",
+      "popkick",
+      "print",
+      "proc",
+      "procshort",
+      "psr",
+      "quinto",
+      "rave",
+      "rave2",
+      "ravemono",
+      "realclaps",
+      "reverbkick",
+      "rm",
+      "rs",
+      "sax",
+      "sd",
+      "seawolf",
+      "sequential",
+      "sf",
+      "sheffield",
+      "short",
+      "sid",
+      "sine",
+      "sitar",
+      "sn",
+      "space",
+      "speakspell",
+      "speech",
+      "speechless",
+      "speedupdown",
+      "sprvibe",
+      "stab",
+      "stomp",
+      "subroc3d",
+      "sugar",
+      "sundance",
+      "tabla",
+      "tabla2",
+      "tablex",
+      "tacscan",
+      "tarola",
+      "tech",
+      "techno",
+      "teclado",
+      "tink",
+      "tok",
+      "toys",
+      "trump",
+      "tumba",
+      "ukulele",
+      "ul",
+      "ulgab",
+      "uxay",
+      "v",
+      "vgut",
+      "voodoo",
+      "wind",
+      "wobble",
+      "world",
+      "xmas",
+      "yeah"
+    ],
+    "description": "drums · 236 sounds · 808, 909, 808bd …",
+    "stars": 2,
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:krillerxyz/stems",
@@ -1945,7 +2300,7 @@
     ],
     "description": "melodic · 665 sounds · LSDAIRCRAFT, SHELLSINAPRISM, TWINKLINGNOMADS …",
     "stars": 2,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:kyrsive/glorkglunk-wavetables",
@@ -1965,7 +2320,7 @@
     ],
     "description": "lead · 9 sounds · wt_additive, wt_clix, wt_fm …",
     "stars": 2,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:prismograph/departure",
@@ -1980,7 +2335,28 @@
     ],
     "description": "bass · 4 sounds · short, breaks, bass …",
     "stars": 2,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
+  },
+  {
+    "ref": "https://raw.githubusercontent.com/randbrown/voidstar.sh/main/public/samples/real_0/lofi/strudel.json",
+    "repo": "randbrown/voidstar.sh",
+    "category": "drums",
+    "soundCount": 10,
+    "sounds": [
+      "bd",
+      "sd",
+      "rim",
+      "hh",
+      "oh",
+      "lt",
+      "mt",
+      "ht",
+      "rd",
+      "cr"
+    ],
+    "description": "drums · 10 sounds · bd, sd, rim …",
+    "stars": 2,
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:alfredojarry/samples_eddyflux_crate",
@@ -2009,7 +2385,7 @@
     ],
     "description": "drums · 18 sounds · crate_sd, crate_block, crate_bd …",
     "stars": 1,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:bingaman/tr707",
@@ -2033,7 +2409,7 @@
     ],
     "description": "drums · 13 sounds · tr707_bd, tr707_cb, tr707_cp …",
     "stars": 1,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:boggodan/bflute",
@@ -2047,7 +2423,20 @@
     ],
     "description": "vocal · 3 sounds · flphrases, flnote, flflutter",
     "stars": 1,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
+  },
+  {
+    "ref": "github:brucelane/strudelpatches",
+    "repo": "brucelane/strudelpatches",
+    "category": "drums",
+    "soundCount": 2,
+    "sounds": [
+      "blbd",
+      "blsd"
+    ],
+    "description": "drums · 2 sounds · blbd, blsd",
+    "stars": 1,
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:Bubobubobubobubo/Dough-Amen",
@@ -2061,7 +2450,7 @@
     ],
     "description": "breaks · 3 sounds · amen1, amen3, amen2",
     "stars": 1,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:Bubobubobubobubo/Dough-Juj",
@@ -2073,7 +2462,84 @@
     ],
     "description": "misc · 1 sounds · juj",
     "stars": 1,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
+  },
+  {
+    "ref": "github:Bubobubobubobubo/Dough-Samples",
+    "repo": "Bubobubobubobubo/Dough-Samples",
+    "category": "drums",
+    "soundCount": 27,
+    "sounds": [
+      "kick",
+      "tom",
+      "stab",
+      "shaker",
+      "snare",
+      "perc",
+      "fx",
+      "snare2",
+      "zap",
+      "crash",
+      "bass",
+      "drone",
+      "vocal",
+      "pad",
+      "synth",
+      "perc2",
+      "voc",
+      "clap",
+      "bass2",
+      "bell",
+      "cowbell",
+      "bass3",
+      "hat",
+      "synth2",
+      "ambiance",
+      "impact",
+      "loop"
+    ],
+    "description": "drums · 27 sounds · kick, tom, stab …",
+    "stars": 1,
+    "lastSeen": "2026-07-20"
+  },
+  {
+    "ref": "github:concordia-dcart/samples-extra",
+    "repo": "concordia-dcart/samples-extra",
+    "category": "drums",
+    "soundCount": 28,
+    "sounds": [
+      "break",
+      "bsbass",
+      "bsguitar",
+      "bshihat",
+      "bskick",
+      "bsnoise",
+      "bsperc",
+      "bssnare",
+      "bsvocals",
+      "clap",
+      "claus",
+      "cpu",
+      "cpu2",
+      "dbass",
+      "dsynth",
+      "foley",
+      "hi",
+      "kick",
+      "lo",
+      "perr-bass",
+      "perr-hh",
+      "perr-kk",
+      "perr-perc",
+      "perr-sn",
+      "perr-vxfx",
+      "perre-loop",
+      "rash",
+      "snare"
+    ],
+    "description": "drums · 28 sounds · break, bsbass, bsguitar …",
+    "stars": 1,
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:creativenucleus/strudel-m8-168-dnb-jungle",
@@ -2092,7 +2558,19 @@
     ],
     "description": "breaks · 8 sounds · breaks, breaks-gated, breaks-noquant …",
     "stars": 1,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
+  },
+  {
+    "ref": "github:darkmarthur/MDQ_LIVECODING_SCRIPTS",
+    "repo": "darkmarthur/MDQ_LIVECODING_SCRIPTS",
+    "category": "misc",
+    "soundCount": 1,
+    "sounds": [
+      "japanese"
+    ],
+    "description": "misc · 1 sounds · japanese",
+    "stars": 1,
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "https://raw.githubusercontent.com/febeverelst/algorave_FE-VER/main/Samples/strudel.json",
@@ -2105,7 +2583,7 @@
     ],
     "description": "vocal · 2 sounds · vocals, try",
     "stars": 1,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:fjpolo/fjpolo-Strudel",
@@ -2119,7 +2597,7 @@
     ],
     "description": "misc · 3 sounds · anvil, chains, metalgrinder",
     "stars": 1,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:GuiMilani/strudel-samples",
@@ -2136,7 +2614,78 @@
     ],
     "description": "drums · 6 sounds · drumloop, drumloop2, drumloop3 …",
     "stars": 1,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
+  },
+  {
+    "ref": "https://raw.githubusercontent.com/karmaterminal/strudel-music/main/samples/strudel.json",
+    "repo": "karmaterminal/strudel-music",
+    "category": "bass",
+    "soundCount": 60,
+    "sounds": [
+      "kick",
+      "hat",
+      "clap",
+      "kick_ghost",
+      "bass_Cs1",
+      "bass_D1",
+      "bass_Ds1",
+      "bass_E1",
+      "bass_F1",
+      "bass_Fs1",
+      "bass_G1",
+      "bass_Gs1",
+      "bass_A1",
+      "bass_As1",
+      "synth_lead",
+      "synth_lead_2",
+      "other_000",
+      "other_001",
+      "other_002",
+      "other_003",
+      "bloom_kick",
+      "bloom_snare",
+      "bloom_mid_perc",
+      "bloom_mid_perc1",
+      "bloom_mid_perc2",
+      "bloom_bass_D1",
+      "bloom_bass_D2",
+      "bloom_bass_As1",
+      "bloom_bass_C1",
+      "bloom_bass_G1",
+      "bloom_bass_Ds1",
+      "bloom_bass_E2",
+      "bloom_bass_Cs2",
+      "bloom_lead_D3",
+      "bloom_lead_A2",
+      "bloom_lead_As2",
+      "bloom_lead_C3",
+      "bloom_lead_E3",
+      "bloom_lead_F3",
+      "bloom_lead_G2",
+      "bloom_bass_As2",
+      "bloom_bass_B0",
+      "bloom_bass_B1",
+      "bloom_bass_Cs1",
+      "bloom_bass_Ds2",
+      "bloom_bass_Fs2",
+      "bloom_bass_Gs1",
+      "bloom_mid_perc3",
+      "bloom_lead_B2",
+      "bloom_lead_Cs3",
+      "bloom_lead_Ds3",
+      "bloom_lead_Gs2",
+      "frbass",
+      "frkick",
+      "frhat",
+      "frclap",
+      "frkick_ghost",
+      "frlead",
+      "frlead2",
+      "frissother"
+    ],
+    "description": "bass · 60 sounds · kick, hat, clap …",
+    "stars": 1,
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "https://raw.githubusercontent.com/lwlsn/digital-selves-samples/main/snd/strudel.json",
@@ -2148,7 +2697,7 @@
     ],
     "description": "misc · 1 sounds · k",
     "stars": 1,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:mamalLivecoder/samples",
@@ -2178,7 +2727,7 @@
     ],
     "description": "drums · 19 sounds · hiphop_bd, hiphop_sd, hiphop_hh …",
     "stars": 1,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "https://raw.githubusercontent.com/Merkoba/Slide/main/server/samples/strudel.json",
@@ -2205,28 +2754,7 @@
     ],
     "description": "drums · 16 sounds · bd, brk, cb …",
     "stars": 1,
-    "lastSeen": "2026-07-13"
-  },
-  {
-    "ref": "https://raw.githubusercontent.com/randbrown/voidstar.sh/main/public/samples/voidstar_0/voidstar/strudel.json",
-    "repo": "randbrown/voidstar.sh",
-    "category": "drums",
-    "soundCount": 10,
-    "sounds": [
-      "bd",
-      "sd",
-      "rim",
-      "hh",
-      "oh",
-      "lt",
-      "mt",
-      "ht",
-      "rd",
-      "cr"
-    ],
-    "description": "drums · 10 sounds · bd, sd, rim …",
-    "stars": 1,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:Sangarshanan/strudel-samples",
@@ -2241,7 +2769,7 @@
     ],
     "description": "drums · 4 sounds · breaks, pads, covers …",
     "stars": 1,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "https://raw.githubusercontent.com/ShawnToubeau/livecode/main/music/songs/bowghain/samples/strudel.json",
@@ -2255,7 +2783,7 @@
     ],
     "description": "lead · 3 sounds · fill, fx, stab",
     "stars": 1,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:sonidosingapura/rochormatic",
@@ -2284,7 +2812,7 @@
     ],
     "description": "breaks · 18 sounds · roni, gndym, yosui …",
     "stars": 1,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:terrorhank/samples",
@@ -2323,7 +2851,7 @@
     ],
     "description": "drums · 28 sounds · ping, cole_zero, mim_one …",
     "stars": 1,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:TodePond/pond",
@@ -2344,7 +2872,7 @@
     ],
     "description": "vocal · 10 sounds · dark, smog, ooh …",
     "stars": 1,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:TristanCacqueray/mirus",
@@ -2359,7 +2887,7 @@
     ],
     "description": "misc · 4 sounds · small-plate, get-it-wet, sillica-beads …",
     "stars": 1,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:aalokok/soundrepo",
@@ -2373,7 +2901,7 @@
     ],
     "description": "lead · 3 sounds · acid, amen, zorp",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:andrewcre8s/laughing-octo-spoon",
@@ -2385,7 +2913,7 @@
     ],
     "description": "misc · 1 sounds · xolrumi",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:AngelaVilladiego/strudel-akas-dnb-essentials",
@@ -2405,7 +2933,7 @@
     ],
     "description": "drums · 9 sounds · bass_one_shots, hats, kicks …",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "https://raw.githubusercontent.com/apostolos-geyer/StrudelSoundbanks/trunk/samples/strudel.json",
@@ -2425,7 +2953,7 @@
     ],
     "description": "drums · 9 sounds · bass, chants, clap …",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:ArthurMuhulet/samples",
@@ -2437,7 +2965,41 @@
     ],
     "description": "misc · 1 sounds · nuclear",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
+  },
+  {
+    "ref": "github:AuditeMarlow/samples",
+    "repo": "AuditeMarlow/samples",
+    "category": "drums",
+    "soundCount": 3,
+    "sounds": [
+      "hihat",
+      "kick",
+      "snare"
+    ],
+    "description": "drums · 3 sounds · hihat, kick, snare",
+    "stars": 0,
+    "lastSeen": "2026-07-20"
+  },
+  {
+    "ref": "github:azhadsyed/strudel-samples",
+    "repo": "azhadsyed/strudel-samples",
+    "category": "drums",
+    "soundCount": 9,
+    "sounds": [
+      "bags",
+      "bass",
+      "dtkick",
+      "dtkick2",
+      "dtkick3",
+      "dtkick4",
+      "dtkick5",
+      "dtkick6",
+      "sunset"
+    ],
+    "description": "drums · 9 sounds · bags, bass, dtkick …",
+    "stars": 0,
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "https://raw.githubusercontent.com/bkamuz/pulsar/main/samples/strudel.json",
@@ -2454,7 +3016,7 @@
     ],
     "description": "drums · 6 sounds · Bass, Breaks, Pads …",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:bobbymcclosky/byorky",
@@ -2466,7 +3028,7 @@
     ],
     "description": "misc · 1 sounds · shakedownstreet",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:boggodan/bmetal",
@@ -2480,7 +3042,7 @@
     ],
     "description": "misc · 3 sounds · chugs, trem, cronch",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:boggodan/nfolk",
@@ -2499,7 +3061,7 @@
     ],
     "description": "melodic · 8 sounds · baldur, flutes, frame …",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "https://raw.githubusercontent.com/bruveping/RepositorioDESonido_N_3/main/guitarra_experimental0001/strudel.json",
@@ -2512,7 +3074,7 @@
     ],
     "description": "drums · 2 sounds · guitarra, toma0001",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:bruveping/RepositorioDesonidosParaExperimentar02",
@@ -2524,7 +3086,7 @@
     ],
     "description": "misc · 1 sounds · todo",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "https://raw.githubusercontent.com/bsssssss/strudel-samples/main/bs-sounds/strudel.json",
@@ -2540,7 +3102,7 @@
     ],
     "description": "drums · 5 sounds · bs_bass, bs_bd, bs_sd …",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:calvarez0/samples",
@@ -2553,7 +3115,7 @@
     ],
     "description": "misc · 2 sounds · chan_chan, mixed_chan",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:chickenalibi/music",
@@ -2565,7 +3127,7 @@
     ],
     "description": "breaks · 1 sounds · breaks",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "https://raw.githubusercontent.com/cosmiclavaflow/-strudel-drums-129-dmaj/main/samples/strudel.json",
@@ -2587,7 +3149,7 @@
     ],
     "description": "drums · 11 sounds · pgkick, pgkickB, pgkickpunch …",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:cosmiclavaflow/samples",
@@ -2599,7 +3161,7 @@
     ],
     "description": "vocal · 1 sounds · f-vocal",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "https://raw.githubusercontent.com/creativenucleus/strudel-tasting-tray/main/testdata/samplepack/strudel.json",
@@ -2612,7 +3174,7 @@
     ],
     "description": "vocal · 2 sounds · breaks, vox",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:Cyb3rs33d/vocalsamples",
@@ -2627,7 +3189,43 @@
     ],
     "description": "misc · 4 sounds · riquiqui, titoarca, fkache …",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
+  },
+  {
+    "ref": "github:dagurkris/Tidalcycles",
+    "repo": "dagurkris/Tidalcycles",
+    "category": "drums",
+    "soundCount": 25,
+    "sounds": [
+      "808bt",
+      "Bassatromma",
+      "adhlustaatonlist",
+      "brot",
+      "brot1",
+      "brot2",
+      "brot3",
+      "dbTrommur",
+      "dós",
+      "gretschTrommur",
+      "hattur",
+      "inagiganticsoundsystem",
+      "irisastoruhljodkerfi",
+      "jungleBassi",
+      "listeningtomusic",
+      "mjoghatt",
+      "reallyloudly",
+      "s",
+      "salad",
+      "sax",
+      "semvinurthinngerdi",
+      "sjálfvirkt",
+      "snare",
+      "thatyourfriendmade",
+      "tunna"
+    ],
+    "description": "drums · 25 sounds · 808bt, Bassatromma, adhlustaatonlist …",
+    "stars": 0,
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:DanielGilbert/strudel-samples",
@@ -2639,7 +3237,7 @@
     ],
     "description": "vocal · 1 sounds · voice",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:davidshipp/dtl",
@@ -2651,7 +3249,7 @@
     ],
     "description": "misc · 1 sounds · car",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:djspilot/samples",
@@ -2671,7 +3269,7 @@
     ],
     "description": "misc · 9 sounds · life, life1, life2 …",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:domi-s/strudel-samples",
@@ -2688,7 +3286,42 @@
     ],
     "description": "lead · 6 sounds · samples, rr, ks …",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
+  },
+  {
+    "ref": "github:dovbaeb/samples-strudel-pls",
+    "repo": "dovbaeb/samples-strudel-pls",
+    "category": "bass",
+    "soundCount": 24,
+    "sounds": [
+      "amens",
+      "bass",
+      "jersey-kiks",
+      "BLIND",
+      "COCKING",
+      "DISHES",
+      "DUSTING",
+      "Doors_1",
+      "Doors_2",
+      "KITCHEN_1",
+      "KITCHEN_2",
+      "KITCHEN_3",
+      "KNOCK",
+      "LAUNDRY_1",
+      "LAUNDRY_2",
+      "TOILET_1",
+      "TOILET_2",
+      "WASHSTAND",
+      "Hard wind",
+      "Little Absynth",
+      "misc",
+      "stems",
+      "textures",
+      "vox"
+    ],
+    "description": "bass · 24 sounds · amens, bass, jersey-kiks …",
+    "stars": 0,
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:Dsm0/htrap",
@@ -2707,7 +3340,7 @@
     ],
     "description": "drums · 8 sounds · htrap_808s, htrap_claps_snaps, htrap_hi_open_hats …",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:Durmiente/amen_breaks_160",
@@ -2719,7 +3352,7 @@
     ],
     "description": "misc · 1 sounds · altamira",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:edcrub/samp",
@@ -2731,7 +3364,19 @@
     ],
     "description": "breaks · 1 sounds · break",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
+  },
+  {
+    "ref": "github:ElBarbs/strudel-pads",
+    "repo": "ElBarbs/strudel-pads",
+    "category": "pad",
+    "soundCount": 1,
+    "sounds": [
+      "cpads"
+    ],
+    "description": "pad · 1 sounds · cpads",
+    "stars": 0,
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:EloMorelo/samples",
@@ -2743,7 +3388,7 @@
     ],
     "description": "vocal · 1 sounds · vocals",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "https://raw.githubusercontent.com/Emanuel-de-Jong/L1C0-B3nLib_x86_EXE/main/assets/audio/strudel.json",
@@ -2759,7 +3404,7 @@
     ],
     "description": "fx · 5 sounds · vl_not_enough_minerals, vl_yeah, dl_impeach_the_president …",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:emin-grbo/app-maker-outpost",
@@ -2771,7 +3416,7 @@
     ],
     "description": "misc · 1 sounds · steveQuotes",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:emptyflash/samples",
@@ -2808,7 +3453,7 @@
     ],
     "description": "drums · 26 sounds · boom, doppler2, efbd …",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:evilfemme/evil-samples",
@@ -2826,7 +3471,7 @@
     ],
     "description": "pad · 7 sounds · 100bpm.cmaj, emaj-drone, break-samp …",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "https://raw.githubusercontent.com/fstiffo/polifonia-samples/master/strudel.json",
@@ -2838,7 +3483,7 @@
     ],
     "description": "misc · 1 sounds · italy",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:FW-Test-26/FORYELIN",
@@ -2850,7 +3495,7 @@
     ],
     "description": "misc · 1 sounds · FORYELIN",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:gaelanmcmillan/breaks",
@@ -2863,7 +3508,7 @@
     ],
     "description": "misc · 2 sounds · bb1, bb2",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:gaelanmcmillan/breaks2",
@@ -2876,7 +3521,7 @@
     ],
     "description": "misc · 2 sounds · bb1, bb2",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:gerzytet/strudel-samples",
@@ -2888,7 +3533,7 @@
     ],
     "description": "misc · 1 sounds · rash",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:HelveticaScenario/trick-shot",
@@ -2900,91 +3545,90 @@
     ],
     "description": "misc · 1 sounds · trick-shot",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
-    "ref": "https://raw.githubusercontent.com/HnnhBot/strudel/main/abp1/strudel.json",
+    "ref": "https://raw.githubusercontent.com/HnnhBot/strudel/main/abp2/strudel.json",
     "repo": "HnnhBot/strudel",
-    "category": "world",
-    "soundCount": 73,
+    "category": "drums",
+    "soundCount": 72,
     "sounds": [
-      "abp1_Kick",
-      "abp1_Blocks",
-      "abp1_Mbalax",
-      "abp1_Brushes",
-      "abp1_Bells",
-      "abp1_Bata",
-      "abp1_Rebolo",
-      "abp1_Bongo",
-      "abp1_Conga",
-      "abp1_HiHat",
-      "abp1_Snare",
-      "abp1_Talking_Drum",
-      "abp1_Shells",
-      "abp1_Kalimba",
-      "abp1_Tambourine",
-      "abp1_Sticks",
-      "abp1_Djembe",
-      "abp1_Clave",
-      "abp1_Shakers",
-      "abp1_Thiol",
-      "abp1_92_Agogo",
-      "abp1_92_Bata",
-      "abp1_92_Bells",
-      "abp1_92_Blocks",
-      "abp1_92_Bongo",
-      "abp1_92_Bottlecaps",
-      "abp1_92_Clave",
-      "abp1_92_Djembe",
-      "abp1_92_Moroccan_Bongo",
-      "abp1_92_Shells",
-      "abp1_108_Agogo",
-      "abp1_108_Bells",
-      "abp1_108_Blocks",
-      "abp1_108_Kalimba",
-      "abp1_108_Sticks",
-      "abp1_108_Talking_Drum",
-      "abp1_110_Bata",
-      "abp1_110_Brushes",
-      "abp1_110_Conga",
-      "abp1_110_Djembe",
-      "abp1_110_Mbalax",
-      "abp1_110_Thiol",
-      "abp1_100_Djembe",
-      "abp1_100_Kalimba",
-      "abp1_100_Mbalax",
-      "abp1_100_Rebolo",
-      "abp1_100_Thiol",
-      "abp1_98_Talking_Drum",
-      "abp1_94_Brushes",
-      "abp1_96_Bata",
-      "abp1_96_Sticks",
-      "abp1_102_Bongo",
-      "abp1_102_Conga",
-      "abp1_102_Moroccan_Bongo",
-      "abp1_104_Bata",
-      "abp1_106_Bottlecaps",
-      "abp1_106_Clave",
-      "abp1_106_Shakers",
-      "abp1_106_Shekere",
-      "abp1_106_Shells",
-      "abp1_106_Tambourine",
-      "abp1_114_Bongo",
-      "abp1_114_Moroccan_Bongo",
-      "abp1_116_Djembe",
-      "abp1_90_Conga",
-      "abp1_90_Kalimba",
-      "abp1_90_Mbalax",
-      "abp1_90_Rebolo",
-      "abp1_90_Shakers",
-      "abp1_90_Shekere",
-      "abp1_90_Talking_Drum",
-      "abp1_90_Tambourine",
-      "abp1_90_Thiol"
+      "abp2_Bata_Mundi_FX",
+      "abp2_Bells",
+      "abp2_Shaker",
+      "abp2_Cymbals",
+      "abp2_Bongo",
+      "abp2_Conga",
+      "abp2_Doorkeys",
+      "abp2_Rimshot",
+      "abp2_Snare",
+      "abp2_Snaps",
+      "abp2_Agogo",
+      "abp2_Moroccan_Bongo",
+      "abp2_Tama",
+      "abp2_Seeds",
+      "abp2_Bassdrum",
+      "abp2_Sticks",
+      "abp2_Metal_Percs",
+      "abp2_Djembe",
+      "abp2_Guiro",
+      "abp2_Birds",
+      "abp2_Kicks",
+      "abp2_128_Bata_Mundi_FX",
+      "abp2_88_Bata_Mundi_FX",
+      "abp2_94_Bells",
+      "abp2_94_Bongo",
+      "abp2_94_Chimes",
+      "abp2_94_Seeds",
+      "abp2_94_Shaker",
+      "abp2_94_Sticks",
+      "abp2_94_Guiro",
+      "abp2_108_Bells",
+      "abp2_108_Seeds",
+      "abp2_108_Sticks",
+      "abp2_120_Moroccan_Bongo",
+      "abp2_120_Shaker",
+      "abp2_96_Djembe",
+      "abp2_96_Shaker",
+      "abp2_96_Tambourine",
+      "abp2_104_Bongo",
+      "abp2_162_Bongo",
+      "abp2_124_Bongo",
+      "abp2_124_Djembe",
+      "abp2_142_Conga",
+      "abp2_100_Bassdrum",
+      "abp2_100_Conga",
+      "abp2_100_Moroccan_Bongo",
+      "abp2_100_Sticks",
+      "abp2_100_Tama",
+      "abp2_90_Bassdrum",
+      "abp2_90_Conga",
+      "abp2_90_Metal_Percs",
+      "abp2_90_Moroccan_Bongo",
+      "abp2_90_Snare",
+      "abp2_76_Conga",
+      "abp2_122_Conga",
+      "abp2_122_Seeds",
+      "abp2_116_Djembe",
+      "abp2_116_Snare",
+      "abp2_136_Agogo",
+      "abp2_136_Chimes",
+      "abp2_136_Metal_Percs",
+      "abp2_154_Moroccan_Bongo",
+      "abp2_74_Tama",
+      "abp2_110_Metal_Percs",
+      "abp2_110_Tambourine",
+      "abp2_92_Seeds",
+      "abp2_92_Doorkeys",
+      "abp2_80_Bassdrum",
+      "abp2_80_Sticks",
+      "abp2_130_Bassdrum",
+      "abp2_130_Sticks",
+      "abp2_85_Djembe"
     ],
-    "description": "world · 73 sounds · abp1_Kick, abp1_Blocks, abp1_Mbalax …",
+    "description": "drums · 72 sounds · abp2_Bata_Mundi_FX, abp2_Bells, abp2_Shaker …",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:hpunq/samples-strudel",
@@ -3091,7 +3735,7 @@
     ],
     "description": "drums · 96 sounds · sinatra-sample, sinatra-bass, blockhead-synth …",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:hvillase/cavlp-25p",
@@ -3105,7 +3749,7 @@
     ],
     "description": "misc · 3 sounds · botella, pelota, spray",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:ibleedicare/strudel-bank",
@@ -3118,7 +3762,7 @@
     ],
     "description": "bass · 2 sounds · bass, synth_ara_ara",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:icortes/audio-samples",
@@ -3152,7 +3796,7 @@
     ],
     "description": "drums · 23 sounds · bassloops, bassshots, basssubdrops …",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:indiepaleale/strudel-samples",
@@ -3175,7 +3819,7 @@
     ],
     "description": "misc · 12 sounds · bianzhong, fengluo, guqin …",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:internetmoment/get-your-wish",
@@ -3188,7 +3832,7 @@
     ],
     "description": "vocal · 2 sounds · gyw_vocals, gyw_melody",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:iSHUSHL/crate",
@@ -3217,7 +3861,7 @@
     ],
     "description": "drums · 18 sounds · crate_sd, crate_block, crate_bd …",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:IzTheWiz/SamplePack",
@@ -3229,7 +3873,21 @@
     ],
     "description": "misc · 1 sounds · sp",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
+  },
+  {
+    "ref": "github:jafartouzeau/strudel-personnal-library",
+    "repo": "jafartouzeau/strudel-personnal-library",
+    "category": "misc",
+    "soundCount": 3,
+    "sounds": [
+      "bemylady1",
+      "bemylady2",
+      "heehaa"
+    ],
+    "description": "misc · 3 sounds · bemylady1, bemylady2, heehaa",
+    "stars": 0,
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:janpc01/samples",
@@ -3242,7 +3900,7 @@
     ],
     "description": "drums · 2 sounds · rockthatbody, giveittome",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:javihuh/BreakSamples",
@@ -3254,7 +3912,7 @@
     ],
     "description": "breaks · 1 sounds · Break-01",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:Jayquan75/bases-funk",
@@ -3273,7 +3931,7 @@
     ],
     "description": "drums · 8 sounds · bfbeat, bfatabaque, bfvocal …",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:jehmal/Samples",
@@ -3297,7 +3955,7 @@
     ],
     "description": "drums · 13 sounds · kick, hh, oh …",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "https://raw.githubusercontent.com/jhw/strudel-rhythm-lab/main/sounds/strudel.json",
@@ -4067,7 +4725,7 @@
     ],
     "description": "breaks · 759 sounds · 101-strings-high-on-the, 20th-century-hot-pants, 2nd-chapter-of-acts-the-devil …",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:joeymorello/live-sample-repo",
@@ -4087,7 +4745,7 @@
     ],
     "description": "drums · 9 sounds · bd, cp, drum_loop …",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:john-szetho/26031-double-bass",
@@ -4101,7 +4759,7 @@
     ],
     "description": "misc · 3 sounds · db1, db2, db3",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:john-szetho/code-jam-samples-feb-2026",
@@ -4114,7 +4772,7 @@
     ],
     "description": "misc · 2 sounds · communal, john",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:jordaoaq/strudelando",
@@ -4126,7 +4784,7 @@
     ],
     "description": "breaks · 1 sounds · breaks",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:JoshBothell/strudel_samples",
@@ -4138,7 +4796,7 @@
     ],
     "description": "drums · 1 sounds · drum_loops",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "https://raw.githubusercontent.com/joverval/cinnamon-roll/main/samples/strudel.json",
@@ -4167,7 +4825,7 @@
     ],
     "description": "drums · 18 sounds · arpy, bd, casio …",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:jpalcala/tidal",
@@ -4179,7 +4837,7 @@
     ],
     "description": "breaks · 1 sounds · breaks",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:k09/samples",
@@ -4217,7 +4875,7 @@
     ],
     "description": "misc · 27 sounds · k09_007, k09_008, k09_001 …",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:kaiye10/strudelSamples",
@@ -4232,7 +4890,7 @@
     ],
     "description": "breaks · 4 sounds · finger, apache, idm …",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:KakuyaShiraishi/samples",
@@ -4251,7 +4909,7 @@
     ],
     "description": "drums · 8 sounds · whatareyou, idolmaker, tense …",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:konrad1001/strudel",
@@ -4264,7 +4922,7 @@
     ],
     "description": "misc · 2 sounds · female, after_laughter_beat",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:kyrsive/xtra-equovil-samples",
@@ -4327,7 +4985,7 @@
     ],
     "description": "drums · 52 sounds · 174_drumloop, 3ashb_G_158, 3ds …",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:larsmosr/samples",
@@ -4340,7 +4998,7 @@
     ],
     "description": "drums · 2 sounds · bd_kick, bassdrum",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:leonardhorns/samples",
@@ -4356,7 +5014,7 @@
     ],
     "description": "misc · 5 sounds · countdown, nobody_likes_the_records, rick_and_morty …",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "https://raw.githubusercontent.com/liush2yuxjtu/strudel-vibe/main/vibe-web/samples/strudel.json",
@@ -4392,7 +5050,19 @@
     ],
     "description": "drums · 25 sounds · bd, sd, hh …",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
+  },
+  {
+    "ref": "github:luvl4ne/breaks",
+    "repo": "luvl4ne/breaks",
+    "category": "breaks",
+    "soundCount": 1,
+    "sounds": [
+      "cw_amen_107"
+    ],
+    "description": "breaks · 1 sounds · cw_amen_107",
+    "stars": 0,
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "https://raw.githubusercontent.com/lynn/sounds/main/chrono-trigger/strudel.json",
@@ -4460,7 +5130,7 @@
     ],
     "description": "melodic · 57 sounds · accordion, choir, churchorgan …",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:marcoonroad/strudel-wav-samples",
@@ -4475,7 +5145,7 @@
     ],
     "description": "drums · 4 sounds · supersaws, supersquares, cowbells …",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:MartinMaguna/luzmilacarpiosamples",
@@ -4487,7 +5157,7 @@
     ],
     "description": "lead · 1 sounds · luzmilacarpio",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:MartinMaguna/samplesKzur",
@@ -4533,7 +5203,7 @@
     ],
     "description": "lead · 35 sounds · elOnce01, elOnce02, elOnce03 …",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:Minibusss/Strudel",
@@ -4562,7 +5232,7 @@
     ],
     "description": "drums · 18 sounds · crate_sd, crate_block, crate_bd …",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:MinistryOfSillyCode/strudel_samples",
@@ -4576,7 +5246,7 @@
     ],
     "description": "misc · 3 sounds · jet, prop, beep",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:mistipher/studel-beats",
@@ -4619,7 +5289,7 @@
     ],
     "description": "breaks · 32 sounds · useme, sesame, do …",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:mmmgarlic/randumsample",
@@ -4674,7 +5344,7 @@
     ],
     "description": "drums · 44 sounds · 808_blameitonu, 808_dreamer, 808_lipgloss …",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:mot4i/loom",
@@ -4689,7 +5359,7 @@
     ],
     "description": "drums · 4 sounds · jazzy, gtR, npx …",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "https://raw.githubusercontent.com/my-dooom/dub-stepbro/main/app/public/drums/strudel.json",
@@ -4705,7 +5375,22 @@
     ],
     "description": "drums · 5 sounds · kick, snare, hat …",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
+  },
+  {
+    "ref": "github:mysinglelise/msl-strudel-samples",
+    "repo": "mysinglelise/msl-strudel-samples",
+    "category": "vocal",
+    "soundCount": 4,
+    "sounds": [
+      "magicfriend",
+      "themoonvocoder",
+      "silverfever",
+      "glass"
+    ],
+    "description": "vocal · 4 sounds · magicfriend, themoonvocoder, silverfever …",
+    "stars": 0,
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:mzhcheng/samples",
@@ -4717,7 +5402,7 @@
     ],
     "description": "misc · 1 sounds · illegal",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:n7down/samples",
@@ -4729,7 +5414,7 @@
     ],
     "description": "misc · 1 sounds · heartbeat",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:Naaeeen/LENS",
@@ -4751,7 +5436,20 @@
     ],
     "description": "bass · 11 sounds · bangzi, daluo, xiaoluo …",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
+  },
+  {
+    "ref": "github:neshanjo/moonalley-samples",
+    "repo": "neshanjo/moonalley-samples",
+    "category": "misc",
+    "soundCount": 2,
+    "sounds": [
+      "bea",
+      "ywk"
+    ],
+    "description": "misc · 2 sounds · bea, ywk",
+    "stars": 0,
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:neshanjo/strudel-producer-space-samples",
@@ -4799,7 +5497,7 @@
     ],
     "description": "vocal · 37 sounds · computer, dvs1, dvs2 …",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:neshanjo/strudel-sample-collection",
@@ -4842,7 +5540,7 @@
     ],
     "description": "drums · 32 sounds · vl_9to5, il_bea, il_breathless …",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:nicolas-rabault/strudel-samples",
@@ -4882,7 +5580,7 @@
     ],
     "description": "world · 29 sounds · indian_song_instru, indian_song_middle, indian_song_soloStart …",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:Nikeryms/Samples",
@@ -4894,7 +5592,7 @@
     ],
     "description": "vocal · 1 sounds · vocals",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:norrischris/samples",
@@ -4906,7 +5604,7 @@
     ],
     "description": "drums · 1 sounds · 909",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:olivertrigg03-max/strudel-samples",
@@ -4919,7 +5617,7 @@
     ],
     "description": "breaks · 2 sounds · breaks, newsound",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:PGaillot/samples",
@@ -4931,7 +5629,7 @@
     ],
     "description": "misc · 1 sounds · quenard",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:photonbit/voices",
@@ -4955,7 +5653,7 @@
     ],
     "description": "misc · 13 sounds · bap, dam, dss …",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "https://raw.githubusercontent.com/plinkysynth/ginkgo_samples/main/microlive/strudel.json",
@@ -4967,7 +5665,7 @@
     ],
     "description": "misc · 1 sounds · microlive",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:poptatarii/codejamsamples",
@@ -4989,7 +5687,7 @@
     ],
     "description": "drums · 11 sounds · chhz, clpz, fxz …",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:potatoboiler/bolero",
@@ -5001,7 +5699,7 @@
     ],
     "description": "misc · 1 sounds · nee",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:pranshuj73/strudel",
@@ -5013,7 +5711,7 @@
     ],
     "description": "breaks · 1 sounds · breaks",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:Prof12200/strudel_repo",
@@ -5030,7 +5728,7 @@
     ],
     "description": "misc · 6 sounds · bloopers, nouns, questa …",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:rdwrome/SPAM",
@@ -5042,7 +5740,7 @@
     ],
     "description": "misc · 1 sounds · SPAM",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:Ricci-Liu/dirt-sample",
@@ -5271,7 +5969,7 @@
     ],
     "description": "drums · 218 sounds · 808, 909, 808bd …",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:RikyBac15/samples",
@@ -5313,7 +6011,7 @@
     ],
     "description": "bass · 31 sounds · space-kick, super-bass, super-bass-short …",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:rtmiz/samples",
@@ -5325,7 +6023,21 @@
     ],
     "description": "misc · 1 sounds · zaunerlan",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
+  },
+  {
+    "ref": "github:sakunovadj/breaks",
+    "repo": "sakunovadj/breaks",
+    "category": "misc",
+    "soundCount": 3,
+    "sounds": [
+      "shade",
+      "sncm",
+      "snpi"
+    ],
+    "description": "misc · 3 sounds · shade, sncm, snpi",
+    "stars": 0,
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:Samplesbit/Plucks",
@@ -5337,7 +6049,7 @@
     ],
     "description": "lead · 1 sounds · pluck",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:Samplesbit/strudel_samples",
@@ -5349,7 +6061,7 @@
     ],
     "description": "pad · 1 sounds · swpad",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:sarefo/strudel",
@@ -5372,7 +6084,7 @@
     ],
     "description": "misc · 12 sounds · botanik, brazil, darkstar …",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:ShaharFullStack/strudelfun",
@@ -5390,7 +6102,7 @@
     ],
     "description": "drums · 7 sounds · drums, bass, guitar …",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "https://raw.githubusercontent.com/simongoricar/strudel-sounds/master/strudel.json",
@@ -5421,7 +6133,7 @@
     ],
     "description": "drums · 20 sounds · sgdrums_bd, sgdrums_cbs, sgdrums_cr …",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:spacemonqi/psyTech-public",
@@ -5442,7 +6154,7 @@
     ],
     "description": "drums · 10 sounds · f#_kick, f#_bass, f#min_arp …",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:sucaritaesredonda/samples",
@@ -5460,7 +6172,7 @@
     ],
     "description": "pad · 7 sounds · nominal, palabra, zdrone …",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:superbuggy/samples",
@@ -5472,7 +6184,7 @@
     ],
     "description": "drums · 1 sounds · drumline",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:SutterChristian/sampuru",
@@ -5492,7 +6204,7 @@
     ],
     "description": "drums · 9 sounds · juicy_vocals, choppings, juicy_sd …",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:theblkguy/strudelTest",
@@ -5504,7 +6216,7 @@
     ],
     "description": "breaks · 1 sounds · amen",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "https://raw.githubusercontent.com/thisyearnofear/sonicguardian/main/public/samples/strudel.json",
@@ -5525,7 +6237,7 @@
     ],
     "description": "drums · 10 sounds · 808, 909, bd …",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:tracedelange/proprietary-homunculus",
@@ -5537,7 +6249,25 @@
     ],
     "description": "misc · 1 sounds · bayside",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
+  },
+  {
+    "ref": "github:ugamochi/strudel-samples",
+    "repo": "ugamochi/strudel-samples",
+    "category": "bass",
+    "soundCount": 7,
+    "sounds": [
+      "breaks",
+      "bassus",
+      "pads",
+      "fx",
+      "textures",
+      "vocals",
+      "amb"
+    ],
+    "description": "bass · 7 sounds · breaks, bassus, pads …",
+    "stars": 0,
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:uhChainsaws/smpls",
@@ -5550,7 +6280,7 @@
     ],
     "description": "misc · 2 sounds · jam, skippy",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:unframework/pastries",
@@ -5563,7 +6293,7 @@
     ],
     "description": "misc · 2 sounds · 1 TUVAN HIGH, seseragi",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:Utsukushii42/samples",
@@ -5575,7 +6305,7 @@
     ],
     "description": "misc · 1 sounds · heartbeat",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:valjason/barrel",
@@ -5587,7 +6317,7 @@
     ],
     "description": "drums · 1 sounds · bassdrum",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:walter-algorave/Samples",
@@ -5604,7 +6334,7 @@
     ],
     "description": "drums · 6 sounds · 808_s, chants, claps …",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:wayne-liberty/strudel-samples",
@@ -5617,7 +6347,7 @@
     ],
     "description": "vocal · 2 sounds · bottle_click, voice",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:xurizaemon/samples",
@@ -5632,7 +6362,7 @@
     ],
     "description": "drums · 4 sounds · temptation_drums, temptation_bass, so_what_intro_loop …",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "github:YAGORAYMOND/samples",
@@ -5644,7 +6374,7 @@
     ],
     "description": "misc · 1 sounds · tub",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   },
   {
     "ref": "https://raw.githubusercontent.com/ZBZFirst/file/master/samples/strudel.json",
@@ -5873,6 +6603,6 @@
     ],
     "description": "drums · 218 sounds · 808, 909, 808bd …",
     "stars": 0,
-    "lastSeen": "2026-07-13"
+    "lastSeen": "2026-07-20"
   }
 ]

@@ -1,58 +1,58 @@
 ## Loadable sample banks discovered on GitHub
 These are REAL, loadable Strudel banks (crawled from public repos). Reach past the base palette: load one with `samples('<ref>')`. For a bank's exact sound names, grep `data/banks.json` before you write the `samples()` load.
 
-### drums (59)
+### drums (69)
 - tidalcycles/Dirt-Samples · https://raw.githubusercontent.com/tidalcycles/Dirt-Samples/master/strudel.json · 218
 - algorave-dave/samples · github:algorave-dave/samples · 7
+- eddyflux/crate · github:eddyflux/crate · 18
 - yaxu/spicule · github:yaxu/spicule · 75
-- tidalcycles/uzu-drumkit · github:tidalcycles/uzu-drumkit · 16
 - mot4i/garden · github:mot4i/garden · 13
-- rcarmo/apfelstrudel · https://raw.githubusercontent.com/rcarmo/apfelstrudel/main/public/vendor/strudel/samples/strudel.json · 50
-- …and 53 more — grep `data/banks.json`.
+- tidalcycles/uzu-drumkit · github:tidalcycles/uzu-drumkit · 16
+- …and 63 more — grep `data/banks.json`.
 
-### bass (7)
+### bass (10)
 - eddyflux/wax · github:eddyflux/wax · 21
 - cleary/samples-flbass · github:cleary/samples-flbass · 1
 - sonidosingapura/blu-mar-ten · github:sonidosingapura/blu-mar-ten · 6
 - prismograph/departure · github:prismograph/departure · 4
-- ibleedicare/strudel-bank · github:ibleedicare/strudel-bank · 2
-- Naaeeen/LENS · github:Naaeeen/LENS · 11
-- …and 1 more — grep `data/banks.json`.
+- karmaterminal/strudel-music · https://raw.githubusercontent.com/karmaterminal/strudel-music/main/samples/strudel.json · 60
+- dovbaeb/samples-strudel-pls · github:dovbaeb/samples-strudel-pls · 24
+- …and 4 more — grep `data/banks.json`.
 
-### lead (8)
+### lead (9)
 - Bubobubobubobubo/Dough-Waveforms · github:Bubobubobubobubo/Dough-Waveforms · 65
+- tidalcycles/uzu-wavetables · github:tidalcycles/uzu-wavetables · 2
 - kyrsive/glorkglunk-wavetables · github:kyrsive/glorkglunk-wavetables · 9
 - ShawnToubeau/livecode · https://raw.githubusercontent.com/ShawnToubeau/livecode/main/music/songs/bowghain/samples/strudel.json · 3
 - aalokok/soundrepo · github:aalokok/soundrepo · 3
 - domi-s/strudel-samples · github:domi-s/strudel-samples · 6
-- MartinMaguna/luzmilacarpiosamples · github:MartinMaguna/luzmilacarpiosamples · 1
-- …and 2 more — grep `data/banks.json`.
+- …and 3 more — grep `data/banks.json`.
 
-### pad (3)
+### pad (4)
+- ElBarbs/strudel-pads · github:ElBarbs/strudel-pads · 1
 - evilfemme/evil-samples · github:evilfemme/evil-samples · 7
 - Samplesbit/strudel_samples · github:Samplesbit/strudel_samples · 1
 - sucaritaesredonda/samples · github:sucaritaesredonda/samples · 7
 
-### vocal (13)
+### vocal (14)
 - switchangel/beginningtrance · github:switchangel/beginningtrance · 1
 - jpopesculian/ep1320 · github:jpopesculian/ep1320 · 58
 - boggodan/bflute · github:boggodan/bflute · 3
 - febeverelst/algorave_FE-VER · https://raw.githubusercontent.com/febeverelst/algorave_FE-VER/main/Samples/strudel.json · 2
 - TodePond/pond · github:TodePond/pond · 10
 - cosmiclavaflow/samples · github:cosmiclavaflow/samples · 1
-- …and 7 more — grep `data/banks.json`.
+- …and 8 more — grep `data/banks.json`.
 
-### world (2)
-- HnnhBot/strudel · https://raw.githubusercontent.com/HnnhBot/strudel/main/abp1/strudel.json · 73
+### world (1)
 - nicolas-rabault/strudel-samples · github:nicolas-rabault/strudel-samples · 29
 
 ### breaks (18)
 - yaxu/clean-breaks · github:yaxu/clean-breaks · 32
 - switchangel/breaks · github:switchangel/breaks · 1
-- timoncool/Bulka · https://raw.githubusercontent.com/timoncool/Bulka/main/examples/codemirror-repl/public/samples/clean-breaks/strudel.json · 32
 - smaudd/joonies-dnb-collection-strudel · github:smaudd/joonies-dnb-collection-strudel · 2
 - Bubobubobubobubo/Dough-Amen · github:Bubobubobubobubo/Dough-Amen · 3
 - creativenucleus/strudel-m8-168-dnb-jungle · github:creativenucleus/strudel-m8-168-dnb-jungle · 8
+- sonidosingapura/rochormatic · github:sonidosingapura/rochormatic · 18
 - …and 12 more — grep `data/banks.json`.
 
 ### fx (1)
@@ -64,11 +64,11 @@ These are REAL, loadable Strudel banks (crawled from public repos). Reach past t
 - boggodan/nfolk · github:boggodan/nfolk · 8
 - lynn/sounds · https://raw.githubusercontent.com/lynn/sounds/main/chrono-trigger/strudel.json · 57
 
-### misc (49)
+### misc (56)
+- timoncool/Bulka · https://raw.githubusercontent.com/timoncool/Bulka/main/examples/codemirror-repl/public/samples/mridangam/strudel.json · 13
 - QuantumVillage/quantum-music · github:QuantumVillage/quantum-music · 1
 - vasilymilovidov/samples · github:vasilymilovidov/samples · 8
+- eduardoagarcia/strudel · https://raw.githubusercontent.com/eduardoagarcia/strudel/main/samples/fx/strudel.json · 1
 - salsicha/capoeira_strudel · github:salsicha/capoeira_strudel · 2
-- Bubobubobubobubo/Dough-Amiga · github:Bubobubobubobubo/Dough-Amiga · 116
-- Bubobubobubobubo/Dough-Juj · github:Bubobubobubobubo/Dough-Juj · 1
-- fjpolo/fjpolo-Strudel · github:fjpolo/fjpolo-Strudel · 3
-- …and 43 more — grep `data/banks.json`.
+- yaxu/mrid · github:yaxu/mrid · 13
+- …and 50 more — grep `data/banks.json`.
