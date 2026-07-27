@@ -10,14 +10,14 @@ These are REAL, loadable Strudel banks (crawled from public repos). Reach past t
 - tidalcycles/uzu-drumkit · github:tidalcycles/uzu-drumkit · 16
 - …and 63 more — grep `data/banks.json`.
 
-### bass (10)
+### bass (11)
 - eddyflux/wax · github:eddyflux/wax · 21
 - cleary/samples-flbass · github:cleary/samples-flbass · 1
 - sonidosingapura/blu-mar-ten · github:sonidosingapura/blu-mar-ten · 6
 - prismograph/departure · github:prismograph/departure · 4
 - karmaterminal/strudel-music · https://raw.githubusercontent.com/karmaterminal/strudel-music/main/samples/strudel.json · 60
 - dovbaeb/samples-strudel-pls · github:dovbaeb/samples-strudel-pls · 24
-- …and 4 more — grep `data/banks.json`.
+- …and 5 more — grep `data/banks.json`.
 
 ### lead (9)
 - Bubobubobubobubo/Dough-Waveforms · github:Bubobubobubobubo/Dough-Waveforms · 65
