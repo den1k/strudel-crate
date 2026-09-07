@@ -1,14 +1,14 @@
 ## Loadable sample banks discovered on GitHub
 These are REAL, loadable Strudel banks (crawled from public repos). Reach past the base palette: load one with `samples('<ref>')`. For a bank's exact sound names, grep `data/banks.json` before you write the `samples()` load.
 
-### drums (67)
+### drums (68)
 - tidalcycles/Dirt-Samples · https://raw.githubusercontent.com/tidalcycles/Dirt-Samples/master/strudel.json · 218
 - algorave-dave/samples · github:algorave-dave/samples · 7
 - eddyflux/crate · github:eddyflux/crate · 18
 - yaxu/spicule · github:yaxu/spicule · 75
 - mot4i/garden · github:mot4i/garden · 13
 - tidalcycles/uzu-drumkit · github:tidalcycles/uzu-drumkit · 16
-- …and 61 more — grep `data/banks.json`.
+- …and 62 more — grep `data/banks.json`.
 
 ### bass (12)
 - eddyflux/wax · github:eddyflux/wax · 21
@@ -28,7 +28,8 @@ These are REAL, loadable Strudel banks (crawled from public repos). Reach past t
 - domi-s/strudel-samples · github:domi-s/strudel-samples · 6
 - …and 3 more — grep `data/banks.json`.
 
-### pad (4)
+### pad (5)
+- eerieear/samples · github:eerieear/samples · 5
 - ElBarbs/strudel-pads · github:ElBarbs/strudel-pads · 1
 - evilfemme/evil-samples · github:evilfemme/evil-samples · 7
 - Samplesbit/strudel_samples · github:Samplesbit/strudel_samples · 1
@@ -59,16 +60,17 @@ These are REAL, loadable Strudel banks (crawled from public repos). Reach past t
 ### fx (1)
 - Emanuel-de-Jong/L1C0-B3nLib_x86_EXE · https://raw.githubusercontent.com/Emanuel-de-Jong/L1C0-B3nLib_x86_EXE/main/assets/audio/strudel.json · 5
 
-### melodic (3)
+### melodic (4)
+- timoncool/Bulka · https://raw.githubusercontent.com/timoncool/Bulka/main/website/public/samples/e-pianos/strudel.json · 3
 - heavy-lifting/a-maze · github:heavy-lifting/a-maze · 26
 - krillerxyz/stems · github:krillerxyz/stems · 665
 - boggodan/nfolk · github:boggodan/nfolk · 8
 
 ### misc (57)
-- timoncool/Bulka · https://raw.githubusercontent.com/timoncool/Bulka/main/examples/codemirror-repl/public/samples/mridangam/strudel.json · 13
 - QuantumVillage/quantum-music · github:QuantumVillage/quantum-music · 1
 - vasilymilovidov/samples · github:vasilymilovidov/samples · 8
 - eduardoagarcia/strudel · https://raw.githubusercontent.com/eduardoagarcia/strudel/main/samples/fx/strudel.json · 1
 - salsicha/capoeira_strudel · github:salsicha/capoeira_strudel · 2
 - yaxu/mrid · github:yaxu/mrid · 13
+- Bubobubobubobubo/Dough-Amiga · github:Bubobubobubobubo/Dough-Amiga · 116
 - …and 51 more — grep `data/banks.json`.
