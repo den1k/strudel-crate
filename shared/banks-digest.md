@@ -1,14 +1,14 @@
 ## Loadable sample banks discovered on GitHub
 These are REAL, loadable Strudel banks (crawled from public repos). Reach past the base palette: load one with `samples('<ref>')`. For a bank's exact sound names, grep `data/banks.json` before you write the `samples()` load.
 
-### drums (69)
+### drums (71)
 - tidalcycles/Dirt-Samples · https://raw.githubusercontent.com/tidalcycles/Dirt-Samples/master/strudel.json · 218
 - algorave-dave/samples · github:algorave-dave/samples · 7
 - eddyflux/crate · github:eddyflux/crate · 18
 - yaxu/spicule · github:yaxu/spicule · 75
 - mot4i/garden · github:mot4i/garden · 13
 - tidalcycles/uzu-drumkit · github:tidalcycles/uzu-drumkit · 16
-- …and 63 more — grep `data/banks.json`.
+- …and 65 more — grep `data/banks.json`.
 
 ### bass (11)
 - eddyflux/wax · github:eddyflux/wax · 21
