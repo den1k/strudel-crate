@@ -1,23 +1,23 @@
 ## Loadable sample banks discovered on GitHub
 These are REAL, loadable Strudel banks (crawled from public repos). Reach past the base palette: load one with `samples('<ref>')`. For a bank's exact sound names, grep `data/banks.json` before you write the `samples()` load.
 
-### drums (73)
+### drums (74)
 - tidalcycles/Dirt-Samples · https://raw.githubusercontent.com/tidalcycles/Dirt-Samples/master/strudel.json · 218
 - algorave-dave/samples · github:algorave-dave/samples · 7
 - eddyflux/crate · github:eddyflux/crate · 18
 - yaxu/spicule · github:yaxu/spicule · 75
 - mot4i/garden · github:mot4i/garden · 13
 - tidalcycles/uzu-drumkit · github:tidalcycles/uzu-drumkit · 16
-- …and 67 more — grep `data/banks.json`.
+- …and 68 more — grep `data/banks.json`.
 
-### bass (11)
+### bass (12)
 - eddyflux/wax · github:eddyflux/wax · 21
 - cleary/samples-flbass · github:cleary/samples-flbass · 1
 - sonidosingapura/blu-mar-ten · github:sonidosingapura/blu-mar-ten · 6
 - karmaterminal/strudel-music · https://raw.githubusercontent.com/karmaterminal/strudel-music/main/samples/strudel.json · 60
 - prismograph/departure · github:prismograph/departure · 4
 - dovbaeb/samples-strudel-pls · github:dovbaeb/samples-strudel-pls · 24
-- …and 5 more — grep `data/banks.json`.
+- …and 6 more — grep `data/banks.json`.
 
 ### lead (11)
 - Bubobubobubobubo/Dough-Waveforms · github:Bubobubobubobubo/Dough-Waveforms · 65
@@ -68,11 +68,11 @@ These are REAL, loadable Strudel banks (crawled from public repos). Reach past t
 - futurechef/codingcuisine.dev · https://raw.githubusercontent.com/futurechef/codingcuisine.dev/main/public/station/strudel.json · 6
 - lynn/sounds · https://raw.githubusercontent.com/lynn/sounds/main/chrono-trigger/strudel.json · 57
 
-### misc (57)
+### misc (58)
 - QuantumVillage/quantum-music · github:QuantumVillage/quantum-music · 1
 - vasilymilovidov/samples · github:vasilymilovidov/samples · 8
 - eduardoagarcia/strudel · https://raw.githubusercontent.com/eduardoagarcia/strudel/main/samples/fx/strudel.json · 1
 - yaxu/mrid · github:yaxu/mrid · 13
 - salsicha/capoeira_strudel · github:salsicha/capoeira_strudel · 2
 - Bubobubobubobubo/Dough-Amiga · github:Bubobubobubobubo/Dough-Amiga · 116
-- …and 51 more — grep `data/banks.json`.
+- …and 52 more — grep `data/banks.json`.
