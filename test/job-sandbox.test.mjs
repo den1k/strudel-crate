@@ -360,3 +360,170 @@ describe('claude login', () => {
     expect(token).toBe('new');
   });
 });
+
+// Audit run-2. Each one is a way out that the kernel must refuse even to arbitrary code,
+// because the code policy is not the boundary.
+describe('sandbox-exec: arbitrary code still reaches nothing else', () => {
+  const pyProbe = (flags, code, opts = {}) => {
+    const r = spawnSync('/usr/bin/python3', ['-I', HELPER, ...SYS, ...flags, '--', '/usr/bin/python3', '-I', '-c', code], { encoding: 'utf8', timeout: 20000, ...opts });
+    return { out: r.stdout.trim(), code: r.status, err: r.stderr };
+  };
+  let dir;
+  let dummy;
+  beforeEach(async () => {
+    dir = await mkdtemp(join(tmpdir(), 'crate-sb2-'));
+    dummy = spawn('/bin/sleep', ['60'], { stdio: 'ignore' });
+  });
+  afterEach(async () => {
+    dummy.kill('SIGKILL');
+    await rm(dir, { recursive: true, force: true });
+  });
+  const alive = () => dummy.exitCode === null && dummy.signalCode === null;
+  const settle = () => new Promise((r) => { setTimeout(r, 150); });
+  const tryIt = (body) => `
+import os, signal, socket, ctypes
+def go():
+${body.split('\n').map((l) => `    ${l}`).join('\n')}
+try:
+    go()
+    print('ALLOWED')
+except OSError as e:
+    print('DENIED', e.errno)
+`;
+
+  it.each([
+    ['symlink', (d) => `os.symlink('/etc/passwd', '${d}/link')`],
+    ['fifo', (d) => `os.mkfifo('${d}/pipe')`],
+  ])('--rw refuses a %s, so a served tree holds only regular files', async (_n, op) => {
+    expect(pyProbe(['--rw', dir], tryIt(op(dir))).out).toMatch(/^DENIED 13/);
+  });
+  it('--rw refuses moving a symlink in from private scratch', async () => {
+    const scratch = join(dir, 'scratch'); const served = join(dir, 'served');
+    await mkdir(scratch); await mkdir(served);
+    const r = pyProbe(['--rw-links', scratch, '--rw', served], tryIt(`os.symlink('/etc/passwd', '${scratch}/l')\nos.rename('${scratch}/l', '${served}/l')`));
+    expect(r.out).toMatch(/^DENIED (13|18)/);
+  });
+  it('--rw refuses hard-linking a file it cannot read', async () => {
+    const closed = join(dir, 'closed'); const served = join(dir, 'served');
+    await mkdir(closed); await mkdir(served);
+    await writeFile(join(closed, '.env'), 'TOKEN=dummy');
+    expect(pyProbe(['--rw', served], tryIt(`os.link('${closed}/.env', '${served}/x')`)).out).toMatch(/^DENIED (13|18)/);
+  });
+  it('--rw still writes and renames regular files', () => {
+    expect(pyProbe(['--rw', dir], tryIt(`open('${dir}/a', 'w').close()\nos.rename('${dir}/a', '${dir}/b')`)).out).toBe('ALLOWED');
+  });
+
+  it.each([
+    ['kill', (p) => `os.kill(${p}, signal.SIGTERM)`],
+    ['kill 0', (p) => `os.kill(${p}, 0)`],
+    ['tkill', (p) => `ctypes.CDLL(None, use_errno=True).syscall(200, ${p}, 15) == 0 or (_ for _ in ()).throw(OSError(ctypes.get_errno(), ''))`],
+    ['tgkill', (p) => `ctypes.CDLL(None, use_errno=True).syscall(234, ${p}, ${p}, 15) == 0 or (_ for _ in ()).throw(OSError(ctypes.get_errno(), ''))`],
+    ['pidfd_open', (p) => `os.pidfd_open(${p})`],
+    ['setpriority', (p) => `os.setpriority(os.PRIO_PROCESS, ${p}, 19)`],
+    ['prlimit', (p) => `import resource\nresource.prlimit(${p}, resource.RLIMIT_CPU, (0, 0))`],
+    ['sched_setaffinity', (p) => `os.sched_setaffinity(${p}, {0})`],
+  ])('%s at a process outside the sandbox is refused', async (_n, op) => {
+    const r = pyProbe([], tryIt(op(dummy.pid)));
+    expect(r.out).toBe('DENIED 1');
+    await settle();
+    expect(alive()).toBe(true);
+  });
+  it('a process group or broadcast signal reaching outside is refused', async () => {
+    const group = pyProbe([], tryIt(`os.killpg(os.getpgid(os.getpid()), 0)`));
+    expect(group.out).toBe('DENIED 1'); // this test's own group holds the test runner
+    expect(pyProbe([], tryIt('os.kill(-1, signal.SIGTERM)')).out).toBe('DENIED 1');
+    await settle();
+    expect(alive()).toBe(true);
+  });
+  it('F_SETOWN cannot make the kernel signal someone else', () => {
+    expect(pyProbe([], tryIt(`import fcntl\nr, w = os.pipe()\nfcntl.fcntl(r, fcntl.F_SETOWN, ${dummy.pid})`)).out).toBe('DENIED 1');
+  });
+  it('a dead pid reads as gone, not as forbidden', () => {
+    expect(pyProbe([], tryIt('os.kill(4194000, 0)')).out).toMatch(/^DENIED 3/);
+  });
+
+  it('its own tree still signals freely: self, children, threads, orphans', () => {
+    const code = tryIt(`
+import subprocess, threading, time
+os.kill(os.getpid(), 0)
+c = subprocess.Popen(['/bin/sleep', '30'])
+os.kill(c.pid, signal.SIGTERM); assert c.wait() == -15
+g = subprocess.Popen(['/bin/sleep', '30'], start_new_session=True)
+os.killpg(g.pid, signal.SIGTERM); assert g.wait() == -15
+d = subprocess.Popen(['/usr/bin/python3', '-I', '-c', 'import os,subprocess;print(subprocess.Popen(["/bin/sleep","30"]).pid)'], stdout=subprocess.PIPE, text=True)
+orphan = int(d.stdout.readline()); d.wait(); time.sleep(.1)
+os.kill(orphan, signal.SIGTERM)
+os.setpriority(os.PRIO_PROCESS, 0, 1)
+done = []
+signal.signal(signal.SIGUSR1, lambda *_: done.append(1))
+signal.raise_signal(signal.SIGUSR1)
+assert done
+`);
+    expect(pyProbe(['--rw', dir], code).out).toBe('ALLOWED');
+  });
+  it('ends when the sandbox does, holding no pipe and leaving no process', async () => {
+    const r = spawnSync('/usr/bin/python3', ['-I', HELPER, ...SYS, '--', '/bin/true'], { timeout: 5000 });
+    expect(r.error).toBeUndefined(); // a supervisor holding stdout would time this out
+    expect(r.status).toBe(0);
+    const marker = `/crate-sb-marker-${process.pid}`;
+    spawnSync('/usr/bin/python3', ['-I', HELPER, ...SYS, '--ro', marker, '--', '/bin/true']);
+    await settle();
+    expect(spawnSync('/usr/bin/pgrep', ['-f', `[-]-ro ${marker}`]).status).toBe(1); // nothing left running
+  });
+
+  it('the supervisor sits outside its tree, and a dead one fails closed', () => {
+    // Not a descendant: the tree can't reach it. Unsandboxed stand-in kills it, as an OOM would.
+    const code = tryIt(`
+import subprocess, sys
+print(os.getpid(), flush=True)
+sys.stdin.readline()
+os.kill(os.getpid(), 0)`);
+    return new Promise((resolve, reject) => {
+      const before = new Set(spawnSync('/usr/bin/pgrep', ['-u', String(process.getuid()), '-f', 'sandbox-exec.py'], { encoding: 'utf8' }).stdout.split('\n'));
+      const job = spawn('/usr/bin/python3', ['-I', HELPER, ...SYS, '--', '/usr/bin/python3', '-I', '-c', code]);
+      let out = '';
+      job.stdout.on('data', (d) => {
+        out += d;
+        if (!/^\d+\n/.test(out) || job.killedSupervisor) return;
+        job.killedSupervisor = true;
+        const sup = spawnSync('/usr/bin/pgrep', ['-u', String(process.getuid()), '-f', 'sandbox-exec.py'], { encoding: 'utf8' }).stdout
+          .split('\n').filter((p) => p && !before.has(p) && Number(p) !== job.pid);
+        try {
+          expect(sup.length).toBe(1);
+          process.kill(Number(sup[0]), 'SIGKILL');
+        } catch (e) { reject(e); }
+        setTimeout(() => job.stdin.write('\n'), 100);
+      });
+      job.on('close', () => {
+        try {
+          expect(out.split('\n')[1]).toBe('DENIED 38'); // ENOSYS: the kernel's answer with no listener
+          resolve();
+        } catch (e) { reject(e); }
+      });
+    });
+  });
+
+  it.each([
+    ['MPTCP', (p) => `s = socket.socket(socket.AF_INET, socket.SOCK_STREAM, 262)\ns.settimeout(3)\ns.connect(('127.0.0.1', ${p}))`],
+    ['a TCP Fast Open send', (p) => `s = socket.socket()\ns.sendto(b'x', 0x20000000, ('127.0.0.1', ${p}))`],
+  ])('%s cannot dodge the TCP port allowlist', async (_n, op) => {
+    let accepted = 0;
+    const server = net.createServer((s) => { accepted += 1; s.destroy(); });
+    await new Promise((r) => { server.listen(0, '127.0.0.1', r); });
+    const { port } = server.address();
+    const out = await new Promise((resolve) => {
+      const c = spawn('/usr/bin/python3', ['-I', HELPER, ...SYS, '--tcp', String(port + 1), '--', '/usr/bin/python3', '-I', '-c', tryIt(op(port))]);
+      let o = '';
+      c.stdout.on('data', (d) => { o += d; });
+      c.on('close', () => resolve(o.trim()));
+    });
+    await settle();
+    server.close();
+    expect(out).toMatch(/^DENIED/);
+    expect(accepted).toBe(0);
+  });
+  it('socketpair gives stream sockets only', () => {
+    expect(pyProbe([], tryIt('socket.socketpair(socket.AF_UNIX, socket.SOCK_DGRAM)')).out).toMatch(/^DENIED/);
+    expect(pyProbe([], tryIt('socket.socketpair()')).out).toBe('ALLOWED');
+  });
+});
