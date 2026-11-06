@@ -42,6 +42,9 @@ const MIN_DISTINCT_ROLES = 3;
 
 const isNonEmptyString = (v) => typeof v === 'string' && v.trim() !== '';
 
+// A sample source is one short reference, never prose: these strings reach later jobs' memos.
+export const isSourceRef = (v) => typeof v === 'string' && /^[a-z][a-z0-9+-]*:[^\s"'`<>\\]{1,300}$/i.test(v);
+
 // ---- shape validation (cheap, synchronous) ---------------------------------
 
 export function validatePaletteShape(palette) {
@@ -51,8 +54,8 @@ export function validatePaletteShape(palette) {
   for (const f of ['batch', 'brief', 'createdAt']) {
     if (!isNonEmptyString(palette[f])) return { ok: false, error: `palette.${f} must be a non-empty string` };
   }
-  if (palette.samples != null && !(Array.isArray(palette.samples) && palette.samples.every(isNonEmptyString))) {
-    return { ok: false, error: 'palette.samples must be an array of source strings' };
+  if (palette.samples != null && !(Array.isArray(palette.samples) && palette.samples.every(isSourceRef))) {
+    return { ok: false, error: 'palette.samples must be an array of source references (like github:user/repo)' };
   }
   if (!Array.isArray(palette.voices)) return { ok: false, error: 'palette.voices must be an array' };
   if (palette.voices.length < MIN_VOICES) {
@@ -65,8 +68,8 @@ export function validatePaletteShape(palette) {
     }
     if (!isNonEmptyString(v.name)) return { ok: false, error: `voice ${i} must have a name` };
     if (!isNonEmptyString(v.frag)) return { ok: false, error: `voice ${i} must have a frag (Strudel sub-expression)` };
-    if (v.samples != null && !(Array.isArray(v.samples) && v.samples.every(isNonEmptyString))) {
-      return { ok: false, error: `voice ${i} samples must be an array of source strings` };
+    if (v.samples != null && !(Array.isArray(v.samples) && v.samples.every(isSourceRef))) {
+      return { ok: false, error: `voice ${i} samples must be an array of source references (like github:user/repo)` };
     }
   }
   const distinctRoles = new Set(palette.voices.map((v) => v.role));
