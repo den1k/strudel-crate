@@ -1,10 +1,10 @@
 // Print the note-driven revision work list as JSON, consumed by the
 // revise-from-notes skill. Usage: node scripts/pending-revisions.mjs <stems|tracks>
 // Inside a job the list is scoped to the requester's own song families.
-import { fileURLToPath } from 'node:url';
 import { buildWorklist } from '../src/versions.js';
+import { isMain } from './lib/is-main.mjs';
 
-if (process.argv[1] && process.argv[1] === fileURLToPath(import.meta.url)) {
+if (isMain(import.meta.url)) {
   const { inJob, brokerCall } = await import('./lib/job-client.mjs');
   if (inJob()) {
     const res = await brokerCall('pending-revisions');

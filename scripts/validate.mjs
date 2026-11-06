@@ -4,7 +4,6 @@
 // rejects code reaching for anything beyond Strudel; inside a job this runs in the worker
 // sandbox, started with --disallow-code-generation-from-strings. So compile only through vm,
 // which that flag leaves alone and which isn't reachable from the evaluated code.
-import { fileURLToPath } from 'node:url';
 import vm from 'node:vm';
 import { transpiler } from '@strudel/transpiler';
 import * as webaudio from '@strudel/webaudio';
@@ -12,6 +11,7 @@ import { Pattern } from '@strudel/core';
 import { initStrudelEnv, loadedSoundNames, resetLoadedSounds } from './strudel-env.mjs';
 import { checkSounds, loadKnownSounds } from './check-sounds.mjs';
 import { checkCodePolicy, samplesStatements } from './lib/code-policy.mjs';
+import { isMain } from './lib/is-main.mjs';
 
 const QUERY_CYCLES = 8; // events must appear early — intros may not open with silence
 // The sound allowlist must cover the WHOLE arrangement, not just the intro:
@@ -224,7 +224,7 @@ async function validateTarget(arg) {
   return validateCode(await readFile(arg, 'utf8'));
 }
 
-if (process.argv[1] && process.argv[1] === fileURLToPath(import.meta.url)) {
+if (isMain(import.meta.url)) {
   const args = process.argv.slice(2);
   if (args.length === 0) {
     console.error('usage: node scripts/validate.mjs <track.json>... | --code "<strudel code>"');

@@ -6,7 +6,7 @@
 // `text`, a `target` ('tracks'|'stems'), and an optional `song` provenance
 // ({ namespace, slug, title } | null). buildDigest renders the provenance suffix
 // only when the lesson came from a song.
-import { fileURLToPath } from 'node:url';
+import { isMain } from './lib/is-main.mjs';
 
 export function buildDigest(lessons) {
   const present = lessons.filter((l) => l.text?.trim());
@@ -21,7 +21,7 @@ export function buildDigest(lessons) {
   return lines.join('\n');
 }
 
-if (process.argv[1] && process.argv[1] === fileURLToPath(import.meta.url)) {
+if (isMain(import.meta.url)) {
   const { inJob, brokerCall } = await import('./lib/job-client.mjs');
   if (inJob()) {
     const res = await brokerCall('feedback');

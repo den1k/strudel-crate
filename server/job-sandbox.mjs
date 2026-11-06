@@ -8,7 +8,7 @@
 // InaccessiblePaths & co here expecting them to do anything.
 import { spawn as nodeSpawn } from 'node:child_process';
 import { realpathSync } from 'node:fs';
-import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, rm, symlink, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
 const SYSTEM_EXEC = ['/usr', '/bin', '/lib', '/lib64', '/sbin'];
@@ -28,6 +28,19 @@ const REPO_READ = [
   'data/banks.json', 'data/kit-lessons', 'data/sample-cache',
 ];
 
+// A job's working directory is its own: real staging/, symlinks to what it may read (Landlock
+// judges the target, so those stay read-only). Skills keep using relative paths, and one job
+// can't see or overwrite what another left in staging/.
+export async function makeJobWorkDir(repoRoot, jobDir) {
+  const workDir = join(jobDir, 'work');
+  await mkdir(join(workDir, 'staging'), { recursive: true });
+  for (const p of REPO_READ) {
+    await mkdir(dirname(join(workDir, p)), { recursive: true });
+    await symlink(join(repoRoot, p), join(workDir, p));
+  }
+  return workDir;
+}
+
 const flags = (flag, paths) => paths.flatMap((p) => [flag, p]);
 const helperPath = (repoRoot) => join(repoRoot, 'scripts', 'sandbox', 'sandbox-exec.py');
 
@@ -35,7 +48,7 @@ export function agentSandboxFlags({ repoRoot, jobDir, proxyPort, claudeDir, envF
   return [
     ...flags('--rox', [...SYSTEM_EXEC, claudeDir]),
     ...flags('--ro', [...SYSTEM_READ, ...REPO_READ.map((p) => join(repoRoot, p))]),
-    ...flags('--rw', [...DEVICES, join(repoRoot, 'staging')]),
+    ...flags('--rw', DEVICES),
     ...flags('--rw-links', [jobDir]), // private scratch: claude keeps symlinks in its config
     '--tcp', String(proxyPort), // the broker: API proxy + save/read ops. Nothing else.
     '--env-file', envFile,
@@ -152,7 +165,7 @@ export function createJobLauncher({ repoRoot, broker, getToken = () => freshOaut
     const oauthToken = await getToken();
     const jobDir = join(repoRoot, 'data', 'job-sandbox', job.id);
     for (const d of ['home', 'tmp', 'config']) await mkdir(join(jobDir, d), { recursive: true });
-    await mkdir(join(repoRoot, 'staging'), { recursive: true });
+    const workDir = await makeJobWorkDir(repoRoot, jobDir);
 
     const brokerToken = broker.register(job, authorProfileId);
     const proxyPort = broker.port();
@@ -170,7 +183,7 @@ export function createJobLauncher({ repoRoot, broker, getToken = () => freshOaut
     ];
     return {
       command: 'systemd-run',
-      args: systemdRunArgv({ unit: `crate-job-${job.id}`, limits: JOB_LIMITS, cwd: repoRoot, command }),
+      args: systemdRunArgv({ unit: `crate-job-${job.id}`, limits: JOB_LIMITS, cwd: workDir, command }),
       options: { cwd: repoRoot, env: systemdEnv() },
       cleanup: async () => {
         broker.revoke(brokerToken);

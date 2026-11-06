@@ -1,6 +1,6 @@
 // scripts/remix-source.mjs <tracks|stems> <slug>
 // Print the source item + a fresh newId for the /remix skill, as JSON.
-import { fileURLToPath } from 'node:url';
+import { isMain } from './lib/is-main.mjs';
 
 export function nextRemixId(sourceSlug, existingSlugs) {
   for (let n = 1; n < 100; n++) {
@@ -10,7 +10,7 @@ export function nextRemixId(sourceSlug, existingSlugs) {
   throw new Error('too many remixes');
 }
 
-if (process.argv[1] && process.argv[1] === fileURLToPath(import.meta.url)) {
+if (isMain(import.meta.url)) {
   const { inJob, brokerCall } = await import('./lib/job-client.mjs');
   if (inJob()) {
     const res = await brokerCall('remix-source', { slug: process.argv[3] });

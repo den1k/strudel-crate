@@ -24,6 +24,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { effectiveSamples, isSourceRef } from './palette.mjs';
 import { extractSampleRefs } from './lib/sample-cache.mjs';
+import { isMain } from './lib/is-main.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 export const DEFAULT_PALETTES_DIR = join(ROOT, 'palettes');
@@ -181,7 +182,7 @@ export async function loadKitLessons({ lessonsDir = DEFAULT_KIT_LESSONS_DIR } = 
 
 // ---- CLI -------------------------------------------------------------------
 
-if (process.argv[1] && process.argv[1] === fileURLToPath(import.meta.url)) {
+if (isMain(import.meta.url)) {
   const limit = Number.parseInt(process.argv[2], 10);
   const palettes = await loadRecentPalettes({ limit: Number.isFinite(limit) ? limit : DEFAULT_LIMIT });
   const lessons = await loadKitLessons();

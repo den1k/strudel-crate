@@ -1,7 +1,7 @@
 // A generation job gets what it needs to generate and nothing else.
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { spawnSync, spawn } from 'node:child_process';
-import { mkdtemp, mkdir, writeFile, rm, stat } from 'node:fs/promises';
+import { mkdtemp, mkdir, writeFile, rm, stat, symlink } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -12,7 +12,7 @@ import request from 'supertest';
 import { fakeAdmin } from './fake-admin.mjs';
 import { createApp } from '../server/app.mjs';
 import { createJobBroker, createOps, createWorkerRunner, saveCapFor } from '../server/job-broker.mjs';
-import { agentEnv, agentSandboxFlags, freshOauthToken, systemdRunArgv, workerSandboxFlags } from '../server/job-sandbox.mjs';
+import { agentEnv, agentSandboxFlags, createJobLauncher, freshOauthToken, systemdRunArgv, workerSandboxFlags } from '../server/job-sandbox.mjs';
 import { budgetFor, createJobStore, jobQuotaError } from '../server/jobs.mjs';
 import { buildArgv, createRunner } from '../server/runner.mjs';
 import { cacheBank, fetchManifests } from '../scripts/lib/sample-cache.mjs';
@@ -107,10 +107,9 @@ describe('job authority', () => {
       expect(g).not.toBe('/run');
     }
   });
-  it('lets the agent write only its own dir and staging', () => {
+  it('lets the agent write only its own dir', () => {
     const rw = flags.filter((_, i) => flags[i - 1] === '--rw' || flags[i - 1] === '--rw-links').filter((p) => !p.startsWith('/dev/'));
-    expect(rw.sort()).toEqual(['/srv/crate/data/job-sandbox/j', '/srv/crate/staging']);
-    expect(flags[flags.indexOf('/srv/crate/staging') - 1]).toBe('--rw'); // shared between jobs: no links
+    expect(rw).toEqual(['/srv/crate/data/job-sandbox/j']);
   });
   it('lets the agent reach only the broker over TCP', () => {
     expect(flags.filter((_, i) => flags[i - 1] === '--tcp')).toEqual(['4000']);
@@ -754,6 +753,65 @@ describe('worker egress', () => {
     expect(units).toEqual([{ kind: 'fetch-manifests', net: true }, { kind: 'check-code', net: false }]);
     await rm(repoRoot, { recursive: true, force: true });
   });
+});
+
+describe('each job has its own staging', () => {
+  let repoRoot; let broker;
+  const launcher = () => createJobLauncher({ repoRoot, broker, getToken: async () => 'tok' });
+  const probeAs = (jobDir, code) => {
+    const r = spawnSync('/usr/bin/python3', ['-I', HELPER, ...SYS, '--rw-links', jobDir, '--ro', join(repoRoot, 'scripts'), '--', '/usr/bin/python3', '-I', '-c', code], { encoding: 'utf8', timeout: 15000 });
+    return r.stdout.trim();
+  };
+  const attempt2 = (expr) => `
+import os
+try:
+    ${expr}
+    print('ALLOWED')
+except OSError:
+    print('DENIED')
+`;
+  beforeEach(async () => {
+    repoRoot = await mkdtemp(join(tmpdir(), 'crate-jobs-'));
+    await mkdir(join(repoRoot, 'scripts'));
+    await writeFile(join(repoRoot, 'scripts', 'a.mjs'), 'x');
+    broker = { register: () => 'b', port: () => 1, revoke() {} };
+  });
+  afterEach(() => rm(repoRoot, { recursive: true, force: true }));
+
+  it('runs in a directory of its own, with the repo reachable the same relative way', async () => {
+    const a = await launcher()({ id: 'a' }, 'p', ['x']);
+    const dir = join(repoRoot, 'data', 'job-sandbox', 'a', 'work');
+    expect(a.args).toContain(`--working-directory=${dir}`);
+    expect((await stat(join(dir, 'staging'))).isDirectory()).toBe(true);
+    expect((await stat(join(dir, 'scripts', 'a.mjs'))).isFile()).toBe(true);
+    expect(a.args).not.toContain(join(repoRoot, 'staging'));
+    await expect(stat(join(repoRoot, 'staging'))).rejects.toThrow();
+  });
+  it('one job cannot read or overwrite what another staged', async () => {
+    await launcher()({ id: 'a' }, 'p', ['x']);
+    await launcher()({ id: 'b' }, 'p', ['x']);
+    const jobs = join(repoRoot, 'data', 'job-sandbox');
+    const theirs = join(jobs, 'b', 'work', 'staging', 'draft.json');
+    await writeFile(theirs, 'private');
+    const me = join(jobs, 'a');
+    expect(probeAs(me, attempt2(`open('${join(me, 'work', 'staging', 'mine.json')}', 'w').close()`))).toBe('ALLOWED');
+    expect(probeAs(me, attempt2(`open('${theirs}').read()`))).toBe('DENIED');
+    expect(probeAs(me, attempt2(`open('${theirs}', 'w').close()`))).toBe('DENIED');
+    expect(probeAs(me, attempt2(`os.listdir('${join(jobs, 'b')}')`))).toBe('DENIED');
+  });
+  it('symlinks in its directory give no more than the repo grants', async () => {
+    await launcher()({ id: 'a' }, 'p', ['x']);
+    const me = join(repoRoot, 'data', 'job-sandbox', 'a');
+    expect(probeAs(me, attempt2(`open('${join(me, 'work', 'scripts', 'a.mjs')}').read()`))).toBe('ALLOWED');
+    expect(probeAs(me, attempt2(`open('${join(me, 'work', 'scripts', 'a.mjs')}', 'w').close()`))).toBe('DENIED');
+  });
+  it('a CLI script still runs as main through such a symlink', async () => {
+    const repo = fileURLToPath(new URL('..', import.meta.url));
+    const link = join(repoRoot, 'linked');
+    await symlink(join(repo, 'scripts'), link);
+    const r = spawnSync(process.execPath, [join(link, 'validate.mjs')], { encoding: 'utf8', timeout: 60000 });
+    expect(r.status).toBe(2); // its usage error: the main block ran
+  }, 90000);
 });
 
 describe('audit run-2: job quota', () => {
