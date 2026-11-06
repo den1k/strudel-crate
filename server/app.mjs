@@ -5,6 +5,7 @@ import express from 'express';
 import { collectionFor } from './runner.mjs';
 import { jobQuotaError } from './jobs.mjs';
 import { setRating, setNotes, itemOwnerProfileId, familyOwnerProfileId, ensureProfile, getProfile, setArtistName, recordPlay, resolvePublicItem, queryLessonsByProfile, createLesson, updateLesson, deleteLesson } from './instant.mjs';
+import { ALLOWED_SAMPLE_HOSTS, BANK_SOURCE_FILE } from '../scripts/lib/sample-cache.mjs';
 import { createPlayLimiter } from './rate-limit.mjs';
 import { songMetaTags, brandMetaTags, injectMeta, cardHash } from './og.mjs';
 import { songCardHtml, brandCardHtml } from './og-card.mjs';
@@ -356,11 +357,16 @@ export function createApp(opts = {}) {
       const checks = await Promise.all(dirs.map(async (slug) => {
         try { await access(join(banksDir, slug, 'strudel.json')); return slug; } catch { return null; }
       }));
-      return checks.filter(Boolean);
+      const slugs = checks.filter(Boolean);
+      const sources = {};
+      await Promise.all(slugs.map(async (slug) => {
+        try { sources[slug] = await readFile(join(banksDir, slug, BANK_SOURCE_FILE), 'utf8'); } catch { /* vendored before sources were recorded */ }
+      }));
+      return { slugs, sources };
     });
     app.get('/sample-cache/index.json', wrap(async (_req, res) => {
       res.setHeader('Access-Control-Allow-Origin', '*'); // read by the opaque-origin engine
-      res.json({ slugs: await cachedBanks() });
+      res.json(await cachedBanks());
     }));
     // Vendored files come from third-party repos: inert data on this origin, never a
     // document. fetch()ing audio/JSON is unaffected by the response's own CSP.

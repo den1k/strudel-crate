@@ -16,6 +16,7 @@ export function bankSlug(source) {
 }
 
 let cacheIndex = null; // Set<slug> once loaded, or null until the lazy fetch resolves
+let cacheSources = {}; // slug -> the source it was vendored from; absent for older banks
 
 // Kick off the index fetch without blocking anything. Safe to call repeatedly.
 export function warmSampleCacheIndex(fetchImpl = fetch) {
@@ -23,7 +24,7 @@ export function warmSampleCacheIndex(fetchImpl = fetch) {
   cacheIndex = new Set(); // optimistic empty set so callers never block
   fetchImpl('/sample-cache/index.json')
     .then((r) => (r.ok ? r.json() : { slugs: [] }))
-    .then((d) => { cacheIndex = new Set(d.slugs ?? []); })
+    .then((d) => { cacheIndex = new Set(d.slugs ?? []); cacheSources = d.sources ?? {}; })
     .catch(() => { cacheIndex = new Set(); });
 }
 
@@ -32,6 +33,9 @@ export function warmSampleCacheIndex(fetchImpl = fetch) {
 export function cachedManifestUrl(source) {
   if (!cacheIndex || cacheIndex.size === 0) return null;
   const slug = bankSlug(source);
+  // Slugs collide (`a-b/c`, `a/b-c`): a bank vendored from another source isn't this one.
+  const holder = cacheSources[slug];
+  if (holder && holder.toLowerCase() !== source.toLowerCase()) return null;
   return cacheIndex.has(slug) ? `/sample-cache/banks/${slug}/strudel.json` : null;
 }
 

@@ -186,7 +186,12 @@ export async function cacheBank(source, opts = {}) {
   const slug = bankSlug(source);
   const bankDir = join(cacheDir, 'banks', slug);
 
-  if (await isBankCached(source, { cacheDir })) return { ok: true, slug, cached: true };
+  if (await isBankCached(source, { cacheDir })) {
+    // bankSlug isn't injective (`a-b/c`, `a/b-c`), and a name someone else's bank holds isn't this bank.
+    const holder = await readFile(join(bankDir, BANK_SOURCE_FILE), 'utf8').catch(() => null);
+    if (holder !== null && !sameSource(holder, source)) return { ok: false, error: `bank name already holds ${holder}` };
+    return { ok: true, slug, cached: true };
+  }
 
   const manifestUrl = manifestUrlFor(source);
   if (!isSafeRemoteUrl(manifestUrl) || !isAllowed(manifestUrl)) return { ok: false, error: `unsafe bank source: ${source}` };
@@ -258,6 +263,7 @@ export async function cacheBank(source, opts = {}) {
   // lists only files that physically exist under banks/<slug>/.
   const localManifest = { ...pruneManifestPaths(manifest, new Set(kept)), _base: './' };
   await mkdir(bankDir, { recursive: true });
+  await writeFile(join(bankDir, BANK_SOURCE_FILE), source);
   await writeFile(join(bankDir, 'strudel.json'), JSON.stringify(localManifest, null, 2) + '\n');
   return { ok: true, slug, cached: false, files: kept.length, skipped };
 }
