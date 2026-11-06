@@ -117,7 +117,7 @@ export async function familyOwnerProfileId(adminDb, namespace, slug) {
 // owned song the author IS the caller, so this changes nothing there.
 export async function setNotes(adminDb, namespace, slug, patch, callerProfileId = null) {
   const res = await adminDb.query({
-    [namespace]: { author: {}, lessonRecord: {}, $: { where: { slug } } },
+    [namespace]: { author: {}, lessonRecord: { profile: {} }, $: { where: { slug } } },
   });
   const item = res[namespace][0];
   if (!item) return null;
@@ -129,9 +129,14 @@ export async function setNotes(adminDb, namespace, slug, patch, callerProfileId 
 
   // has-one reverse links come back as a (possibly empty) list — normalize to a
   // single record or null (an empty [] is truthy and would break the branches).
-  const existing = (Array.isArray(item.lessonRecord) ? item.lessonRecord[0] : item.lessonRecord) || null;
+  const record = (Array.isArray(item.lessonRecord) ? item.lessonRecord[0] : item.lessonRecord) || null;
+  const recordOwner = Array.isArray(record?.profile) ? record.profile[0]?.id : record?.profile?.id;
+  // An unowned song can be edited by any allowlisted caller, but its lesson is someone's
+  // private text: only its own profile may see or change it.
+  const foreign = Boolean(recordOwner && callerProfileId && recordOwner !== callerProfileId);
+  const existing = foreign ? null : record;
   let lessonText = existing?.text ?? '';
-  if (patch.lesson !== undefined) {
+  if (patch.lesson !== undefined && !foreign) {
     const text = (patch.lesson ?? '').trim();
     const now = new Date().toISOString();
     if (!text) {
