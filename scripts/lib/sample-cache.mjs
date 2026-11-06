@@ -20,6 +20,8 @@ export const DEFAULT_CACHE_DIR = join(ROOT, 'data', 'sample-cache');
 
 // Bound how much a single track can pull, per the design's security note.
 const MAX_FILES_PER_BANK = 600;
+const MAX_FILE_BYTES = 64 * 1024 * 1024; // largest vendored sample today is 16 MB
+const MAX_BANK_BYTES = 1024 * 1024 * 1024; // largest vendored bank today is 177 MB
 
 // ---- manifest safety -------------------------------------------------------
 // A manifest is attacker-controlled (any public repo, refetched at vendor time),
@@ -142,6 +144,8 @@ export async function cacheBank(source, opts = {}) {
     cacheDir = DEFAULT_CACHE_DIR,
     fetchImpl = fetch,
     maxFiles = MAX_FILES_PER_BANK,
+    maxFileBytes = MAX_FILE_BYTES,
+    maxBankBytes = MAX_BANK_BYTES,
   } = opts;
   const slug = bankSlug(source);
   const bankDir = join(cacheDir, 'banks', slug);
@@ -183,6 +187,7 @@ export async function cacheBank(source, opts = {}) {
   const abort = async (error) => { await rm(bankDir, { recursive: true, force: true }); return { ok: false, error }; };
   const kept = [];
   const skipped = [];
+  let bankBytes = 0;
   for (const rel of paths) {
     const url = new URL(rel, base).href;
     let buf;
@@ -190,10 +195,14 @@ export async function cacheBank(source, opts = {}) {
       const res = await fetchImpl(url, { redirect: 'error' });
       if (res.status === 404) { skipped.push(rel); continue; }
       if (res.ok === false) return abort(`sample HTTP ${res.status}: ${url}`);
+      if (Number(res.headers?.get?.('content-length')) > maxFileBytes) return abort(`sample too large: ${url}`);
       buf = Buffer.from(await res.arrayBuffer());
     } catch (err) {
       return abort(`sample fetch failed (${url}): ${err.message}`);
     }
+    if (buf.length > maxFileBytes) return abort(`sample too large: ${url}`);
+    bankBytes += buf.length;
+    if (bankBytes > maxBankBytes) return abort(`bank too large: ${source}`);
     const dest = join(bankDir, rel);
     await mkdir(dirname(dest), { recursive: true });
     await writeFile(dest, buf);
