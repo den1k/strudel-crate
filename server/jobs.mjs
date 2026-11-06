@@ -62,6 +62,19 @@ export function createJobStore({ jobsDir }) {
     return jobs.sort((a, b) => (a.createdAt < b.createdAt ? 1 : a.createdAt > b.createdAt ? -1 : 0));
   }
 
+  // Check and write as one step, one at a time (one server process), so concurrent submissions
+  // can't all pass on the same count. Returns the check's refusal, or null once written.
+  let admitting = Promise.resolve();
+  function admit(job, check) {
+    const turn = admitting.then(async () => {
+      const refused = check(await listAll());
+      if (!refused) await write(job);
+      return refused ?? null;
+    });
+    admitting = turn.catch(() => {});
+    return turn;
+  }
+
   const list = async () => (await listAll()).slice(0, 50); // the UI log never needs more
 
   async function update(id, patch) {
@@ -70,5 +83,5 @@ export function createJobStore({ jobsDir }) {
     return write({ ...job, ...patch });
   }
 
-  return { write, get, list, listAll, update, TYPES: JOB_TYPES };
+  return { write, get, list, listAll, update, admit, TYPES: JOB_TYPES };
 }

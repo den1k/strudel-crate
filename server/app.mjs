@@ -248,10 +248,9 @@ function jobRoutes(app, jobStore, runner, progressFor, requireAuth, adminDb, job
       job = { ...base, prompt: prompt.trim(), count: n, collection: collectionFor(type) };
     }
 
-    const over = jobQuotaError(await jobStore.listAll(), job, Date.now());
+    const over = await jobStore.admit(job, (jobs) => jobQuotaError(jobs, job, Date.now()));
     if (over) return res.status(429).json({ error: over });
 
-    await jobStore.write(job);
     await runner.enqueue(job);
     res.status(201).json(job);
   }));
