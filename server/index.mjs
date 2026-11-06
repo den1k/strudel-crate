@@ -12,7 +12,7 @@ import { createCardRenderer } from './render-card.mjs';
 import { createCardCache } from './card-cache.mjs';
 import { createAllowlist } from './allowlist.mjs';
 import { createJobBroker, createOps, createWorkerRunner } from './job-broker.mjs';
-import { createJobLauncher, stopStaleUnits } from './job-sandbox.mjs';
+import { createDiskGuard, createJobLauncher, stopStaleUnits } from './job-sandbox.mjs';
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const distDir = join(repoRoot, 'dist');
@@ -80,5 +80,6 @@ await stopStaleUnits();
 // A crash can leave a job's dir behind, its credentials file included. Recovered jobs make new ones.
 await rm(join(repoRoot, 'data', 'job-sandbox'), { recursive: true, force: true });
 await runner.recover();
+createDiskGuard({ path: repoRoot, stop: stopStaleUnits }).start();
 
 app.listen(port, () => console.log(`strudel-ai api listening on http://localhost:${port}`));

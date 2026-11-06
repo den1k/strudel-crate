@@ -11,7 +11,7 @@
 //
 // The webapp can serve banks/<slug>/strudel.json and load it with samples(); the
 // relative _base + mirrored layout means cached banks are self-contained.
-import { mkdir, writeFile, readFile, access, rm } from 'node:fs/promises';
+import { mkdir, writeFile, readFile, access, readdir, rm, stat } from 'node:fs/promises';
 import { dirname, join, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -22,6 +22,9 @@ export const DEFAULT_CACHE_DIR = join(ROOT, 'data', 'sample-cache');
 const MAX_FILES_PER_BANK = 600;
 const MAX_FILE_BYTES = 64 * 1024 * 1024; // largest vendored sample today is 16 MB
 const MAX_BANK_BYTES = 1024 * 1024 * 1024; // largest vendored bank today is 177 MB
+// The whole cache. Saves can name many banks and this disk is shared. Past it, new banks don't
+// vendor: a save warns, and the track loads from upstream. Today: 582 MB.
+const MAX_CACHE_BYTES = 4 * 1024 * 1024 * 1024;
 
 // ---- manifest safety -------------------------------------------------------
 // A manifest is attacker-controlled (any public repo, refetched at vendor time),
@@ -107,6 +110,20 @@ export function extractSampleRefs(code) {
 
 // ---- cache operations ------------------------------------------------------
 
+// Beside a bank's manifest: the source it was vendored from. Never a sample path (not audio).
+export const BANK_SOURCE_FILE = 'source.txt';
+const sameSource = (a, b) => a.toLowerCase() === b.toLowerCase(); // GitHub names ignore case
+
+async function dirBytes(dir) {
+  const entries = await readdir(dir, { withFileTypes: true }).catch(() => []);
+  const sizes = await Promise.all(entries.map(async (e) => {
+    const p = join(dir, e.name);
+    if (e.isDirectory()) return dirBytes(p);
+    return e.isFile() ? (await stat(p)).size : 0;
+  }));
+  return sizes.reduce((sum, n) => sum + n, 0);
+}
+
 const exists = async (p) => { try { await access(p); return true; } catch { return false; } };
 
 /** True if this bank has already been vendored to the cache. */
@@ -164,6 +181,7 @@ export async function cacheBank(source, opts = {}) {
     maxFiles = MAX_FILES_PER_BANK,
     maxFileBytes = MAX_FILE_BYTES,
     maxBankBytes = MAX_BANK_BYTES,
+    maxCacheBytes = MAX_CACHE_BYTES,
   } = opts;
   const slug = bankSlug(source);
   const bankDir = join(cacheDir, 'banks', slug);
@@ -206,6 +224,7 @@ export async function cacheBank(source, opts = {}) {
   const kept = [];
   const skipped = [];
   let bankBytes = 0;
+  const cacheBytes = await dirBytes(cacheDir);
   for (const rel of paths) {
     const url = new URL(rel, base).href;
     let buf;
@@ -221,6 +240,7 @@ export async function cacheBank(source, opts = {}) {
     if (buf.length > maxFileBytes) return abort(`sample too large: ${url}`);
     bankBytes += buf.length;
     if (bankBytes > maxBankBytes) return abort(`bank too large: ${source}`);
+    if (cacheBytes + bankBytes > maxCacheBytes) return abort(`sample cache is full, not vendoring ${source}`);
     const dest = join(bankDir, rel);
     await mkdir(dirname(dest), { recursive: true });
     await writeFile(dest, buf);

@@ -8,7 +8,7 @@
 // InaccessiblePaths & co here expecting them to do anything.
 import { spawn as nodeSpawn } from 'node:child_process';
 import { realpathSync } from 'node:fs';
-import { mkdir, readFile, rm, symlink, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, rm, statfs as nodeStatfs, symlink, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
 const SYSTEM_EXEC = ['/usr', '/bin', '/lib', '/lib64', '/sbin'];
@@ -191,6 +191,28 @@ export function createJobLauncher({ repoRoot, broker, getToken = () => freshOaut
         await rm(jobDir, { recursive: true, force: true });
       },
     };
+  };
+}
+
+// Unit limits don't bound disk, and this disk is shared with other services. A job or worker can
+// write to its own dir as fast as the disk goes, so while space is under the floor, none may run:
+// stopping one lets its cleanup free what it wrote. Polled, so the floor has to cover the gap.
+export const DISK_FLOOR_BYTES = 4 * 1024 * 1024 * 1024;
+export function createDiskGuard({
+  path, stop, floorBytes = DISK_FLOOR_BYTES, intervalMs = 5000, statfs = nodeStatfs, log = console.error,
+}) {
+  let low = false;
+  async function check() {
+    const { bavail, bsize } = await statfs(path);
+    const free = Number(bavail) * Number(bsize);
+    if (free >= floorBytes) { low = false; return; }
+    if (!low) log(`[crate] disk: ${free} bytes free, under the floor, stopping job units`);
+    low = true;
+    await stop();
+  }
+  return {
+    check,
+    start: () => setInterval(() => { check().catch((err) => log('[crate] disk guard:', err)); }, intervalMs).unref(),
   };
 }
 
