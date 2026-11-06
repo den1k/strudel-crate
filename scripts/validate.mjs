@@ -1,13 +1,15 @@
 // Validate a Strudel code string headlessly: it must transpile, evaluate to
 // a Pattern, and produce events when queried.
-// NOTE: evaluate() executes the input string as JS in this process. Inputs are
-// trusted agent-generated Strudel code (reviewed via the webapp), not untrusted user input.
+// NOTE: evaluate() executes the input string as JS in this process, and stored code
+// runs on the crate origin when a listener presses play. checkCodePolicy (below) runs
+// first and rejects code reaching for anything beyond Strudel.
 import { fileURLToPath } from 'node:url';
 import { evaluate } from '@strudel/transpiler';
 import * as webaudio from '@strudel/webaudio';
 import { Pattern } from '@strudel/core';
 import { initStrudelEnv, loadedSoundNames, resetLoadedSounds } from './strudel-env.mjs';
 import { checkSounds, loadKnownSounds } from './check-sounds.mjs';
+import { checkCodePolicy } from './lib/code-policy.mjs';
 
 const QUERY_CYCLES = 8; // events must appear early — intros may not open with silence
 // The sound allowlist must cover the WHOLE arrangement, not just the intro:
@@ -22,7 +24,7 @@ const SAMPLES_STMT = /^\s*(samples\s*\([\s\S]*?\))\s*;?\s*$/gm;
 // Run every `samples(...)` call the code declares against the REAL webaudio
 // loader, so the bank's sounds become resolvable. Returns the code with those
 // statements stripped (the remaining expression is the pattern to evaluate).
-// `samples` is the only identifier in scope — no other code is executed here.
+// Arguments are evaluated, so this relies on checkCodePolicy having passed first.
 async function loadDeclaredSamples(code) {
   const calls = [];
   const stripped = code.replace(SAMPLES_STMT, (_, call) => { calls.push(call); return ''; });
@@ -35,6 +37,8 @@ async function loadDeclaredSamples(code) {
 }
 
 export async function validateCode(code) {
+  const policy = checkCodePolicy(code);
+  if (!policy.ok) return policy;
   await initStrudelEnv();
   // Each track is validated against the base set ∪ ONLY its own samples() loads.
   resetLoadedSounds();

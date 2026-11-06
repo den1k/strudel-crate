@@ -3,18 +3,27 @@ import { join } from 'node:path';
 import { readFile } from 'node:fs/promises';
 import express from 'express';
 import { collectionFor } from './runner.mjs';
-import { setRating, setNotes, itemOwnerProfileId, ensureProfile, getProfile, setArtistName, recordPlay, resolvePublicItem, queryLessonsByProfile, createLesson, updateLesson, deleteLesson } from './instant.mjs';
+import { setRating, setNotes, itemOwnerProfileId, familyOwnerProfileId, ensureProfile, getProfile, setArtistName, recordPlay, resolvePublicItem, queryLessonsByProfile, createLesson, updateLesson, deleteLesson } from './instant.mjs';
 import { createPlayLimiter } from './rate-limit.mjs';
 import { songMetaTags, brandMetaTags, injectMeta, cardHash } from './og.mjs';
 import { songCardHtml, brandCardHtml } from './og-card.mjs';
 
 const ID_RE = /^[A-Za-z0-9_-]+$/; // rating files are written as <id>.json — no path chars
 
-// Real client ip behind nginx (X-Forwarded-For), falling back to the socket.
-// Trustworthy only because nginx is the guaranteed ingress in production and
-// rewrites the header; a directly-exposed instance could spoof it.
+// Real client ip behind nginx, falling back to the socket. nginx OVERWRITES
+// X-Real-IP with $remote_addr but only APPENDS to X-Forwarded-For, so the leftmost
+// XFF value is whatever the client sent: never key anything on it. Port 3008 is
+// tailnet-only, so a direct caller setting X-Real-IP is inside the trust boundary.
 const clientIp = (req) =>
-  req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket?.remoteAddress || 'anon';
+  req.headers['x-real-ip']?.trim() || req.socket?.remoteAddress || 'anon';
+
+// The stored job record is internal runner state; these reads are anonymous. Only
+// the fields the public log + retry flow use go out: requester identity and raw
+// agent output stay in the job file for operators.
+const publicJob = ({ userId, userEmail, summary, error, ...job }) => ({
+  ...job,
+  error: error ? 'generation failed' : null,
+});
 
 // Absolute origin for crawler URLs: the configured public origin, else derived
 // from the (proxy-aware) request. Behind nginx, app.set('trust proxy', true)
@@ -49,12 +58,19 @@ function collectionRoutes(app, name, adminDb, requireUser, resolveUser, playLimi
 
     const exists = (await adminDb.query({ [name]: { $: { where: { slug: id } } } }))[name][0];
     if (!exists) return res.status(404).json({ error: 'not found' });
-    const owner = await itemOwnerProfileId(adminDb, name, id);
+    // A note asks for a change to the song, so it belongs to whoever owns the family
+    // (revise-from-notes acts on the family root's owner). A lesson is private to the
+    // row's own author, so it stays bound to the row.
+    const owner = await familyOwnerProfileId(adminDb, name, id);
     const callerProfile = await ensureProfile(adminDb, req.user);
     const email = req.user?.email?.toLowerCase();
     const isOwner = owner != null && owner === callerProfile;
     const isAdminOnUnowned = owner == null && email && (await isAllowed(email));
     if (!isOwner && !isAdminOnUnowned) return res.status(403).json({ error: 'not your song' });
+    if (lesson !== undefined) {
+      const rowOwner = await itemOwnerProfileId(adminDb, name, id);
+      if (rowOwner != null && rowOwner !== callerProfile) return res.status(403).json({ error: 'not your song' });
+    }
 
     const out = await setNotes(adminDb, name, id, { notes, lesson }, callerProfile);
     if (!out) return res.status(404).json({ error: 'not found' });
@@ -137,9 +153,21 @@ function profileRoutes(app, adminDb, requireAuth) {
 // route resolves the item, renders the code-as-art card on a cache miss, and
 // serves the cached JPEG. Reads stay public (they mirror the public song pages).
 function cardRoutes(app, { adminDb, namespaces, cardRenderer, cardCache }) {
+  // Concurrent misses on one card share a single render.
+  const inflight = new Map();
+  const renderAndStore = (name, html) => {
+    let p = inflight.get(name);
+    if (!p) {
+      p = (async () => cardCache.store(name, await cardRenderer.render(html())))()
+        .finally(() => inflight.delete(name));
+      inflight.set(name, p);
+    }
+    return p;
+  };
+
   app.get('/og/home.jpg', wrap(async (_req, res) => {
     let p = await cardCache.cachedPath('brand');
-    if (!p) p = await cardCache.store('brand', await cardRenderer.render(brandCardHtml()));
+    if (!p) p = await renderAndStore('brand', () => brandCardHtml());
     res.type('jpeg');
     res.setHeader('Cache-Control', 'public, max-age=86400');
     res.sendFile(p);
@@ -153,7 +181,7 @@ function cardRoutes(app, { adminDb, namespaces, cardRenderer, cardCache }) {
     if (!found) return res.status(404).json({ error: 'not found' });
     const name = `${found.item.entityId}-${cardHash(found.item)}`;
     let p = await cardCache.cachedPath(name);
-    if (!p) p = await cardCache.store(name, await cardRenderer.render(songCardHtml(found.item)));
+    if (!p) p = await renderAndStore(name, () => songCardHtml(found.item));
     res.type('jpeg');
     res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
     res.sendFile(p);
@@ -214,19 +242,19 @@ function jobRoutes(app, jobStore, runner, progressFor, requireAuth, adminDb) {
 
   app.get('/api/jobs', wrap(async (_req, res) => {
     const jobs = await jobStore.list();
-    if (!progressFor) return res.json(jobs);
+    if (!progressFor) return res.json(jobs.map(publicJob));
     const enriched = await Promise.all(jobs.map(async (job) => {
       const produced = await progressFor(job);
       return produced === undefined ? job : { ...job, produced };
     }));
-    res.json(enriched);
+    res.json(enriched.map(publicJob));
   }));
 
   app.get('/api/jobs/:id', wrap(async (req, res) => {
     if (!ID_RE.test(req.params.id)) return res.status(400).json({ error: 'invalid id' });
     const job = await jobStore.get(req.params.id);
     if (!job) return res.status(404).json({ error: 'not found' });
-    res.json(job);
+    res.json(publicJob(job));
   }));
 }
 
@@ -273,7 +301,11 @@ export function createApp(opts = {}) {
       }));
       res.json({ slugs: checks.filter(Boolean) });
     }));
-    app.use('/sample-cache', express.static(opts.sampleCacheDir));
+    // Vendored files come from third-party repos: inert data on this origin, never a
+    // document. fetch()ing audio/JSON is unaffected by the response's own CSP.
+    app.use('/sample-cache', express.static(opts.sampleCacheDir, {
+      setHeaders: (res) => res.setHeader('Content-Security-Policy', "sandbox; default-src 'none'"),
+    }));
   }
 
   // Production: serve the built SPA (dev uses Vite). Defined AFTER the API so
@@ -317,7 +349,9 @@ export function createApp(opts = {}) {
 
   // JSON error responses (body-parser 400s and async store failures land here).
   app.use((err, _req, res, _next) => {
-    res.status(err.status ?? 500).json({ error: err.message });
+    const status = err.status ?? 500;
+    if (status >= 500 && !err.expose) console.error('[crate] request failed:', err);
+    res.status(status).json({ error: status >= 500 && !err.expose ? 'internal error' : err.message });
   });
 
   return app;

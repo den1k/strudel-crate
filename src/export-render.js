@@ -5,6 +5,7 @@ import * as webaudio from '@strudel/webaudio';
 import { registerSynthSounds, samples } from '@strudel/webaudio';
 import banks from '../shared/sample-banks.json';
 import { renderTrack, renderStemsZip, renderSegment } from './render.js';
+import { isTrustedExportMessage } from './export-guard.js';
 
 // Register the same sound map the app loads on boot. This only registers (URLs
 // + synth defs); individual samples are fetched/decoded lazily during a render,
@@ -22,6 +23,7 @@ const ready = (async () => {
 })();
 
 window.addEventListener('message', async (e) => {
+  if (!isTrustedExportMessage(e, window)) return;
   const data = e.data || {};
   if (data.type === 'render-segment') {
     const { id, segment, track } = data;

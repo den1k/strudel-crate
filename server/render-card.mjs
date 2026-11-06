@@ -12,10 +12,12 @@ export const CARD_H = 630;
 export function createCardRenderer({
   chromePath = process.env.CRATE_CHROME ?? '/opt/google/chrome/chrome',
   idleMs = 60000,
+  maxQueue = 16,
   launch = (opts) => puppeteer.launch(opts),
 }) {
   let browser = null;
   let chain = Promise.resolve(); // serial lock: renders run one at a time
+  let pending = 0; // renders running or waiting; cold cards are anonymous-triggered
   let idleTimer = null;
 
   function armIdleClose() {
@@ -54,8 +56,12 @@ export function createCardRenderer({
   }
 
   function render(html) {
+    if (pending >= maxQueue) {
+      return Promise.reject(Object.assign(new Error('card renderer busy'), { status: 503, expose: true }));
+    }
+    pending += 1;
     // Append to the serial chain; callers get their own result, errors isolated.
-    const run = chain.then(() => renderOnce(html));
+    const run = chain.then(() => renderOnce(html)).finally(() => { pending -= 1; });
     chain = run.catch(() => {}); // keep the lock alive past a failed render
     return run;
   }

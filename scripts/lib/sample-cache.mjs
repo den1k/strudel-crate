@@ -12,7 +12,7 @@
 // The webapp can serve banks/<slug>/strudel.json and load it with samples(); the
 // relative _base + mirrored layout means cached banks are self-contained.
 import { mkdir, writeFile, readFile, access, rm } from 'node:fs/promises';
-import { dirname, join } from 'node:path';
+import { dirname, join, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -20,6 +20,46 @@ export const DEFAULT_CACHE_DIR = join(ROOT, 'data', 'sample-cache');
 
 // Bound how much a single track can pull, per the design's security note.
 const MAX_FILES_PER_BANK = 600;
+
+// ---- manifest safety -------------------------------------------------------
+// A manifest is attacker-controlled (any public repo, refetched at vendor time),
+// so nothing in it reaches the network or the disk until it has been checked.
+
+const AUDIO_FILE_RE = /\.(wav|ogg|mp3|flac|aif|aiff|m4a)$/i;
+
+/** True only for a relative audio path that stays inside `bankDir`. */
+export function isSafeSamplePath(rel, bankDir) {
+  if (typeof rel !== 'string' || !rel) return false;
+  if (/^[a-z][a-z0-9+.-]*:/i.test(rel) || rel.startsWith('/')) return false; // URL or absolute
+  if (/[\\\0-\x1f]/.test(rel) || /%(2e|2f|5c|00)/i.test(rel)) return false; // separators in disguise
+  if (rel.split('/').includes('..')) return false;
+  if (!AUDIO_FILE_RE.test(rel)) return false; // the path as written, so `a.wav?.html` fails
+  return resolve(bankDir, rel).startsWith(resolve(bankDir) + sep);
+}
+
+// IPv4/IPv6 literals and names that reach this host or the tailnet. Literals only:
+// internal services here speak plain http, which the https rule already excludes,
+// so this is a second layer rather than a DNS-aware SSRF filter.
+function isInternalHost(hostname) {
+  const h = hostname.toLowerCase().replace(/^\[|\]$/g, '');
+  if (h === 'localhost' || h.endsWith('.localhost') || h.endsWith('.local') || h.endsWith('.internal')) return true;
+  if (h.includes(':')) return true; // no public bank is addressed by IPv6 literal
+  const m = h.match(/^(\d+)\.(\d+)\.(\d+)\.(\d+)$/);
+  if (!m) return false;
+  const [a, b] = [Number(m[1]), Number(m[2])];
+  return a === 0 || a === 10 || a === 127 || (a === 169 && b === 254) || (a === 172 && b >= 16 && b <= 31)
+    || (a === 192 && b === 168) || (a === 100 && b >= 64 && b <= 127);
+}
+
+/** True for an https URL on a host that isn't an internal literal. */
+export function isSafeRemoteUrl(value) {
+  try {
+    const u = new URL(value);
+    return u.protocol === 'https:' && !isInternalHost(u.hostname);
+  } catch {
+    return false;
+  }
+}
 
 // ---- pure helpers ----------------------------------------------------------
 
@@ -108,9 +148,12 @@ export async function cacheBank(source, opts = {}) {
 
   if (await isBankCached(source, { cacheDir })) return { ok: true, slug, cached: true };
 
+  const manifestUrl = manifestUrlFor(source);
+  if (!isSafeRemoteUrl(manifestUrl)) return { ok: false, error: `unsafe bank source: ${source}` };
+
   let manifest;
   try {
-    const res = await fetchImpl(manifestUrlFor(source));
+    const res = await fetchImpl(manifestUrl, { redirect: 'error' });
     if (res.ok === false) return { ok: false, error: `manifest HTTP ${res.status} for ${source}` };
     manifest = await res.json();
   } catch (err) {
@@ -123,6 +166,15 @@ export async function cacheBank(source, opts = {}) {
     return { ok: false, error: `bank ${source} exceeds the ${maxFiles}-file bound (${paths.length}) — too many samples to vendor` };
   }
 
+  // Whole-bank decision, before any fetch or write: one bad entry means the manifest
+  // isn't a plain sample bank, so nothing from it is vendored. Callers fall back to
+  // upstream, exactly as for any other vendoring miss.
+  if (paths.length > 0 && !isSafeRemoteUrl(base)) {
+    return { ok: false, error: `unsafe or missing _base in ${source}` };
+  }
+  const unsafe = paths.find((rel) => !isSafeSamplePath(rel, bankDir));
+  if (unsafe !== undefined) return { ok: false, error: `unsafe sample path in ${source}: ${JSON.stringify(unsafe)}` };
+
   // strudel.json is written last, so a half-vendored bank has samples but no
   // manifest — abort() removes the partial dir so it isn't left as an orphan.
   // A single missing sample (404) is common in community manifests that over-
@@ -132,10 +184,10 @@ export async function cacheBank(source, opts = {}) {
   const kept = [];
   const skipped = [];
   for (const rel of paths) {
-    const url = base ? new URL(rel, base).href : rel;
+    const url = new URL(rel, base).href;
     let buf;
     try {
-      const res = await fetchImpl(url);
+      const res = await fetchImpl(url, { redirect: 'error' });
       if (res.status === 404) { skipped.push(rel); continue; }
       if (res.ok === false) return abort(`sample HTTP ${res.status}: ${url}`);
       buf = Buffer.from(await res.arrayBuffer());

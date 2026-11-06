@@ -21,7 +21,8 @@ is a per-item request for change; the new version supersedes the noted one.
 
 3. **Get the work list:** run `node scripts/pending-revisions.mjs <collection>`.
    It prints a JSON array; each item is
-   `{ root, nextId, version, note, code, batch, prompt, title }`. If the array is
+   `{ root, nextId, version, note, code, batch, prompt, title }`. Inside a job it
+   holds only the requester's own song families, at most 24 at a time. If the array is
    empty, report "Nothing to revise — no noted items pending." and STOP.
 
 4. **Get a timestamp** for the new versions: `date -u +%Y-%m-%dT%H:%M:%SZ`.

@@ -90,6 +90,19 @@ export async function itemOwnerProfileId(adminDb, namespace, slug) {
   return item?.author?.[0]?.id ?? null;
 }
 
+// The owner of an item's version family: the author of its root row (`versionOf`
+// names the root; a root is its own family). Falls back to the row's own author
+// only if the root row is gone.
+export async function familyOwnerProfileId(adminDb, namespace, slug) {
+  const res = await adminDb.query({ [namespace]: { author: {}, $: { where: { slug } } } });
+  const item = res[namespace][0];
+  if (!item) return null;
+  const own = item.author?.[0]?.id ?? null;
+  if (!item.versionOf) return own;
+  const root = await adminDb.query({ [namespace]: { author: {}, $: { where: { slug: item.versionOf } } } });
+  return root[namespace][0] ? (root[namespace][0].author?.[0]?.id ?? null) : own;
+}
+
 // Patch notes on the item and, when `patch.lesson` is present, upsert/delete the
 // song's linked lesson record (the song-card "quick-add"). `notes` still lives
 // as a string on the item; `lesson` is now a first-class `lessons` record linked
@@ -346,6 +359,14 @@ export async function resolvePublicItem(adminDb, namespaces, param) {
 export async function insertItem(adminDb, namespace, track, authorProfileId) {
   const existing = await itemsBySlug(adminDb, namespace, [track.id]);
   if (existing.length) return { ok: false, error: `slug already exists: ${track.id}` };
+  // versionOf is agent-written, so this is the control that keeps a family's versions
+  // with its owner. Manual CLI runs (no job, no author) stay unrestricted.
+  if (track.versionOf && (authorProfileId || process.env.CRATE_JOB_ID)) {
+    const rootOwner = await itemOwnerProfileId(adminDb, namespace, track.versionOf);
+    if (!authorProfileId || rootOwner !== authorProfileId) {
+      return { ok: false, error: `not the owner of family: ${track.versionOf}` };
+    }
+  }
   const entId = id();
   const update = {
     slug: track.id,

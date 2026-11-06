@@ -108,7 +108,7 @@ describe('insertItem', () => {
   });
 
   it('sets versionOf when present', async () => {
-    const db = fakeAdmin({ tracks: [] });
+    const db = fakeAdmin({ tracks: [{ id: 'root', slug: '2026-06-16-x-01', author: [{ id: 'p1' }] }] });
     await insertItem(db, 'tracks', { ...track, id: '2026-06-16-x-01-v2', versionOf: '2026-06-16-x-01' }, 'p1');
     expect(db._txs[0].update.versionOf).toBe('2026-06-16-x-01');
   });

@@ -41,6 +41,35 @@ export function pendingRevisions(items) {
     });
 }
 
+// Revisions one job may dispatch; each is an Opus agent on operator quota. The rest
+// stay noted, so a later job picks them up.
+export const MAX_WORKLIST = 24;
+
+// Rows of the families whose ROOT is authored by profileId. Whole families are kept:
+// filtering rows before grouping would drop another author's version from a mixed
+// family and recompute the wrong latest version and a colliding nextId. Rows need
+// `id` (the slug) and `authorProfileId`.
+export function scopeToFamilyOwner(rows, profileId) {
+  return groupVersions(rows)
+    .filter((fam) => {
+      const root = fam.versions.find((v) => v.id === fam.family);
+      return root?.authorProfileId === profileId;
+    })
+    .flatMap((fam) => fam.versions);
+}
+
+// The revise-from-notes work list. A note is its owner's request, so inside a job it
+// only drives that owner's run, and a job with no author fails closed (same rule as
+// the lessons digest). Manual CLI runs (no job) see every family, uncapped.
+export function buildWorklist(rows, { profileId, inJob }) {
+  if (inJob && !profileId) {
+    throw new Error('CRATE_AUTHOR_PROFILE_ID missing inside job: refusing to act on all users\' notes');
+  }
+  if (!profileId) return pendingRevisions(rows);
+  const list = pendingRevisions(scopeToFamilyOwner(rows, profileId));
+  return inJob ? list.slice(0, MAX_WORKLIST) : list;
+}
+
 // Count distinct version-families from raw Instant rows. Rows carry `slug`
 // (the human id) and optional `versionOf` (pointing at the root slug), so map
 // to the {id, versionOf} shape groupVersions expects before grouping.
