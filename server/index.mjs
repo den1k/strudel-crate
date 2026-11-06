@@ -69,6 +69,7 @@ const app = createApp({
   progressFor, requireAuth, resolveUser, requireUser, isAllowed,
   distDir: existsSync(distDir) ? distDir : undefined,
   sampleCacheDir: join(repoRoot, 'data', 'sample-cache'),
+  anonCacheMs: 2000,
   cardRenderer,
   cardCache,
   publicOrigin: process.env.CRATE_PUBLIC_ORIGIN || 'https://crate.vimsical.com',

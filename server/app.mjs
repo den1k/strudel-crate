@@ -26,6 +26,18 @@ const publicJob = ({ userId, userEmail, summary, error, costUSD, ...job }) => ({
   error: error ? 'generation failed' : null,
 });
 
+const memoized = (ttlMs, fn) => {
+  let at = 0;
+  let value = null;
+  return () => {
+    if (!value || Date.now() - at >= ttlMs) {
+      at = Date.now();
+      value = fn().catch((err) => { value = null; throw err; });
+    }
+    return value;
+  };
+};
+
 // Absolute origin for crawler URLs: the configured public origin, else derived
 // from the (proxy-aware) request. Behind nginx, app.set('trust proxy', true)
 // makes req.protocol reflect X-Forwarded-Proto.
@@ -190,7 +202,7 @@ function cardRoutes(app, { adminDb, namespaces, cardRenderer, cardCache }) {
 }
 
 // `requireAuth` gates job creation (it triggers Claude Code); reads stay public.
-function jobRoutes(app, jobStore, runner, progressFor, requireAuth, adminDb) {
+function jobRoutes(app, jobStore, runner, progressFor, requireAuth, adminDb, jobsCacheMs = 0) {
   app.post('/api/jobs', requireAuth, wrap(async (req, res) => {
     const { type, prompt, count } = req.body ?? {};
     if (!jobStore.TYPES.has(type)) return res.status(400).json({ error: 'invalid type' });
@@ -244,15 +256,17 @@ function jobRoutes(app, jobStore, runner, progressFor, requireAuth, adminDb) {
     res.status(201).json(job);
   }));
 
-  app.get('/api/jobs', wrap(async (_req, res) => {
+  // Anonymous and polled: file reads plus an Instant query per request without this.
+  const jobList = memoized(jobsCacheMs, async () => {
     const jobs = await jobStore.list();
-    if (!progressFor) return res.json(jobs.map(publicJob));
+    if (!progressFor) return jobs.map(publicJob);
     const enriched = await Promise.all(jobs.map(async (job) => {
       const produced = await progressFor(job);
       return produced === undefined ? job : { ...job, produced };
     }));
-    res.json(enriched.map(publicJob));
-  }));
+    return enriched.map(publicJob);
+  });
+  app.get('/api/jobs', wrap(async (_req, res) => res.json(await jobList())));
 
   app.get('/api/jobs/:id', wrap(async (req, res) => {
     if (!ID_RE.test(req.params.id)) return res.status(400).json({ error: 'invalid id' });
@@ -298,7 +312,7 @@ export function createApp(opts = {}) {
     profileRoutes(app, adminDb, requireAuth);
   }
 
-  if (opts.jobStore && opts.runner) jobRoutes(app, opts.jobStore, opts.runner, opts.progressFor, requireAuth, adminDb);
+  if (opts.jobStore && opts.runner) jobRoutes(app, opts.jobStore, opts.runner, opts.progressFor, requireAuth, adminDb, opts.anonCacheMs);
 
   if (opts.cardRenderer && opts.cardCache && adminDb) {
     cardRoutes(app, { adminDb, namespaces, cardRenderer: opts.cardRenderer, cardCache: opts.cardCache });
@@ -308,7 +322,7 @@ export function createApp(opts = {}) {
   // prefer locally-cached banks over upstream github repos. /sample-cache/index.json
   // lists cached bank slugs; /sample-cache/banks/<slug>/... serves the vendored files.
   if (opts.sampleCacheDir) {
-    app.get('/sample-cache/index.json', wrap(async (_req, res) => {
+    const cachedBanks = memoized(opts.anonCacheMs ?? 0, async () => {
       const { readdir, access } = await import('node:fs/promises');
       const banksDir = join(opts.sampleCacheDir, 'banks');
       let dirs = [];
@@ -320,8 +334,11 @@ export function createApp(opts = {}) {
       const checks = await Promise.all(dirs.map(async (slug) => {
         try { await access(join(banksDir, slug, 'strudel.json')); return slug; } catch { return null; }
       }));
+      return checks.filter(Boolean);
+    });
+    app.get('/sample-cache/index.json', wrap(async (_req, res) => {
       res.setHeader('Access-Control-Allow-Origin', '*'); // read by the opaque-origin engine
-      res.json({ slugs: checks.filter(Boolean) });
+      res.json({ slugs: await cachedBanks() });
     }));
     // Vendored files come from third-party repos: inert data on this origin, never a
     // document. fetch()ing audio/JSON is unaffected by the response's own CSP.
