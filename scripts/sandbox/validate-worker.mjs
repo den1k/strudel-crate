@@ -1,8 +1,9 @@
 // Runs inside a worker sandbox (server/job-broker.mjs): no secrets. check-* kinds evaluate
-// agent code and can write nothing that lasts; the other kinds publish and evaluate nothing.
+// agent code, with no network and nothing writable that lasts; the other kinds fetch or
+// publish and evaluate nothing.
 // Reads one JSON request on stdin, prints one result line.
 import { validateCode, validateTrack } from '../validate.mjs';
-import { cacheBank, cacheTrackSamples, writeTrackManifest } from '../lib/sample-cache.mjs';
+import { cacheBank, cacheTrackSamples, fetchManifests, sourcesIn, writeTrackManifest } from '../lib/sample-cache.mjs';
 import { effectiveSamples, validatePalette, writePalette } from '../palette.mjs';
 
 const finish = (result) => {
@@ -42,7 +43,17 @@ async function vendorPalette(palette) {
   return warnings;
 }
 
+// samples() in the evaluator gets only what was fetched for it beforehand.
+if (req.kind.startsWith('check-')) {
+  globalThis.fetch = async (url) => {
+    const manifest = req.manifests?.[String(url)];
+    if (manifest === undefined) throw new Error('samples sources must be literal strings');
+    return new Response(JSON.stringify(manifest));
+  };
+}
+
 try {
+  if (req.kind === 'fetch-manifests') finish(await fetchManifests(sourcesIn(req.request)));
   if (req.kind === 'check-code') finish(await validateCode(req.code));
   if (req.kind === 'check-item') finish(await validateTrack(req.item, { character: req.character }));
   if (req.kind === 'check-palette') finish(await validatePalette(req.palette));

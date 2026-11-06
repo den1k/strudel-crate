@@ -13,6 +13,7 @@ import {
   MAX_CONCURRENT_WORKERS, PUBLISHER_LIMITS, systemdEnv, systemdRunArgv, workerSandboxFlags, WORKER_LIMITS,
 } from './job-sandbox.mjs';
 import { checkCodePolicy } from '../scripts/lib/code-policy.mjs';
+import { sourcesIn } from '../scripts/lib/sample-cache.mjs';
 import { buildDigest } from '../scripts/feedback.mjs';
 import { nextRemixId } from '../scripts/remix-source.mjs';
 import { buildWorklist } from '../src/versions.js';
@@ -25,6 +26,7 @@ const MAX_OPS = 5000;
 const MAX_REVISIONS = 24; // buildWorklist's per-job cap: a job also saves its Step 0 revisions
 const RESULT_MARK = 'CRATE_WORKER_RESULT ';
 const PUBLISHING_KINDS = new Set(['vendor-item', 'write-palette']);
+const MAX_WORKER_OUTPUT = 40 * 1024 * 1024; // a fetcher's answer holds sample manifests
 const MAX_PALETTES_PER_JOB = 3;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -61,14 +63,15 @@ export const saveCapFor = (job) => (job.count ?? 1) + MAX_REVISIONS;
 // runs in an opaque frame, and why only a publisher, running none of that code, can write.
 export function createWorkerRunner({ repoRoot, spawn = nodeSpawn, maxConcurrent = MAX_CONCURRENT_WORKERS }) {
   const limited = limiter(maxConcurrent);
-  return (payload) => limited(async () => {
+  const runUnit = (payload) => limited(async () => {
     const publishes = PUBLISHING_KINDS.has(payload.kind);
+    const network = publishes || payload.kind === 'fetch-manifests';
     const name = randomUUID();
     const tmpDir = join(repoRoot, 'data', 'job-sandbox', `worker-${name}`);
     await mkdir(tmpDir, { recursive: true });
     const command = [
       '/usr/bin/python3', '-I', join(repoRoot, 'scripts', 'sandbox', 'sandbox-exec.py'),
-      ...workerSandboxFlags({ repoRoot, tmpDir, publishes }),
+      ...workerSandboxFlags({ repoRoot, tmpDir, publishes, network }),
       '--', '/usr/bin/env', '-i', 'PATH=/usr/bin:/bin', `HOME=${tmpDir}`, `TMPDIR=${tmpDir}`, 'NODE_ENV=production',
       // A string can't become code here, whichever gadget it travels through.
       process.execPath, '--disallow-code-generation-from-strings',
@@ -80,7 +83,7 @@ export function createWorkerRunner({ repoRoot, spawn = nodeSpawn, maxConcurrent 
           unit: `crate-worker-${name}`, limits: publishes ? PUBLISHER_LIMITS : WORKER_LIMITS, cwd: repoRoot, command,
         }), { cwd: repoRoot, env: systemdEnv() });
         let out = '';
-        child.stdout.on('data', (d) => { if (out.length < MAX_BODY) out += d; });
+        child.stdout.on('data', (d) => { if (out.length < MAX_WORKER_OUTPUT) out += d; });
         child.stderr.on('data', () => {});
         child.on('error', () => resolve({ ok: false, error: 'validation worker failed to start' }));
         child.on('close', () => {
@@ -97,6 +100,12 @@ export function createWorkerRunner({ repoRoot, spawn = nodeSpawn, maxConcurrent 
       await rm(tmpDir, { recursive: true, force: true });
     }
   });
+  return async function runWorker(payload) {
+    if (!payload.kind.startsWith('check-') || sourcesIn(payload).length === 0) return runUnit(payload);
+    const fetched = await runUnit({ kind: 'fetch-manifests', request: payload });
+    if (!fetched.ok) return fetched;
+    return runUnit({ ...payload, manifests: fetched.manifests });
+  };
 }
 
 const fail = (error) => ({ ok: false, error });

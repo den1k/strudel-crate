@@ -52,7 +52,7 @@ describe('cacheBank refuses unsafe manifests', () => {
     ['script', 'kit/a.js'],
     ['null byte', 'kit/a\0.wav'],
   ])('aborts the whole bank on %s, fetching and writing nothing', async (_n, leaf) => {
-    const { res, urls } = await run({ _base: 'https://fake.test/a/b/c/d/', ok: ['ok/a.wav'], bad: ['ok/b.wav', leaf] });
+    const { res, urls } = await run({ _base: 'https://raw.githubusercontent.com/fake/a/b/c/d/', ok: ['ok/a.wav'], bad: ['ok/b.wav', leaf] });
     expect(res.ok).toBe(false);
     expect(urls).toHaveLength(1); // the manifest only, no sample
     expect(await exists(join(root, 'pwned.wav'))).toBe(false);
@@ -79,7 +79,7 @@ describe('cacheBank refuses unsafe manifests', () => {
     ['http://fake.test/strudel.json'],
     ['file:///etc/passwd'],
   ])('refuses source %s before fetching', async (source) => {
-    const { res, urls } = await run({ _base: 'https://fake.test/', ok: ['ok/a.wav'] }, source);
+    const { res, urls } = await run({ _base: 'https://raw.githubusercontent.com/fake/', ok: ['ok/a.wav'] }, source);
     expect(res.ok).toBe(false);
     expect(urls).toHaveLength(0);
   });
@@ -89,7 +89,7 @@ describe('cacheBank refuses unsafe manifests', () => {
     const fetchImpl = async (url, init) => {
       seen.push(init?.redirect);
       return url.endsWith('strudel.json')
-        ? { ok: true, status: 200, json: async () => ({ _base: 'https://fake.test/', ok: ['ok/a.wav'] }) }
+        ? { ok: true, status: 200, json: async () => ({ _base: 'https://raw.githubusercontent.com/fake/', ok: ['ok/a.wav'] }) }
         : { ok: true, status: 200, arrayBuffer: async () => new ArrayBuffer(1) };
     };
     const res = await cacheBank('github:evil/bank', { cacheDir, fetchImpl });
@@ -98,7 +98,7 @@ describe('cacheBank refuses unsafe manifests', () => {
   });
 
   it('still vendors a normal bank', async () => {
-    const { res } = await run({ _base: 'https://fake.test/x/', kick: ['kit one/Kick_01.WAV', 'kit one/k2.flac'], sn: 'sn.ogg' });
+    const { res } = await run({ _base: 'https://raw.githubusercontent.com/fake/x/', kick: ['kit one/Kick_01.WAV', 'kit one/k2.flac'], sn: 'sn.ogg' });
     expect(res).toMatchObject({ ok: true, files: 3 });
     expect(await readdir(join(cacheDir, 'banks', 'github-evil-bank'))).toContain('strudel.json');
   });

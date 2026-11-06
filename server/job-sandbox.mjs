@@ -42,17 +42,17 @@ export function agentSandboxFlags({ repoRoot, jobDir, proxyPort, claudeDir, envF
   ];
 }
 
-// Two kinds of worker, never one process doing both. An evaluator runs agent-written code,
-// so assume it is arbitrary code: it can write only its own scratch. A publisher writes where
-// a save lands (the server serves one of those trees) and never evaluates agent code.
-export function workerSandboxFlags({ repoRoot, tmpDir, publishes = false }) {
+// Separate workers, never one process doing two of these. An evaluator runs agent-written
+// code, so assume it is arbitrary code: no network, and it can write only its own scratch. A
+// fetcher gets it the sample manifests it names. A publisher writes where a save lands (the
+// server serves one of those trees). Neither of those two evaluates agent code.
+export function workerSandboxFlags({ repoRoot, tmpDir, publishes = false, network = publishes }) {
   const landing = publishes ? [join(repoRoot, 'data', 'sample-cache'), join(repoRoot, 'palettes')] : [];
   return [
     ...flags('--rox', SYSTEM_EXEC),
     ...flags('--ro', [...SYSTEM_READ, ...REPO_READ.map((p) => join(repoRoot, p))]),
     ...flags('--rw', [...DEVICES, tmpDir, ...landing]),
-    '--tcp', '443',
-    '--allow-udp', // DNS
+    ...(network ? ['--tcp', '443', '--allow-udp'] : []), // UDP: DNS
   ];
 }
 

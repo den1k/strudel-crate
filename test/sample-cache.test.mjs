@@ -51,7 +51,7 @@ describe('cacheBank + manifests (filesystem)', () => {
   let dir;
   // A tiny fake manifest server: one bank, one sample file.
   const fakeManifest = {
-    _base: 'https://fake.test/banks/',
+    _base: 'https://raw.githubusercontent.com/fake/banks/',
     tk_bd: ['tk_bd/kick.wav'],
   };
   const fakeFetch = async (url) => {
@@ -107,7 +107,7 @@ describe('cacheBank + manifests (filesystem)', () => {
   });
 
   it('aborts and removes the dir on a transient (non-404) sample failure', async () => {
-    const manifest = { _base: 'https://fake.test/banks/', kit: ['kit/a.wav', 'kit/flaky.wav'] };
+    const manifest = { _base: 'https://raw.githubusercontent.com/fake/banks/', kit: ['kit/a.wav', 'kit/flaky.wav'] };
     const flakyFetch = async (url) => {
       if (url.includes('.json')) return { ok: true, status: 200, json: async () => manifest };
       if (url.includes('flaky')) return { ok: false, status: 500 }; // transient → must abort
@@ -121,7 +121,7 @@ describe('cacheBank + manifests (filesystem)', () => {
   });
 
   it('skips 404 samples, caches the rest, and prunes them from the manifest', async () => {
-    const manifest = { _base: 'https://fake.test/banks/', cp: ['cp/a.wav', 'cp/missing.wav'] };
+    const manifest = { _base: 'https://raw.githubusercontent.com/fake/banks/', cp: ['cp/a.wav', 'cp/missing.wav'] };
     const fetch404 = async (url) => {
       if (url.includes('.json')) return { ok: true, status: 200, json: async () => manifest };
       if (url.includes('missing')) return { ok: false, status: 404 };
@@ -142,7 +142,7 @@ describe('cacheBank + manifests (filesystem)', () => {
   });
 
   it('aborts (no cache) when every referenced sample 404s', async () => {
-    const manifest = { _base: 'https://fake.test/banks/', cp: ['cp/x.wav', 'cp/y.wav'] };
+    const manifest = { _base: 'https://raw.githubusercontent.com/fake/banks/', cp: ['cp/x.wav', 'cp/y.wav'] };
     const allGone = async (url) =>
       url.includes('.json')
         ? { ok: true, status: 200, json: async () => manifest }
@@ -156,7 +156,7 @@ describe('cacheBank + manifests (filesystem)', () => {
 
   it('bounds the number of samples downloaded per bank', async () => {
     const bigManifest = {
-      _base: 'https://fake.test/banks/',
+      _base: 'https://raw.githubusercontent.com/fake/banks/',
       // way more than the bound
       huge: Array.from({ length: 100000 }, (_, i) => `huge/s${i}.wav`),
     };
@@ -170,7 +170,7 @@ describe('cacheBank + manifests (filesystem)', () => {
   });
 
   it('cacheTrackSamples reports skipped samples per bank', async () => {
-    const manifest = { _base: 'https://fake.test/banks/', cp: ['cp/a.wav', 'cp/missing.wav'] };
+    const manifest = { _base: 'https://raw.githubusercontent.com/fake/banks/', cp: ['cp/a.wav', 'cp/missing.wav'] };
     const fetch404 = async (url) => {
       if (url.includes('.json')) return { ok: true, status: 200, json: async () => manifest };
       if (url.includes('missing')) return { ok: false, status: 404 };

@@ -63,6 +63,22 @@ export function isSafeRemoteUrl(value) {
   }
 }
 
+// Agent-written code picks these URLs, and agents hold private text. A URL is a way to send
+// that text anywhere, so at save time sources may only name known sample CDNs, with nothing
+// beyond a path. Repos on GitHub are still attacker-choosable, but a raw file fetch shows the
+// repo's owner nothing.
+export const ALLOWED_SAMPLE_HOSTS = new Set(['raw.githubusercontent.com', 'strudel.b-cdn.net']);
+
+export function isAllowedSampleUrl(value) {
+  try {
+    const u = new URL(value);
+    return u.protocol === 'https:' && ALLOWED_SAMPLE_HOSTS.has(u.hostname) && !u.port
+      && !u.username && !u.password && !u.search && !u.hash;
+  } catch {
+    return false;
+  }
+}
+
 // ---- pure helpers ----------------------------------------------------------
 
 /** Filesystem-safe, stable slug for a bank source (shorthand or URL). */
@@ -73,8 +89,9 @@ export function bankSlug(source) {
 /** The strudel.json manifest URL for a bank source. Mirrors webaudio's githubPath. */
 export function manifestUrlFor(source) {
   if (source.startsWith('github:')) {
-    const repo = source.slice('github:'.length);
-    return `https://raw.githubusercontent.com/${repo}/main/strudel.json`;
+    const parts = source.slice('github:'.length).replace(/\/$/, '').split('/');
+    const [user, repo = 'samples', branch = 'main', ...rest] = parts;
+    return `https://raw.githubusercontent.com/${[user, repo, branch, ...rest, 'strudel.json'].join('/')}`;
   }
   return source; // already a URL
 }
@@ -143,6 +160,7 @@ export async function cacheBank(source, opts = {}) {
   const {
     cacheDir = DEFAULT_CACHE_DIR,
     fetchImpl = fetch,
+    isAllowed = isAllowedSampleUrl,
     maxFiles = MAX_FILES_PER_BANK,
     maxFileBytes = MAX_FILE_BYTES,
     maxBankBytes = MAX_BANK_BYTES,
@@ -153,7 +171,7 @@ export async function cacheBank(source, opts = {}) {
   if (await isBankCached(source, { cacheDir })) return { ok: true, slug, cached: true };
 
   const manifestUrl = manifestUrlFor(source);
-  if (!isSafeRemoteUrl(manifestUrl)) return { ok: false, error: `unsafe bank source: ${source}` };
+  if (!isSafeRemoteUrl(manifestUrl) || !isAllowed(manifestUrl)) return { ok: false, error: `unsafe bank source: ${source}` };
 
   let manifest;
   try {
@@ -173,7 +191,7 @@ export async function cacheBank(source, opts = {}) {
   // Whole-bank decision, before any fetch or write: one bad entry means the manifest
   // isn't a plain sample bank, so nothing from it is vendored. Callers fall back to
   // upstream, exactly as for any other vendoring miss.
-  if (paths.length > 0 && !isSafeRemoteUrl(base)) {
+  if (paths.length > 0 && (!isSafeRemoteUrl(base) || !isAllowed(base))) {
     return { ok: false, error: `unsafe or missing _base in ${source}` };
   }
   const unsafe = paths.find((rel) => !isSafeSamplePath(rel, bankDir));
@@ -240,6 +258,45 @@ export async function readTrackManifest(trackId, { cacheDir = DEFAULT_CACHE_DIR 
   } catch {
     return null;
   }
+}
+
+// Literal sources a worker request names. Anything built at runtime isn't fetched, and fails
+// in the evaluator, which has no network.
+export function sourcesIn({ code, item, palette }) {
+  const sources = [...extractSampleRefs(code ?? ''), ...extractSampleRefs(item?.code ?? '')];
+  if (palette) {
+    sources.push(...(Array.isArray(palette.samples) ? palette.samples : []));
+    for (const v of Array.isArray(palette.voices) ? palette.voices : []) {
+      sources.push(...(Array.isArray(v?.samples) ? v.samples : []), ...extractSampleRefs(typeof v?.frag === 'string' ? v.frag : ''));
+    }
+  }
+  return [...new Set(sources.filter((s) => typeof s === 'string'))];
+}
+
+const MAX_MANIFEST_BYTES = 4 * 1024 * 1024;
+const MAX_MANIFESTS = 32;
+
+// Fetch, outside the evaluator, the manifests its samples() calls will ask for, keyed by the
+// URL they'll ask for. Evaluates nothing.
+export async function fetchManifests(sources, { fetchImpl = fetch } = {}) {
+  if (sources.length > MAX_MANIFESTS) return { ok: false, error: `too many sample sources (${sources.length})` };
+  const manifests = {};
+  for (const source of sources) {
+    const url = manifestUrlFor(source);
+    if (!isAllowedSampleUrl(url)) {
+      return { ok: false, error: `samples source not allowed: ${source.slice(0, 200)} (use github:user/repo, or a plain https URL on ${[...ALLOWED_SAMPLE_HOSTS].join(', ')})` };
+    }
+    try {
+      const res = await fetchImpl(url, { redirect: 'error' });
+      if (res.ok === false) return { ok: false, error: `samples() load failed: HTTP ${res.status} for ${source}` };
+      const text = await res.text();
+      if (text.length > MAX_MANIFEST_BYTES) return { ok: false, error: `samples() load failed: manifest too large for ${source}` };
+      manifests[url] = JSON.parse(text);
+    } catch (err) {
+      return { ok: false, error: `samples() load failed for ${source}: ${err.message}` };
+    }
+  }
+  return { ok: true, manifests };
 }
 
 /**

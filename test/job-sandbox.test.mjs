@@ -15,6 +15,7 @@ import { createJobBroker, createOps, createWorkerRunner, saveCapFor } from '../s
 import { agentEnv, agentSandboxFlags, freshOauthToken, systemdRunArgv, workerSandboxFlags } from '../server/job-sandbox.mjs';
 import { budgetFor, createJobStore, jobQuotaError } from '../server/jobs.mjs';
 import { buildArgv, createRunner } from '../server/runner.mjs';
+import { cacheBank, fetchManifests } from '../scripts/lib/sample-cache.mjs';
 
 const HELPER = fileURLToPath(new URL('../scripts/sandbox/sandbox-exec.py', import.meta.url));
 const SYS = ['--rox', '/usr', '--rox', '/lib', '--rox', '/lib64', '--rox', '/bin', '--ro', '/etc/ld.so.cache'];
@@ -665,6 +666,94 @@ describe('audit run-2: worker units', () => {
     `], { encoding: 'utf8', timeout: 60000 });
     expect(JSON.parse(probe.stdout.trim().split('\n').at(-1))).toEqual({ blocked: true, evaluate: 'undefined', evalScope: 'undefined', webaudioRepl: 'undefined', note: 'function' });
   }, 90000);
+});
+
+describe('worker egress', () => {
+  const repo = fileURLToPath(new URL('..', import.meta.url));
+  const worker = (req) => JSON.parse(spawnSync(process.execPath, ['--disallow-code-generation-from-strings', join(repo, 'scripts/sandbox/validate-worker.mjs')], {
+    input: JSON.stringify(req), encoding: 'utf8', timeout: 60000,
+  }).stdout.split('\n').find((l) => l.startsWith('CRATE_WORKER_RESULT ')).slice(20));
+  const fakeFetch = (seen) => async (url) => {
+    seen.push(url);
+    return { ok: true, status: 200, text: async () => JSON.stringify({ _base: 'https://raw.githubusercontent.com/a/b/main/', zz: ['zz/a.wav'] }) };
+  };
+
+  it.each([
+    ['an unlisted host with data in it', 'https://evil.example/strudel.json?lesson=private+text'],
+    ['data in the query of a listed host', 'https://raw.githubusercontent.com/a/b/main/strudel.json?lesson=private'],
+    ['a look-alike host', 'https://raw.githubusercontent.com.evil.example/x.json'],
+    ['credentials in the URL', 'https://private@raw.githubusercontent.com/a/b/main/strudel.json'],
+    ['plain http', 'http://raw.githubusercontent.com/a/b/main/strudel.json'],
+    ['shabda, which sends words to a third party', 'shabda:private+text'],
+    ['an internal host', 'https://127.0.0.1/x.json'],
+  ])('refuses %s without touching the network', async (_n, source) => {
+    const seen = [];
+    const res = await fetchManifests([source], { fetchImpl: fakeFetch(seen) });
+    expect(res.ok).toBe(false);
+    expect(res.error).toMatch(/not allowed/);
+    expect(seen).toEqual([]);
+  });
+  it('vendoring refuses them too, and a manifest pointing its samples elsewhere', async () => {
+    const seen = [];
+    expect((await cacheBank('https://evil.example/s.json?x=1', { fetchImpl: fakeFetch(seen), cacheDir: '/nonexistent' })).ok).toBe(false);
+    expect(seen).toEqual([]);
+    const elsewhere = async (url) => { seen.push(url); return { ok: true, json: async () => ({ _base: 'https://evil.example/', zz: ['a.wav'] }) }; };
+    expect((await cacheBank('github:a/b', { fetchImpl: elsewhere, cacheDir: '/nonexistent' })).error).toMatch(/_base/);
+    expect(seen.length).toBe(1);
+  });
+  it('fetches a listed bank at the URL samples() will ask for', async () => {
+    for (const [source, url] of [
+      ['github:a/b', 'https://raw.githubusercontent.com/a/b/main/strudel.json'],
+      ['github:a/b/dev/sub', 'https://raw.githubusercontent.com/a/b/dev/sub/strudel.json'],
+      ['https://strudel.b-cdn.net/piano.json', 'https://strudel.b-cdn.net/piano.json'],
+    ]) {
+      const seen = [];
+      const res = await fetchManifests([source], { fetchImpl: fakeFetch(seen) });
+      expect(res.ok).toBe(true);
+      expect(seen).toEqual([url]);
+    }
+  });
+  it('an evaluator has no network at all, and a publisher or fetcher does', () => {
+    const f = (o) => workerSandboxFlags({ repoRoot: '/r', tmpDir: '/t', ...o });
+    expect(f({})).not.toContain('--tcp');
+    expect(f({})).not.toContain('--allow-udp');
+    expect(f({ network: true })).toContain('--tcp');
+    expect(f({ publishes: true })).toContain('--tcp');
+    expect(f({ network: true }).filter((_, i, a) => a[i - 1] === '--rw')).not.toContain('/r/palettes');
+  });
+  it('the evaluator resolves samples() from what was fetched, and nothing else', () => {
+    const url = 'https://raw.githubusercontent.com/a/b/main/strudel.json';
+    const manifests = { [url]: { _base: 'https://raw.githubusercontent.com/a/b/main/', zz: ['zz/a.wav'] } };
+    const code = 'samples("github:a/b")\ns("zz*4")';
+    expect(worker({ kind: 'check-code', code, manifests })).toMatchObject({ ok: true });
+    expect(worker({ kind: 'check-code', code })).toMatchObject({ ok: false });
+    expect(worker({ kind: 'check-code', code: 'samples(`https://evil.example/?x=1`)\ns("bd")', manifests })).toMatchObject({ ok: false });
+  }, 90000);
+  it('runs the fetcher first, and never the evaluator when it refuses', async () => {
+    const repoRoot = await mkdtemp(join(tmpdir(), 'crate-w-'));
+    const units = [];
+    const spawnFn = (_cmd, argv) => {
+      const child = new EventEmitter();
+      child.stdout = new EventEmitter();
+      child.stderr = new EventEmitter();
+      child.stdin = { end(body) {
+        const req = JSON.parse(body);
+        units.push({ kind: req.kind, net: argv.includes('--tcp') });
+        setImmediate(() => {
+          child.stdout.emit('data', `CRATE_WORKER_RESULT ${JSON.stringify({ ok: req.kind !== 'fetch-manifests' || !/evil/.test(req.request.code), manifests: {}, error: 'not allowed' })}\n`);
+          child.emit('close', 0);
+        });
+      } };
+      return child;
+    };
+    const run = createWorkerRunner({ repoRoot, spawn: spawnFn });
+    expect(await run({ kind: 'check-code', code: "samples('https://evil.example/?x')" })).toMatchObject({ ok: false });
+    expect(units).toEqual([{ kind: 'fetch-manifests', net: true }]);
+    units.length = 0;
+    expect((await run({ kind: 'check-code', code: "samples('github:a/b')" })).ok).toBe(true);
+    expect(units).toEqual([{ kind: 'fetch-manifests', net: true }, { kind: 'check-code', net: false }]);
+    await rm(repoRoot, { recursive: true, force: true });
+  });
 });
 
 describe('audit run-2: job quota', () => {
