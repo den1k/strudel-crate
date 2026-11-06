@@ -329,3 +329,28 @@ describe('stored-code policy', () => {
     expect(globalThis.__crate_marker).toBeUndefined();
   });
 });
+
+describe('audit run-2: code policy', () => {
+  it.each([
+    ['evaluate', "evaluate('1')"],
+    ['evalScope', 'evalScope({})'],
+    ['strudelScope', 'strudelScope.x'],
+    ['repl', 'repl({})'],
+    ['webaudioRepl', 'webaudioRepl({})'],
+    ['a computed class method key', 'class A { [fetch("https://x")]() {} }\ns("bd")'],
+    ['a computed static key', 'class A { static [process.pid]() {} }\ns("bd")'],
+    ['a computed class field key', 'class A { [fetch("https://x")] = 1 }\ns("bd")'],
+    ['a built class key', 'class A { [a + b]() {} }\ns("bd")'],
+    ['a class key naming constructor', 'class A { ["constructor"]() {} }\ns("bd")'],
+  ])('rejects %s', (_n, code) => {
+    expect(checkCodePolicy(code).ok).toBe(false);
+  });
+  it.each([
+    ['a plain class', 'class A { m() { return 1 } }\ns("bd")'],
+    ['a literal class key', 'class A { ["m"]() {} }\ns("bd")'],
+    ['the words in text', 's("evaluate repl") // evaluate()'],
+    ['a property called evaluate', 'x.evaluate'],
+  ])('allows %s', (_n, code) => {
+    expect(checkCodePolicy(code).ok).toBe(true);
+  });
+});

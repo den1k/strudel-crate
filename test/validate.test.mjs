@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach } from 'vitest';
 import { validateCode, validateTrack, characterCheck, isTrackPath } from '../scripts/validate.mjs';
 
 describe('validateCode', () => {
@@ -280,5 +280,23 @@ describe('isTrackPath', () => {
     expect(isTrackPath('stems/2026-06-15-foo-01.json')).toBe(false);
     expect(isTrackPath('/abs/path/stems/x.json')).toBe(false);
     expect(isTrackPath('foo.json')).toBe(false);
+  });
+});
+
+describe('audit run-2: only real statements run ahead of the pattern', () => {
+  const marker = '__crateMarker';
+  const smuggle = `samples(globalThis['${marker}'] = 1)`;
+  afterEach(() => { delete globalThis[marker]; });
+
+  it.each([
+    ['a block comment', `/*\n${smuggle}\n*/\ns("bd")`],
+    ['a template literal', `const t = \`\n${smuggle}\n\`\ns("bd")`],
+  ])('text in %s that looks like a samples() statement is not run', async (_n, code) => {
+    await validateCode(code);
+    expect(globalThis[marker]).toBeUndefined();
+  });
+  it('real samples() statements still load and strip, on their own line or not', async () => {
+    expect((await validateCode('samples({ zz: ["a.wav"] }, "https://x.invalid/")\ns("bd")')).ok).toBe(true);
+    expect((await validateCode('samples({ zz: ["a.wav"] }, "https://x.invalid/"); s("zz")')).ok).toBe(true);
   });
 });

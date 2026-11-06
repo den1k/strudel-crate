@@ -1,39 +1,46 @@
 // Validate a Strudel code string headlessly: it must transpile, evaluate to
 // a Pattern, and produce events when queried.
-// NOTE: evaluate() executes the input string as JS in this process, and stored code
-// runs on the crate origin when a listener presses play. checkCodePolicy (below) runs
-// first and rejects code reaching for anything beyond Strudel.
+// NOTE: this executes the input as JS in this process. checkCodePolicy (below) runs first and
+// rejects code reaching for anything beyond Strudel; inside a job this runs in the worker
+// sandbox, started with --disallow-code-generation-from-strings. So compile only through vm,
+// which that flag leaves alone and which isn't reachable from the evaluated code.
 import { fileURLToPath } from 'node:url';
-import { evaluate } from '@strudel/transpiler';
+import vm from 'node:vm';
+import { transpiler } from '@strudel/transpiler';
 import * as webaudio from '@strudel/webaudio';
 import { Pattern } from '@strudel/core';
 import { initStrudelEnv, loadedSoundNames, resetLoadedSounds } from './strudel-env.mjs';
 import { checkSounds, loadKnownSounds } from './check-sounds.mjs';
-import { checkCodePolicy } from './lib/code-policy.mjs';
+import { checkCodePolicy, samplesStatements } from './lib/code-policy.mjs';
 
 const QUERY_CYCLES = 8; // events must appear early — intros may not open with silence
 // The sound allowlist must cover the WHOLE arrangement, not just the intro:
 // 512 cycles > 6 minutes at 180 BPM (6 × 180 / 4 = 270 bars), with headroom.
 const SOUND_SCAN_CYCLES = 512;
 
-// Matches whole top-level `samples(...)` statements so we can run them ahead of
-// pattern evaluation (the transpiler's eager evaluation can't reconcile an async
-// samples() load that returns a promise mid-expression). One per line.
-const SAMPLES_STMT = /^\s*(samples\s*\([\s\S]*?\))\s*;?\s*$/gm;
+const compile = (source) => vm.runInThisContext(source, { filename: 'track-code' });
 
-// Run every `samples(...)` call the code declares against the REAL webaudio
-// loader, so the bank's sounds become resolvable. Returns the code with those
-// statements stripped (the remaining expression is the pattern to evaluate).
-// Arguments are evaluated, so this relies on checkCodePolicy having passed first.
+// Strudel's evaluate(), without Function: transpile, then run as an async body.
+async function evaluate(code) {
+  const { output } = transpiler(code);
+  return { pattern: await compile(`(()=>{"use strict";return (async ()=>{${output}})()})()`) };
+}
+
+// Run every top-level `samples(...)` statement against the REAL webaudio loader ahead of
+// pattern evaluation (the transpiler's eager evaluation can't reconcile an async samples()
+// load that returns a promise mid-expression), so the bank's sounds become resolvable. Returns
+// the code without them. Arguments are evaluated, so this relies on checkCodePolicy first.
 async function loadDeclaredSamples(code) {
-  const calls = [];
-  const stripped = code.replace(SAMPLES_STMT, (_, call) => { calls.push(call); return ''; });
-  for (const call of calls) {
-    // eslint-disable-next-line no-new-func
-    const run = new Function('samples', `return ${call};`);
-    await run(webaudio.samples);
+  const statements = samplesStatements(code);
+  let stripped = '';
+  let at = 0;
+  for (const { start, end, call } of statements) {
+    stripped += code.slice(at, start);
+    at = end;
+    await compile(`(samples)=>(${call})`)(webaudio.samples);
   }
-  return { stripped: stripped.trim(), loaded: calls.length > 0 };
+  stripped += code.slice(at);
+  return { stripped: stripped.trim(), loaded: statements.length > 0 };
 }
 
 export async function validateCode(code) {

@@ -4,6 +4,7 @@ import * as tonal from '@strudel/tonal';
 import * as webaudio from '@strudel/webaudio';
 import { registerSynthSounds, samples } from '@strudel/webaudio';
 import banks from '../shared/sample-banks.json';
+import { vocabulary } from '../shared/strudel-scope.js';
 import { renderTrack, renderStemsZip, renderSegment } from './render.js';
 import { isTrustedExportMessage } from './export-guard.js';
 
@@ -11,7 +12,7 @@ import { isTrustedExportMessage } from './export-guard.js';
 // + synth defs); individual samples are fetched/decoded lazily during a render,
 // so no running AudioContext is needed here — this iframe is headless.
 const ready = (async () => {
-  await core.evalScope(core, mini, tonal, webaudio);
+  await core.evalScope(...[core, mini, tonal, webaudio].map(vocabulary));
   await Promise.all([
     registerSynthSounds(),
     ...banks.map((b) =>

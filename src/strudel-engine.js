@@ -12,6 +12,7 @@ import {
   getAudioContext, initAudio, registerSynthSounds, resetGlobalEffects, samples, webaudioOutput,
 } from '@strudel/webaudio';
 import banks from '../shared/sample-banks.json';
+import { vocabulary } from '../shared/strudel-scope.js';
 import { enableSilentSwitchPlayback } from './ios-audio.js';
 import { installCacheAwareSamples, warmSampleCacheIndex } from './sample-cache-client.js';
 import { applySeek, readCycle } from './transport.js';
@@ -23,7 +24,7 @@ const unlockSession = enableSilentSwitchPlayback(); // iOS: play through the sil
 warmSampleCacheIndex();
 
 const ready = (async () => {
-  await core.evalScope(core, mini, tonal, webaudio);
+  await core.evalScope(...[core, mini, tonal, webaudio].map(vocabulary));
   // evalScope copies webaudio's exports onto globalThis; wrap the now-global samples() so
   // tracks that self-declare a vendored bank prefer the local cache.
   installCacheAwareSamples(globalThis);
@@ -134,4 +135,5 @@ window.addEventListener('message', (e) => {
   if (Object.hasOwn(handlers, type)) handlers[type](e.data);
 });
 
+send({ type: 'hello' }); // listening: the page waits for this before showing a fresh frame's gate
 ready.then(() => send({ type: 'ready' }));

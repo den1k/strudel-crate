@@ -10,6 +10,7 @@ import * as core from '@strudel/core';
 import * as mini from '@strudel/mini';
 import * as tonal from '@strudel/tonal';
 import * as webaudio from '@strudel/webaudio';
+import { vocabulary } from '../shared/strudel-scope.js';
 
 // Pattern methods that only have audio/visual side effects in the browser.
 const BROWSER_ONLY_METHODS = [
@@ -30,7 +31,7 @@ export function initStrudelEnv() {
   // webaudio `samples` so `samples('github:...')` fetches the bank's manifest
   // and registers its sounds in webaudio's soundMap (no audio is decoded in
   // Node — only the JSON manifest is fetched, and decode is lazy/at-trigger).
-  ready = core.evalScope(core, mini, tonal, webaudio, {
+  ready = core.evalScope(...[core, mini, tonal, webaudio].map(vocabulary), {
     setcps: id,
     setcpm: id,
     getAudioContext: () => ({ currentTime: 0 }),

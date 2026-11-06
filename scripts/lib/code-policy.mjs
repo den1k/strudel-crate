@@ -1,12 +1,12 @@
 // scripts/lib/code-policy.mjs
-// Static gate on Strudel code before it is executed or stored. Track code is plain JS
-// that runs in this process at save time and on the crate origin at play time, where
-// the visitor's session lives, so it must stay a pattern expression. Works on the AST
-// (same parser and options as @strudel/transpiler): text in comments and mini-notation
-// strings can't false-positive, and string-built property names can't slip through.
+// Static gate on Strudel code before it is executed or stored, so it stays a pattern
+// expression. Works on the AST (same parser and options as @strudel/transpiler): text in
+// comments and mini-notation strings can't false-positive, and string-built property names
+// can't slip through.
 //
-// This raises the bar on what a steered agent can store. It is not a sandbox; the real
-// isolation would be evaluating code on a separate origin.
+// This raises the bar on what a steered agent can store. It is a denylist, not the boundary:
+// the boundaries are the opaque frame at play time and the worker sandbox at save time
+// (no code generation from strings, nothing writable that lasts, nothing outside its tree).
 import { parse } from 'acorn';
 
 // Free identifiers that reach the host, the page, the network or code generation.
@@ -17,6 +17,7 @@ const FORBIDDEN_IDENTIFIERS = new Set([
   'fetch', 'XMLHttpRequest', 'WebSocket', 'EventSource', 'RTCPeerConnection',
   'Worker', 'SharedWorker', 'ServiceWorker', 'importScripts', 'postMessage',
   'eval', 'Function', 'AsyncFunction', 'GeneratorFunction', 'WebAssembly',
+  'evaluate', 'evalScope', 'strudelScope', 'repl', 'webaudioRepl', // Strudel's own way from a string to code
   'setTimeout', 'setInterval', 'setImmediate', 'queueMicrotask', 'requestAnimationFrame',
   'Reflect', 'Proxy', 'Object', 'Symbol', 'arguments',
   'process', 'require', 'module', 'exports', 'Buffer', '__dirname', '__filename',
@@ -67,8 +68,10 @@ function violation(node) {
       }
       return violation(node.value);
     }
-    case 'MethodDefinition': case 'PropertyDefinition':
-      return violation(node.value);
+    case 'MethodDefinition': case 'PropertyDefinition': {
+      const v = node.computed ? computedKeyViolation(node.key) : null;
+      return v ?? violation(node.value);
+    }
     default:
   }
   for (const key of Object.keys(node)) {
@@ -91,10 +94,20 @@ function computedKeyViolation(key) {
   return FORBIDDEN_PROPERTIES.has(String(key.value)) ? `\`${key.value}\` is not allowed` : null;
 }
 
+const PARSE_OPTIONS = { ecmaVersion: 2022, allowAwaitOutsideFunction: true };
+
+// Top-level `samples(...)` statements, as the parser sees them: text that merely looks like
+// one inside a comment or a string isn't a statement, and isn't ever run.
+export function samplesStatements(code) {
+  return parse(code, PARSE_OPTIONS).body.filter((n) => n.type === 'ExpressionStatement'
+    && n.expression.type === 'CallExpression' && n.expression.callee.name === 'samples')
+    .map((n) => ({ start: n.start, end: n.end, call: code.slice(n.expression.start, n.expression.end) }));
+}
+
 export function checkCodePolicy(code) {
   let ast;
   try {
-    ast = parse(code, { ecmaVersion: 2022, allowAwaitOutsideFunction: true });
+    ast = parse(code, PARSE_OPTIONS);
   } catch (err) {
     return fail(`evaluation failed: ${err.message}`);
   }
