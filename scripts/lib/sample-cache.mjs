@@ -317,7 +317,14 @@ export async function fetchManifests(sources, { fetchImpl = fetch } = {}) {
       if (res.ok === false) return { ok: false, error: `samples() load failed: HTTP ${res.status} for ${source}` };
       const text = await res.text();
       if (text.length > MAX_MANIFEST_BYTES) return { ok: false, error: `samples() load failed: manifest too large for ${source}` };
-      manifests[url] = JSON.parse(text);
+      const manifest = JSON.parse(text);
+      // Viewers' frames fetch samples from here, and may reach only the listed hosts. A relative
+      // or missing _base stays on the manifest's own host.
+      const base = manifest?._base;
+      if (/^[a-z][a-z0-9+.-]*:/i.test(String(base ?? '')) && !isAllowedSampleUrl(base)) {
+        return { ok: false, error: `samples() bank ${source} keeps its samples elsewhere (_base not on ${[...ALLOWED_SAMPLE_HOSTS].join(', ')})` };
+      }
+      manifests[url] = manifest;
     } catch (err) {
       return { ok: false, error: `samples() load failed for ${source}: ${err.message}` };
     }

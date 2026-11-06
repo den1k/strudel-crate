@@ -276,14 +276,17 @@ function jobRoutes(app, jobStore, runner, progressFor, requireAuth, adminDb, job
   }));
 }
 
+const SAMPLE_ORIGINS = [...ALLOWED_SAMPLE_HOSTS].map((h) => `https://${h}`).join(' ');
 const SANDBOXED_PAGES = ['strudel-engine.html', 'export-render.html'];
 const SANDBOX_CSP = [
   'sandbox allow-scripts',
   "default-src 'none'",
   "script-src 'self' 'unsafe-eval' 'wasm-unsafe-eval' blob: data:", // evaluating code is the job
   "worker-src 'self' blob: data:",
-  "connect-src 'self' https: data: blob:", // sample banks live on arbitrary https hosts
-  "media-src 'self' https: data: blob:",
+  // Vendored banks and the sample hosts saves are held to. Stored code has nothing secret here,
+  // but it shouldn't get to report its listeners to a host of its choosing.
+  `connect-src 'self' ${SAMPLE_ORIGINS} data: blob:`,
+  `media-src 'self' ${SAMPLE_ORIGINS} data: blob:`,
   "style-src 'unsafe-inline'",
   "base-uri 'none'",
   "form-action 'none'",
@@ -314,7 +317,8 @@ function onlyFilesInside(dir) {
   };
 }
 
-const PAGE_CSP = "script-src 'self' 'wasm-unsafe-eval'; object-src 'none'; base-uri 'self'";
+// frame-src: a sandboxed frame may still navigate itself, and connect-src doesn't cover that.
+const PAGE_CSP = "script-src 'self' 'wasm-unsafe-eval'; object-src 'none'; base-uri 'self'; frame-src 'self'";
 
 export function createApp(opts = {}) {
   const app = express();
