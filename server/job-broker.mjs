@@ -8,7 +8,7 @@ import { randomBytes, randomUUID } from 'node:crypto';
 import { spawn as nodeSpawn } from 'node:child_process';
 import { mkdir, rm } from 'node:fs/promises';
 import { join } from 'node:path';
-import { insertItem, itemSlugs, queryLessonsByProfile } from './instant.mjs';
+import { insertItem, itemSlugs, itemsBySlug, queryLessonsByProfile } from './instant.mjs';
 import {
   MAX_CONCURRENT_WORKERS, PUBLISHER_LIMITS, systemdEnv, systemdRunArgv, workerSandboxFlags, WORKER_LIMITS,
 } from './job-sandbox.mjs';
@@ -119,19 +119,56 @@ function checkItem(item, key = 'id') {
   return null;
 }
 
+// A saved row is public, so its free text is a place private text could go. These are several
+// times the longest live values. Evaluation can't vouch for them: its result is advisory.
+const FIELD_LIMITS = { title: 200, prompt: 2000, batch: 128, description: 4000, createdAt: 40 };
+const MAX_META = 8000;
+
+function checkFields(item) {
+  for (const [field, max] of Object.entries(FIELD_LIMITS)) {
+    const v = item[field];
+    if (v !== undefined && (typeof v !== 'string' || v.length > max)) return `${field} must be a string of at most ${max} characters`;
+  }
+  if (JSON.stringify(item.meta ?? {}).length > MAX_META) return 'meta too large';
+  for (const f of ['versionOf', 'remixOf']) {
+    if (item[f] !== undefined && item[f] !== null && !SLUG_RE.test(String(item[f]))) return `invalid ${f}`;
+  }
+  return null;
+}
+
+const squeeze = (s) => String(s).toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '');
+const MIN_QUOTE = 16; // squeezed characters: shorter than this is ordinary musical vocabulary
+
+// Lessons are private and rows are public. This catches a lesson copied into a row, including
+// by an unsteered model being helpful; it is no bar to one paraphrasing or encoding on purpose.
+// A requester's own prompt may repeat their lesson: that is their choice to publish.
+function quotesPrivateText(entry, item) {
+  const texts = entry.privateTexts ?? [];
+  if (!texts.length) return false;
+  const row = squeeze([item.title, item.batch, item.description, item.prompt, JSON.stringify(item.meta ?? {}), item.code].join('\n'));
+  const prompt = squeeze(entry.job.prompt ?? '');
+  return texts.flatMap((t) => String(t).split(/[.!?\n]+/)).map(squeeze)
+    .some((part) => part.length >= MIN_QUOTE && !prompt.includes(part) && row.includes(part));
+}
+
 function checkCode(code) {
   if (typeof code !== 'string' || code.length > MAX_CODE) return 'code missing or too large';
   const policy = checkCodePolicy(code);
   return policy.ok ? null : policy.error;
 }
 
+// A remix job reads another user's row, which is text that user chose. It holds nothing private,
+// so that text has nothing of the requester's to steer into a public row.
+const NOT_IN_REMIX = 'a remix job does not read lessons or notes';
+
 export function createOps({ adminDb, runWorker }) {
   async function save(entry, namespace, body, character) {
     const { job, profileId } = entry;
     if (namespace !== job.collection) return fail(`this job can only save to ${job.collection}`);
     const { item } = body;
-    const problem = checkItem(item) ?? checkCode(item?.code);
+    const problem = checkItem(item) ?? checkFields(item) ?? checkCode(item?.code);
     if (problem) return fail(problem);
+    if (quotesPrivateText(entry, item)) return fail('this row quotes a private lesson, and rows are public: say it in other words or leave it out');
     if (!profileId) return fail('job has no author profile');
     // Taken before the first await, or overlapping saves all pass the cap. Only a save that
     // lands keeps its slot.
@@ -139,11 +176,14 @@ export function createOps({ adminDb, runWorker }) {
     entry.saves += 1;
     let saved = false;
     try {
+      // Before vendoring, which would otherwise spend disk and rewrite this slug's manifest for nothing.
+      if ((await itemsBySlug(adminDb, namespace, [item.id])).length) return fail(`slug already exists: ${item.id}`);
       const checked = await runWorker({ kind: 'check-item', item, character });
       if (!checked.ok) return { ok: false, error: checked.error, warnings: checked.warnings };
       const vendored = await runWorker({ kind: 'vendor-item', item });
       const warnings = vendored.warnings ?? [];
-      const inserted = await insertItem(adminDb, namespace, item, profileId, { jobId: job.id });
+      // Notes and lessons on a row are its listeners', and start empty.
+      const inserted = await insertItem(adminDb, namespace, { ...item, notes: '', lesson: '' }, profileId, { jobId: job.id });
       if (!inserted.ok) return { ...inserted, warnings };
       saved = true;
       return { ok: true, id: item.id, warnings };
@@ -184,12 +224,17 @@ export function createOps({ adminDb, runWorker }) {
 
     'list-slugs': async (entry) => ({ ok: true, slugs: [...(await itemSlugs(adminDb, entry.job.collection))].sort() }),
 
-    feedback: async ({ profileId, job }) => {
+    feedback: async (entry) => {
+      const { profileId, job } = entry;
+      if (job.type === 'remix') return fail(NOT_IN_REMIX);
       if (!profileId) return fail('job has no author profile');
-      return { ok: true, digest: buildDigest(await queryLessonsByProfile(adminDb, profileId, job.collection)) };
+      const lessons = await queryLessonsByProfile(adminDb, profileId, job.collection);
+      entry.privateTexts = lessons.map((l) => l.text).filter(Boolean);
+      return { ok: true, digest: buildDigest(lessons) };
     },
 
     'pending-revisions': async ({ job, profileId }) => {
+      if (job.type === 'remix') return fail(NOT_IN_REMIX);
       const ns = job.collection;
       const res = await adminDb.query({ [ns]: { author: {} } });
       const rows = res[ns].map((r) => {

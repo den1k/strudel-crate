@@ -60,6 +60,10 @@ function valueHoldsSamples(val) {
   return collectStrings(val, []).length > 0;
 }
 
+// Anyone's public repo ends up here, and generation agents read the result, so a key only
+// counts when it looks like a name rather than a sentence.
+const isSoundName = (k) => /^[\p{L}\p{N}][\p{L}\p{N} _.,:&+#'()-]{0,59}$/u.test(k) && k.split(' ').length <= 6;
+
 /**
  * The sound names a manifest defines: every top-level key that is not a
  * `_`-prefixed meta key (`_base`, `_meta`, …) whose value carries sample paths
@@ -70,7 +74,7 @@ function valueHoldsSamples(val) {
 export function extractSounds(manifest) {
   if (!manifest || typeof manifest !== 'object') return [];
   return Object.keys(manifest).filter(
-    (k) => !k.startsWith('_') && valueHoldsSamples(manifest[k]),
+    (k) => !k.startsWith('_') && isSoundName(k) && valueHoldsSamples(manifest[k]),
   );
 }
 
