@@ -48,6 +48,15 @@ describe('server headers', () => {
   });
   afterEach(async () => { await rm(dist, { recursive: true }); await rm(cache, { recursive: true }); });
 
+  it.each([['/strudel%2Dengine.html'], ['/export-render%2Ehtml']])('%s, an encoded alias, is sandboxed too', async (page) => {
+    const csp = (await request(app).get(page).expect(200)).headers['content-security-policy'];
+    expect(csp).toMatch(/sandbox allow-scripts/);
+  });
+  it('/index.html, the static alias, refuses eval too', async () => {
+    const csp = (await request(app).get('/index.html').expect(200)).headers['content-security-policy'];
+    expect(csp).toMatch(/script-src 'self'/);
+  });
+
   for (const page of ['/strudel-engine.html', '/export-render.html']) {
     it(`${page} is an opaque-origin document even when navigated to directly`, async () => {
       const res = await request(app).get(page).expect(200);
@@ -108,6 +117,85 @@ describe('engine client', () => {
     win.fire({ source: doc.frame.contentWindow, data: 'not-an-object' });
     win.fire({ source: doc.frame.contentWindow, data: { type: 'tick', gen: 1 } });
     expect(got).toEqual([{ type: 'tick', gen: 1 }]);
+  });
+
+  describe('audio gate', () => {
+    // Each createElement gives a new frame, like the DOM.
+    function fakeDoc2() {
+      const frames = [];
+      return {
+        frames,
+        createElement: () => {
+          const f = {
+            attrs: {}, style: {}, removed: false,
+            contentWindow: { posted: [], postMessage(m) { this.posted.push(m); } },
+            setAttribute(k, v) { this.attrs[k] = v; }, remove() { this.removed = true; },
+          };
+          frames.push(f);
+          return f;
+        },
+        body: { appendChild() {} },
+      };
+    }
+    const shown = (f) => !/visibility:hidden/.test(f.style.cssText);
+
+    it('shows a frame that has never run stored code, as a small control', () => {
+      const doc = fakeDoc2();
+      const client = createEngineClient({ doc, win: fakeWin(), src: '/x' });
+      expect(client.showGate(true)).toBe(false);
+      expect(doc.frames.length).toBe(1);
+      expect(shown(doc.frames[0])).toBe(true);
+      expect(doc.frames[0].style.cssText).not.toMatch(/inset:0|height:100%/);
+      expect(doc.frames[0].contentWindow.posted).toContainEqual({ type: 'gate', show: true });
+      client.showGate(false);
+      expect(shown(doc.frames[0])).toBe(false);
+    });
+
+    it('never shows a frame that has run stored code: it discards it for a fresh one', () => {
+      const doc = fakeDoc2(); const win = fakeWin();
+      const client = createEngineClient({ doc, win, src: '/x' });
+      client.post({ type: 'play', gen: 1, id: 't', code: 'stored' });
+      expect(client.holdsStoredCode).toBe(true);
+      expect(client.showGate(true)).toBe(true);
+      const [old, fresh] = doc.frames;
+      expect(old.removed).toBe(true);
+      expect(shown(old)).toBe(false);
+      expect(client.holdsStoredCode).toBe(false);
+      // Hidden until our own code in it says it's listening.
+      expect(shown(fresh)).toBe(false);
+      win.fire({ source: old.contentWindow, data: { type: 'hello' } });
+      expect(shown(fresh)).toBe(false);
+      win.fire({ source: fresh.contentWindow, data: { type: 'hello' } });
+      expect(shown(fresh)).toBe(true);
+    });
+
+    it('hides the gate before anything evaluates, and the old frame can no longer talk', () => {
+      const doc = fakeDoc2(); const win = fakeWin();
+      const client = createEngineClient({ doc, win, src: '/x' });
+      client.showGate(true);
+      client.post({ type: 'play', gen: 1, id: 't', code: 'stored' });
+      expect(shown(doc.frames[0])).toBe(false);
+      client.showGate(true);
+      const got = [];
+      client.on((m) => got.push(m));
+      win.fire({ source: doc.frames[0].contentWindow, data: { type: 'audio', state: 'running' } });
+      expect(got).toEqual([]);
+    });
+
+    it('a play racing the fresh frame\'s hello never reveals it', () => {
+      const doc = fakeDoc2(); const win = fakeWin();
+      const client = createEngineClient({ doc, win, src: '/x' });
+      client.post({ type: 'play', gen: 1, id: 't', code: 'a' });
+      client.showGate(true);
+      client.post({ type: 'play', gen: 2, id: 't', code: 'b' });
+      win.fire({ source: doc.frames[1].contentWindow, data: { type: 'hello' } });
+      expect(shown(doc.frames[1])).toBe(false);
+    });
+
+    it('stops the gesture feed while typing in a form', async () => {
+      const src = await readFile(join(SRC, 'strudel-boot.js'), 'utf8');
+      expect(src).toMatch(/closest\?\.\('input, textarea'\)/);
+    });
   });
 
   it('never uses a same-origin frame for exports either', async () => {

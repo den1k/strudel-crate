@@ -423,7 +423,13 @@ export function createApp(opts = {}) {
       await sendInjected(res, 'song.html', await tagsForRef(origin, req.params.slug));
     }));
 
-    app.use(express.static(opts.distDir));
+    // Same headers when a percent-encoded path misses the routes above but send decodes it.
+    app.use(express.static(opts.distDir, {
+      setHeaders: (res, file) => {
+        if (SANDBOXED_PAGES.includes(basename(file))) res.setHeader('Content-Security-Policy', SANDBOX_CSP);
+        else if (file.endsWith('.html')) res.setHeader('Content-Security-Policy', PAGE_CSP);
+      },
+    }));
   }
 
   // JSON error responses (body-parser 400s and async store failures land here).
