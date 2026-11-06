@@ -37,7 +37,21 @@ export async function setArtistName(adminDb, user, artistName) {
 // removed out-of-band — e.g. deleting a profile cascades away its ratings links
 // but does not decrement ratingSum/ratingCount on the item.
 // Returns { you, avg, count } or null when the slug doesn't exist.
-export async function setRating(adminDb, namespace, slug, profileId, value) {
+// Ratings are read-then-write with delta aggregates, so parallel PUTs on one item would
+// drift ratingSum/ratingCount. One server process, so a per-item chain is enough.
+const ratingChains = new Map();
+export function setRating(adminDb, namespace, slug, profileId, value) {
+  const key = `${namespace}:${slug}`;
+  const run = (ratingChains.get(key) ?? Promise.resolve())
+    .catch(() => {})
+    .then(() => applyRating(adminDb, namespace, slug, profileId, value));
+  ratingChains.set(key, run);
+  const release = () => { if (ratingChains.get(key) === run) ratingChains.delete(key); };
+  run.then(release, release);
+  return run;
+}
+
+async function applyRating(adminDb, namespace, slug, profileId, value) {
   const res = await adminDb.query({ [namespace]: { $: { where: { slug } } } });
   const item = res[namespace][0];
   if (!item) return null;
