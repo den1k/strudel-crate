@@ -21,8 +21,11 @@ import { buildWorklist } from '../src/versions.js';
 const EGRESS_HOSTS = new Set(['api.anthropic.com:443']);
 const SLUG_RE = /^[a-zA-Z0-9][a-zA-Z0-9_-]{0,127}$/;
 const MAX_BODY = 1024 * 1024;
-const MAX_CODE = 256 * 1024;
+const MAX_CODE = 64 * 1024; // longest live row: 9.4K
 const MAX_OPS = 5000;
+// Requests one job may have open. Sub-agents fan out to about 8, one call each; each open call
+// holds its body (up to MAX_BODY) on this process's heap while it waits for a worker.
+const MAX_INFLIGHT = 24;
 const MAX_REVISIONS = 24; // buildWorklist's per-job cap: a job also saves its Step 0 revisions
 const RESULT_MARK = 'CRATE_WORKER_RESULT ';
 const PUBLISHING_KINDS = new Set(['vendor-item', 'write-palette']);
@@ -245,7 +248,13 @@ export function createJobBroker({ ops, connect = (port, host) => net.connect(por
       const name = req.url.match(/^\/op\/([a-z-]+)$/)?.[1];
       if (req.method !== 'POST' || !name || !Object.hasOwn(ops, name)) return reply(404, fail('no such op'));
       if (++entry.calls > MAX_OPS) return reply(429, fail('op limit for this job reached'));
-      return reply(200, await ops[name](entry, await readBody(req)));
+      if (entry.inflight >= MAX_INFLIGHT) return reply(429, fail('too many calls at once'));
+      entry.inflight += 1;
+      try {
+        return reply(200, await ops[name](entry, await readBody(req)));
+      } finally {
+        entry.inflight -= 1;
+      }
     } catch (err) {
       console.error('[crate] job broker:', err);
       return reply(err.status ?? 500, fail('broker error'));
@@ -276,7 +285,7 @@ export function createJobBroker({ ops, connect = (port, host) => net.connect(por
     port: () => server.address().port,
     register(job, profileId) {
       const token = randomBytes(32).toString('hex');
-      jobs.set(token, { job, profileId, saves: 0, calls: 0 });
+      jobs.set(token, { job, profileId, saves: 0, calls: 0, inflight: 0 });
       return token;
     },
     revoke: (token) => { jobs.delete(token); },

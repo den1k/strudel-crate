@@ -163,6 +163,9 @@ const claudeBinary = () => realpathSync(join(process.env.HOME ?? '', '.local', '
 export function createJobLauncher({ repoRoot, broker, getToken = () => freshOauthToken({ refresh: () => refreshOauthWithClaude({ cwd: repoRoot }) }) }) {
   return async function launch(job, authorProfileId, claudeArgs) {
     const oauthToken = await getToken();
+    // First: nothing below may throw between writing the token to disk and handing back cleanup.
+    const claudeBin = claudeBinary();
+    const claudeDir = dirname(claudeBin);
     const jobDir = join(repoRoot, 'data', 'job-sandbox', job.id);
     for (const d of ['home', 'tmp', 'config']) await mkdir(join(jobDir, d), { recursive: true });
     const workDir = await makeJobWorkDir(repoRoot, jobDir);
@@ -174,8 +177,6 @@ export function createJobLauncher({ repoRoot, broker, getToken = () => freshOaut
       jobId: job.id, jobDir, proxyPort, brokerToken, oauthToken,
     })), { mode: 0o600 });
 
-    const claudeBin = claudeBinary();
-    const claudeDir = dirname(claudeBin);
     const command = [
       '/usr/bin/python3', '-I', helperPath(repoRoot),
       ...agentSandboxFlags({ repoRoot, jobDir, proxyPort, claudeDir, envFile }),

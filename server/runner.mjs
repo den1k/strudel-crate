@@ -110,11 +110,18 @@ export function modelUsageLine(stdout) {
 export function costOf(stdout) {
   try {
     const cost = JSON.parse(stdout).total_cost_usd;
-    return Number.isFinite(cost) ? cost : null;
+    return Number.isFinite(cost) && cost >= 0 ? cost : null; // quota sums this: negative would refund it
   } catch {
     return null;
   }
 }
+
+// A job's output lives on this process's heap. The envelope is far smaller than this; past it,
+// parsing fails and the job records no summary. stderr is only ever read from its tail.
+export const MAX_OUTPUT = 16 * 1024 * 1024;
+const ERR_TAIL = 64 * 1024;
+export const keepHead = (buf, d) => (buf.length < MAX_OUTPUT ? buf + d : buf);
+export const keepTail = (buf, d) => (buf + d).slice(-ERR_TAIL);
 
 export { nodeSpawn, parseSummary, ALLOWED_TOOLS };
 
@@ -136,8 +143,8 @@ export function createRunner({
         let resolved = false;
         const settle = (result) => { if (!resolved) { resolved = true; resolve(result); } };
         const child = spawn(command, args, options);
-        child.stdout?.on('data', (d) => { out += d; });
-        child.stderr?.on('data', (d) => { err += d; });
+        child.stdout?.on('data', (d) => { out = keepHead(out, d); });
+        child.stderr?.on('data', (d) => { err = keepTail(err, d); });
         child.on('error', (e) => settle({ code: -1, out, err: err || String(e?.message ?? e) }));
         child.on('close', (code) => settle({ code: code ?? -1, out, err }));
       });
