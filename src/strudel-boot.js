@@ -10,7 +10,11 @@ export function bootStrudel() {
   const engine = createEngineClient();
   // Forward each gesture synchronously: WebKit carries user activation across postMessage
   // only from inside the gesture, and Chrome walks up to the page's sticky activation.
-  const unlock = () => engine.post({ type: 'unlock' });
+  // Not while typing into a form: the frame would learn the rhythm of a magic code.
+  const unlock = (e) => {
+    if (e.target?.closest?.('input, textarea')) return;
+    engine.post({ type: 'unlock' });
+  };
   for (const ev of GESTURES) document.addEventListener(ev, unlock, { capture: true });
   attachEngine(engine);
   return new Promise((resolve) => {

@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
-import { join } from 'node:path';
-import { readFile } from 'node:fs/promises';
+import { basename, join, sep } from 'node:path';
+import { readFile, realpath, stat } from 'node:fs/promises';
 import express from 'express';
 import { collectionFor } from './runner.mjs';
 import { jobQuotaError } from './jobs.mjs';
@@ -291,6 +291,29 @@ const SANDBOX_CSP = [
 ].join('; ');
 // Pages never evaluate track code, so a regression fails here instead of running it on
 // this origin. wasm-unsafe-eval stays for bundled wasm deps.
+// A sandboxed worker writes these trees and this process doesn't run in its sandbox, so what
+// it serves must be a regular file physically inside. send follows symlinks and opens FIFOs.
+function onlyFilesInside(dir) {
+  return async (req, res, next) => {
+    let rel;
+    try {
+      rel = decodeURIComponent(req.path);
+    } catch {
+      return next(); // send answers a malformed path itself
+    }
+    try {
+      const root = await realpath(dir);
+      const real = await realpath(join(root, rel));
+      const inside = real === root || real.startsWith(root + sep);
+      const kind = inside ? await stat(real) : null;
+      if (inside && (kind.isFile() || kind.isDirectory())) return next();
+      return res.status(404).end();
+    } catch {
+      return next(); // doesn't exist: the ordinary 404
+    }
+  };
+}
+
 const PAGE_CSP = "script-src 'self' 'wasm-unsafe-eval'; object-src 'none'; base-uri 'self'";
 
 export function createApp(opts = {}) {
@@ -342,7 +365,7 @@ export function createApp(opts = {}) {
     }));
     // Vendored files come from third-party repos: inert data on this origin, never a
     // document. fetch()ing audio/JSON is unaffected by the response's own CSP.
-    app.use('/sample-cache', express.static(opts.sampleCacheDir, {
+    app.use('/sample-cache', onlyFilesInside(opts.sampleCacheDir), express.static(opts.sampleCacheDir, {
       setHeaders: (res) => {
         res.setHeader('Content-Security-Policy', "sandbox; default-src 'none'");
         res.setHeader('Access-Control-Allow-Origin', '*'); // read by the opaque-origin engine

@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import request from 'supertest';
-import { mkdtemp, rm, mkdir, writeFile } from 'node:fs/promises';
+import { mkdtemp, rm, mkdir, writeFile, symlink } from 'node:fs/promises';
+import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createApp } from '../server/app.mjs';
@@ -50,5 +51,42 @@ describe('sample cache routes', () => {
     const index = await request(app).get('/sample-cache/index.json');
     expect(index.body.slugs).toContain(good);
     expect(index.body.slugs).not.toContain(orphan);
+  });
+
+  describe('serves only regular files physically inside', () => {
+    let outside;
+    beforeEach(async () => {
+      outside = await mkdtemp(join(tmpdir(), 'crate-outside-'));
+      await writeFile(join(outside, '.env'), 'TOKEN=dummy-secret');
+      await mkdir(join(cacheDir, 'banks', 'b'), { recursive: true });
+      await writeFile(join(cacheDir, 'banks', 'b', 'a.wav'), 'RIFF');
+    });
+    afterEach(() => rm(outside, { recursive: true, force: true }));
+
+    it('still serves a regular file', async () => {
+      expect((await request(app).get('/sample-cache/banks/b/a.wav')).status).toBe(200);
+    });
+    it('refuses a symlink to a file outside', async () => {
+      await symlink(join(outside, '.env'), join(cacheDir, 'banks', 'b', 'x.wav'));
+      const res = await request(app).get('/sample-cache/banks/b/x.wav');
+      expect(res.status).toBe(404);
+      expect(res.text ?? '').not.toContain('dummy-secret');
+    });
+    it('refuses a symlinked directory on the way there', async () => {
+      await symlink(outside, join(cacheDir, 'banks', 'out'));
+      await writeFile(join(outside, 'y.wav'), 'dummy-secret');
+      expect((await request(app).get('/sample-cache/banks/out/y.wav')).status).toBe(404);
+    });
+    it('refuses an encoded path through a symlink', async () => {
+      await symlink(join(outside, '.env'), join(cacheDir, 'banks', 'b', 'x.wav'));
+      expect((await request(app).get('/sample-cache/banks/b/%78.wav')).status).toBe(404);
+    });
+    it('does not open a FIFO', async () => {
+      expect(spawnSync('/usr/bin/mkfifo', [join(cacheDir, 'banks', 'b', 'p.wav')]).status).toBe(0);
+      expect((await request(app).get('/sample-cache/banks/b/p.wav').timeout(3000)).status).toBe(404);
+    });
+    it('an ordinary miss stays an ordinary 404', async () => {
+      expect((await request(app).get('/sample-cache/banks/b/none.wav')).status).toBe(404);
+    });
   });
 });

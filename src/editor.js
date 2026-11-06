@@ -10,6 +10,7 @@ let engine = null;
 let audioNonce = 0;
 
 const AUDIO_GATE_AFTER_MS = 1200;
+const AUDIO_GATE_REPLACING_AFTER_MS = 4000; // that path costs a tap: don't take it on a slow frame
 const SAFE_COLOR = /^[#a-zA-Z0-9]{1,32}$/;
 const num = (v) => (Number.isFinite(Number(v)) ? Number(v) : 0);
 
@@ -42,13 +43,14 @@ export function resumeAudio() {
   if (!engine) return Promise.resolve();
   const nonce = ++audioNonce;
   return new Promise((resolve) => {
-    const timer = setTimeout(() => { engine.showGate(true); engine.post({ type: 'gate', show: true }); }, AUDIO_GATE_AFTER_MS);
+    const timer = setTimeout(() => {
+      if (engine.showGate(true)) setStarted(false); // that frame is gone, with whatever it played
+    }, engine.holdsStoredCode ? AUDIO_GATE_REPLACING_AFTER_MS : AUDIO_GATE_AFTER_MS);
     const off = engine.on((m) => {
       if (m.type !== 'audio' || m.state !== 'running') return;
       if (m.nonce !== nonce && m.nonce !== null) return;
       clearTimeout(timer);
       off();
-      engine.post({ type: 'gate', show: false });
       engine.showGate(false);
       resolve();
     });
