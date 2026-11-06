@@ -96,8 +96,8 @@ export function metaTagsHtml({ title, description, image, url, type = 'website',
 
 // Replace the <!--OG--> marker, or insert before </head> if it isn't there.
 export function injectMeta(html, tagsHtml) {
-  if (html.includes(MARKER)) return html.replace(MARKER, tagsHtml);
-  return html.replace('</head>', `    ${tagsHtml}\n  </head>`);
+  if (html.includes(MARKER)) return html.replace(MARKER, () => tagsHtml);
+  return html.replace('</head>', () => `    ${tagsHtml}\n  </head>`);
 }
 
 export function songMetaTags(item, ns, origin) {
