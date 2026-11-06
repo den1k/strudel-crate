@@ -3,6 +3,13 @@
 import type { InstantRules } from "@instantdb/core";
 
 const rules = {
+  // Only the schema (pushed with the admin token) defines attributes. Without this a
+  // client could mint new namespaces and attributes, which no entity rule covers.
+  attrs: {
+    allow: {
+      create: "false",
+    },
+  },
   plays: {
     allow: {
       view: "auth.id != null && auth.id in data.ref('profile.user.id')",
