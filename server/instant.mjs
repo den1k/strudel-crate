@@ -350,11 +350,11 @@ export async function resolvePublicItem(adminDb, namespaces, param) {
   };
   for (const ns of namespaces) {
     const res = await adminDb.query({ [ns]: { author: {}, $: { where: { id: param } } } });
-    if (res[ns][0]) return map(res[ns][0], ns);
+    if (res[ns][0]) return res[ns][0].isPublic === false ? null : map(res[ns][0], ns);
   }
   for (const ns of namespaces) {
     const res = await adminDb.query({ [ns]: { author: {}, $: { where: { slug: param } } } });
-    if (res[ns][0]) return map(res[ns][0], ns);
+    if (res[ns][0]) return res[ns][0].isPublic === false ? null : map(res[ns][0], ns);
   }
   return null;
 }
