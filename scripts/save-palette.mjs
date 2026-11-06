@@ -4,12 +4,13 @@
 // (cache-on-save), so a saved kit survives an upstream repo vanishing. Deletes
 // the staging file on success. Prints "PASS <batch>" / "FAIL <batch> — <reason>".
 import { readFile, unlink } from 'node:fs/promises';
-import { savePalette } from './palette.mjs';
-import { effectiveSamples } from './palette.mjs';
-import { cacheBank, writeTrackManifest } from './lib/sample-cache.mjs';
+import { inJob, saveThroughBroker } from './lib/job-client.mjs';
 
 async function main() {
   const file = process.argv[2];
+  if (file && inJob()) process.exit(await saveThroughBroker('save-palette', file, { field: 'palette', key: 'batch' }));
+  const { savePalette, effectiveSamples } = await import('./palette.mjs');
+  const { cacheBank, writeTrackManifest } = await import('./lib/sample-cache.mjs');
   if (!file) { console.error('usage: node scripts/save-palette.mjs <staging/<batch>.json>'); process.exit(2); }
 
   let palette;

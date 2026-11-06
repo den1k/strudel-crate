@@ -11,6 +11,13 @@ export function nextRemixId(sourceSlug, existingSlugs) {
 }
 
 if (process.argv[1] && process.argv[1] === fileURLToPath(import.meta.url)) {
+  const { inJob, brokerCall } = await import('./lib/job-client.mjs');
+  if (inJob()) {
+    const res = await brokerCall('remix-source', { slug: process.argv[3] });
+    if (!res.ok) { console.error(res.error); process.exit(1); }
+    console.log(JSON.stringify(res.source, null, 2));
+    process.exit(0);
+  }
   const { adminDb } = await import('./lib/instant.mjs');
   const ns = process.argv[2] === 'stems' ? 'stems' : 'tracks';
   const slug = process.argv[3];

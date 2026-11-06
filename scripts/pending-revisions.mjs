@@ -5,6 +5,13 @@ import { fileURLToPath } from 'node:url';
 import { buildWorklist } from '../src/versions.js';
 
 if (process.argv[1] && process.argv[1] === fileURLToPath(import.meta.url)) {
+  const { inJob, brokerCall } = await import('./lib/job-client.mjs');
+  if (inJob()) {
+    const res = await brokerCall('pending-revisions');
+    if (!res.ok) { console.error(`pending-revisions: ${res.error}`); process.exit(2); }
+    console.log(JSON.stringify(res.list, null, 2));
+    process.exit(0);
+  }
   const { adminDb } = await import('./lib/instant.mjs');
   const ns = process.argv[2] === 'stems' ? 'stems' : 'tracks';
   const res = await adminDb.query({ [ns]: { author: {} } });

@@ -174,6 +174,14 @@ beforeEach(async () => {
   ticks = () => `2026-06-15T00:00:0${n++}Z`;
 });
 
+// The real launcher binds identity through the broker (see job-sandbox.test.mjs); this one
+// surfaces what the runner hands it.
+const launcher = async (job, authorProfileId, args) => ({
+  command: 'claude',
+  args,
+  options: { env: { CRATE_JOB_ID: job.id, ...(authorProfileId ? { CRATE_AUTHOR_PROFILE_ID: authorProfileId } : {}) } },
+});
+
 const until = async (cond, timeout = 1500) => {
   const start = Date.now();
   while (!(await cond())) {
@@ -186,7 +194,7 @@ describe2('createRunner worker', () => {
   it2('runs a job: running -> done, captures newItems/batch/summary', async () => {
     const { spawn, children } = fakeSpawnFactory();
     const admin = fakeAdmin({ profiles: [], stems: [], tracks: [] });
-    const runner = createRunner({ repoRoot, jobStore, adminDb: admin, spawn, now: ticks });
+    const runner = createRunner({ launcher, jobStore, adminDb: admin, spawn, now: ticks });
     await jobStore.write(baseJob('j1'));
     await runner.enqueue(baseJob('j1'));
     await until(() => children.length === 1);
@@ -211,7 +219,7 @@ describe2('createRunner worker', () => {
       profiles: [{ id: 'p1', artistName: 'kala', user: { id: 'u1' } }],
       stems: [], tracks: [],
     });
-    const runner = createRunner({ repoRoot, jobStore, adminDb: admin, spawn, now: ticks });
+    const runner = createRunner({ launcher, jobStore, adminDb: admin, spawn, now: ticks });
     await jobStore.write(baseJob('j1', { userId: 'u1', userEmail: 'kala@x.com' }));
     await runner.enqueue(baseJob('j1', { userId: 'u1', userEmail: 'kala@x.com' }));
     await until(() => children.length === 1);
@@ -223,7 +231,7 @@ describe2('createRunner worker', () => {
   it2('omits the author env var when the job has no userId', async () => {
     const { spawn, children } = fakeSpawnFactory();
     const admin = fakeAdmin({ profiles: [], stems: [], tracks: [] });
-    const runner = createRunner({ repoRoot, jobStore, adminDb: admin, spawn, now: ticks });
+    const runner = createRunner({ launcher, jobStore, adminDb: admin, spawn, now: ticks });
     await jobStore.write(baseJob('j1'));
     await runner.enqueue(baseJob('j1'));
     await until(() => children.length === 1);
@@ -235,7 +243,7 @@ describe2('createRunner worker', () => {
   it2('sets CRATE_JOB_ID in the child env', async () => {
     const { spawn, children } = fakeSpawnFactory();
     const admin = fakeAdmin({ profiles: [], stems: [], tracks: [] });
-    const runner = createRunner({ repoRoot, jobStore, adminDb: admin, spawn, now: ticks });
+    const runner = createRunner({ launcher, jobStore, adminDb: admin, spawn, now: ticks });
     await jobStore.write(baseJob('j1'));
     await runner.enqueue(baseJob('j1'));
     await until(() => children.length === 1);
@@ -247,7 +255,7 @@ describe2('createRunner worker', () => {
   it2('marks a job failed on non-zero exit', async () => {
     const { spawn, children } = fakeSpawnFactory();
     const admin = fakeAdmin({ profiles: [], stems: [], tracks: [] });
-    const runner = createRunner({ repoRoot, jobStore, adminDb: admin, spawn, now: ticks });
+    const runner = createRunner({ launcher, jobStore, adminDb: admin, spawn, now: ticks });
     await jobStore.write(baseJob('j1'));
     await runner.enqueue(baseJob('j1'));
     await until(() => children.length === 1);
@@ -259,7 +267,7 @@ describe2('createRunner worker', () => {
   it2('captures child stderr in the failure error for debuggability', async () => {
     const { spawn, children } = fakeSpawnFactory();
     const admin = fakeAdmin({ profiles: [], stems: [], tracks: [] });
-    const runner = createRunner({ repoRoot, jobStore, adminDb: admin, spawn, now: ticks });
+    const runner = createRunner({ launcher, jobStore, adminDb: admin, spawn, now: ticks });
     await jobStore.write(baseJob('j1'));
     await runner.enqueue(baseJob('j1'));
     await until(() => children.length === 1);
@@ -274,7 +282,7 @@ describe2('createRunner worker', () => {
   it2('runs up to maxConcurrent jobs at once and queues the rest', async () => {
     const { spawn, children } = fakeSpawnFactory();
     const admin = fakeAdmin({ profiles: [], stems: [], tracks: [] });
-    const runner = createRunner({ repoRoot, jobStore, adminDb: admin, spawn, now: ticks, maxConcurrent: 2 });
+    const runner = createRunner({ launcher, jobStore, adminDb: admin, spawn, now: ticks, maxConcurrent: 2 });
     for (const id of ['j1', 'j2', 'j3']) {
       await jobStore.write(baseJob(id));
       await runner.enqueue(baseJob(id));
@@ -290,7 +298,7 @@ describe2('createRunner worker', () => {
   it2('respects maxConcurrent: 1 (serial)', async () => {
     const { spawn, children } = fakeSpawnFactory();
     const admin = fakeAdmin({ profiles: [], stems: [], tracks: [] });
-    const runner = createRunner({ repoRoot, jobStore, adminDb: admin, spawn, now: ticks, maxConcurrent: 1 });
+    const runner = createRunner({ launcher, jobStore, adminDb: admin, spawn, now: ticks, maxConcurrent: 1 });
     await jobStore.write(baseJob('j1'));
     await jobStore.write(baseJob('j2'));
     await runner.enqueue(baseJob('j1'));
@@ -304,7 +312,7 @@ describe2('createRunner worker', () => {
   it2('attributes rows per job when two run concurrently in the same namespace', async () => {
     const { spawn, children } = fakeSpawnFactory();
     const admin = fakeAdmin({ profiles: [], stems: [], tracks: [] });
-    const runner = createRunner({ repoRoot, jobStore, adminDb: admin, spawn, now: ticks, maxConcurrent: 2 });
+    const runner = createRunner({ launcher, jobStore, adminDb: admin, spawn, now: ticks, maxConcurrent: 2 });
     await jobStore.write(baseJob('jA'));
     await jobStore.write(baseJob('jB'));
     await runner.enqueue(baseJob('jA'));
@@ -328,7 +336,7 @@ describe2('createRunner worker', () => {
     const admin = fakeAdmin({ profiles: [], stems: [], tracks: [] });
     await jobStore.write(baseJob('stale', { status: 'running' }));
     await jobStore.write(baseJob('waiting', { status: 'queued' }));
-    const runner = createRunner({ repoRoot, jobStore, adminDb: admin, spawn, now: ticks });
+    const runner = createRunner({ launcher, jobStore, adminDb: admin, spawn, now: ticks });
     await runner.recover();
     await until(() => children.length === 1);
     expect2((await jobStore.get('stale')).status).toBe('interrupted');
@@ -338,7 +346,7 @@ describe2('createRunner worker', () => {
   it2('derives batch from the row field, not the slug (revise version rows)', async () => {
     const { spawn, children } = fakeSpawnFactory();
     const admin = fakeAdmin({ profiles: [], stems: [], tracks: [] });
-    const runner = createRunner({ repoRoot, jobStore, adminDb: admin, spawn, now: ticks });
+    const runner = createRunner({ launcher, jobStore, adminDb: admin, spawn, now: ticks });
     await jobStore.write(baseJob('rev', { type: 'revise-from-notes', prompt: 'stems', count: null }));
     await runner.enqueue(baseJob('rev', { type: 'revise-from-notes', prompt: 'stems', count: null }));
     await until(() => children.length === 1);
@@ -354,7 +362,7 @@ describe2('createRunner worker', () => {
   it2('picks the majority batch when Step-0 revise adds version rows from another batch', async () => {
     const { spawn, children } = fakeSpawnFactory();
     const admin = fakeAdmin({ profiles: [], stems: [], tracks: [] });
-    const runner = createRunner({ repoRoot, jobStore, adminDb: admin, spawn, now: ticks });
+    const runner = createRunner({ launcher, jobStore, adminDb: admin, spawn, now: ticks });
     await jobStore.write(baseJob('gen'));
     await runner.enqueue(baseJob('gen'));
     await until(() => children.length === 1);
@@ -373,7 +381,7 @@ describe2('createRunner worker', () => {
   it2('returns null batch when new rows span multiple batches', async () => {
     const { spawn, children } = fakeSpawnFactory();
     const admin = fakeAdmin({ profiles: [], stems: [], tracks: [] });
-    const runner = createRunner({ repoRoot, jobStore, adminDb: admin, spawn, now: ticks });
+    const runner = createRunner({ launcher, jobStore, adminDb: admin, spawn, now: ticks });
     await jobStore.write(baseJob('j1'));
     await runner.enqueue(baseJob('j1'));
     await until(() => children.length === 1);
@@ -398,7 +406,7 @@ describe2('createRunner worker', () => {
       if (queryCalls >= 1) throw new Error('instant down');
       return origQuery(q);
     };
-    const runner = createRunner({ repoRoot, jobStore, adminDb: admin, spawn, now: ticks });
+    const runner = createRunner({ launcher, jobStore, adminDb: admin, spawn, now: ticks });
     await jobStore.write(baseJob('j1'));
     await runner.enqueue(baseJob('j1'));
     await until(() => children.length === 1);

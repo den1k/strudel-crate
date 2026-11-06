@@ -3,15 +3,17 @@
 // `tracks`, linked to CRATE_AUTHOR_PROFILE_ID. Deletes the staging file on
 // success. Prints "PASS <slug>" / "FAIL <slug> — <reason>" (exit 0/1).
 import { readFile, unlink } from 'node:fs/promises';
-import { validateTrack } from './validate.mjs';
-import { adminDb, insertItem } from './lib/instant.mjs';
-import { cacheTrackSamples } from './lib/sample-cache.mjs';
+import { inJob, saveThroughBroker } from './lib/job-client.mjs';
 
 const NAMESPACE = 'tracks';
 const CHARACTER = true;
 
 async function main() {
   const file = process.argv[2];
+  if (file && inJob()) process.exit(await saveThroughBroker('save-track', file));
+  const { validateTrack } = await import('./validate.mjs');
+  const { adminDb, insertItem } = await import('./lib/instant.mjs');
+  const { cacheTrackSamples } = await import('./lib/sample-cache.mjs');
   if (!file) { console.error('usage: node scripts/save-track.mjs <staging/file.json>'); process.exit(2); }
 
   let track;

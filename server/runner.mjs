@@ -3,6 +3,7 @@
 // createRunner (later task) owns the queue and side effects.
 import { spawn as nodeSpawn } from 'node:child_process';
 import { itemsByJob, ensureProfile } from './instant.mjs';
+import { budgetFor } from './jobs.mjs';
 
 const COLLECTION_BY_TYPE = {
   'generate-stems': 'stems',
@@ -15,15 +16,18 @@ export function collectionFor(type, prompt, collection) {
   return COLLECTION_BY_TYPE[type];
 }
 
-// Scoped tool allowlist: exactly what the skills + their sub-agents run.
-// If sub-agents stall on a permission prompt headless can't answer, widen the
-// Bash entry to a bare 'Bash' (still private + fixed prompt) and note it here.
+// Scoped tool allowlist: exactly what the skills + their sub-agents run. The real limit is
+// the sandbox (server/job-sandbox.mjs); this keeps the model from trying anything else.
+const TOOLS = ['Read', 'Write', 'Edit', 'Glob', 'Grep', 'Bash', 'Task', 'Skill', 'TodoWrite'].join(',');
 const ALLOWED_TOOLS = [
-  'Write', 'Read', 'Edit', 'Task',
+  'Read', 'Glob', 'Grep', 'Task', 'Skill', 'TodoWrite',
+  'Write(staging/**)', 'Edit(staging/**)',
   'Bash(node scripts/save-track.mjs:*)',
   'Bash(node scripts/save-stem.mjs:*)',
+  'Bash(node scripts/save-palette.mjs:*)',
   'Bash(node scripts/list-slugs.mjs:*)',
   'Bash(node scripts/feedback.mjs:*)',
+  'Bash(node scripts/kit-feedback.mjs:*)',
   'Bash(node scripts/pending-revisions.mjs:*)',
   'Bash(node scripts/validate.mjs:*)',
   'Bash(node scripts/remix-source.mjs:*)',
@@ -47,7 +51,13 @@ export function buildArgv(job) {
   // agents on Sonnet; everything else (kit design, stems, remix, revise) stays
   // on this model. Override via CRATE_PLANNER_MODEL; default Opus.
   const plannerModel = process.env.CRATE_PLANNER_MODEL || 'opus';
-  return ['-p', prompt, '--model', plannerModel, '--output-format', 'json', '--allowedTools', ALLOWED_TOOLS];
+  return [
+    '-p', prompt, '--model', plannerModel, '--output-format', 'json',
+    '--tools', TOOLS, '--allowedTools', ALLOWED_TOOLS,
+    '--max-budget-usd', String(budgetFor(job)),
+    // The job gets the repo's skills and nothing of the operator's config.
+    '--setting-sources', 'project', '--strict-mcp-config', '--no-session-persistence',
+  ];
 }
 
 // Number of rows this job has produced so far (rows stamped with its jobId).
@@ -97,10 +107,19 @@ export function modelUsageLine(stdout) {
   }
 }
 
+export function costOf(stdout) {
+  try {
+    const cost = JSON.parse(stdout).total_cost_usd;
+    return Number.isFinite(cost) ? cost : null;
+  } catch {
+    return null;
+  }
+}
+
 export { nodeSpawn, parseSummary, ALLOWED_TOOLS };
 
 export function createRunner({
-  repoRoot, jobStore, adminDb,
+  jobStore, adminDb, launcher, isAllowed,
   spawn = nodeSpawn,
   now = () => new Date().toISOString(),
   maxConcurrent = 1,
@@ -108,21 +127,23 @@ export function createRunner({
   const queue = [];
   let active = 0;
 
-  function runClaude(job, authorProfileId) {
-    return new Promise((resolve) => {
-      let out = '';
-      let err = '';
-      let resolved = false;
-      const settle = (result) => { if (!resolved) { resolved = true; resolve(result); } };
-      const env = { ...process.env };
-      env.CRATE_JOB_ID = job.id;
-      if (authorProfileId) env.CRATE_AUTHOR_PROFILE_ID = authorProfileId;
-      const child = spawn('claude', buildArgv(job), { cwd: repoRoot, env });
-      child.stdout?.on('data', (d) => { out += d; });
-      child.stderr?.on('data', (d) => { err += d; });
-      child.on('error', (e) => settle({ code: -1, out, err: err || String(e?.message ?? e) }));
-      child.on('close', (code) => settle({ code: code ?? -1, out, err }));
-    });
+  async function runClaude(job, authorProfileId) {
+    const { command, args, options, cleanup } = await launcher(job, authorProfileId, buildArgv(job));
+    try {
+      return await new Promise((resolve) => {
+        let out = '';
+        let err = '';
+        let resolved = false;
+        const settle = (result) => { if (!resolved) { resolved = true; resolve(result); } };
+        const child = spawn(command, args, options);
+        child.stdout?.on('data', (d) => { out += d; });
+        child.stderr?.on('data', (d) => { err += d; });
+        child.on('error', (e) => settle({ code: -1, out, err: err || String(e?.message ?? e) }));
+        child.on('close', (code) => settle({ code: code ?? -1, out, err }));
+      });
+    } finally {
+      await cleanup?.();
+    }
   }
 
   async function runOne(id) {
@@ -130,6 +151,11 @@ export function createRunner({
     if (!job) return;
     const ns = job.collection; // 'tracks' | 'stems'
     try {
+      // A queued job can outlive its requester's access, including across a restart.
+      if (isAllowed && !(job.userEmail && await isAllowed(job.userEmail))) {
+        await jobStore.update(id, { status: 'failed', finishedAt: now(), error: 'requester no longer allowed' });
+        return;
+      }
       const authorProfileId = job.userId
         ? await ensureProfile(adminDb, { id: job.userId, email: job.userEmail })
         : null;
@@ -137,7 +163,7 @@ export function createRunner({
       const { code, out, err } = await runClaude(job, authorProfileId);
       const newRows = await itemsByJob(adminDb, ns, id);
       const newItems = newRows.map((r) => r.slug).sort();
-      const patch = { finishedAt: now(), newItems, batch: majorityBatch(newRows) };
+      const patch = { finishedAt: now(), newItems, batch: majorityBatch(newRows), costUSD: costOf(out) };
       if (code === 0) {
         patch.status = 'done';
         patch.summary = parseSummary(out);

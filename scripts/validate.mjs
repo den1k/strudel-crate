@@ -223,8 +223,25 @@ if (process.argv[1] && process.argv[1] === fileURLToPath(import.meta.url)) {
     console.error('usage: node scripts/validate.mjs <track.json>... | --code "<strudel code>"');
     process.exit(2);
   }
+  const { inJob, brokerCall } = await import('./lib/job-client.mjs');
   let failures = 0;
-  if (args[0] === '--code') {
+  if (inJob()) {
+    // Evaluate in the worker sandbox, never in the agent's own process tree.
+    const { readFile } = await import('node:fs/promises');
+    const targets = args[0] === '--code' ? [{ code: args[1] ?? '', label: '' }] : args.map((label) => ({ label }));
+    for (const { code, label } of targets) {
+      let body;
+      if (code !== undefined) body = { code };
+      else {
+        const text = await readFile(label, 'utf8');
+        body = label.endsWith('.json') ? { item: JSON.parse(text), character: isTrackPath(label) } : { code: text };
+      }
+      const result = await brokerCall('validate', body);
+      const tag = label ? ` ${label}` : '';
+      console.log(result.ok ? `PASS${tag} (${result.events} events / 8 cycles)` : `FAIL${tag} — ${result.error}`);
+      failures += result.ok ? 0 : 1;
+    }
+  } else if (args[0] === '--code') {
     const result = await validateCode(args[1] ?? '');
     console.log(result.ok ? `PASS (${result.events} events / 8 cycles)` : `FAIL — ${result.error}`);
     failures += result.ok ? 0 : 1;

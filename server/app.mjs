@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { readFile } from 'node:fs/promises';
 import express from 'express';
 import { collectionFor } from './runner.mjs';
+import { jobQuotaError } from './jobs.mjs';
 import { setRating, setNotes, itemOwnerProfileId, familyOwnerProfileId, ensureProfile, getProfile, setArtistName, recordPlay, resolvePublicItem, queryLessonsByProfile, createLesson, updateLesson, deleteLesson } from './instant.mjs';
 import { createPlayLimiter } from './rate-limit.mjs';
 import { songMetaTags, brandMetaTags, injectMeta, cardHash } from './og.mjs';
@@ -20,7 +21,7 @@ const clientIp = (req) =>
 // The stored job record is internal runner state; these reads are anonymous. Only
 // the fields the public log + retry flow use go out: requester identity and raw
 // agent output stay in the job file for operators.
-const publicJob = ({ userId, userEmail, summary, error, ...job }) => ({
+const publicJob = ({ userId, userEmail, summary, error, costUSD, ...job }) => ({
   ...job,
   error: error ? 'generation failed' : null,
 });
@@ -234,6 +235,9 @@ function jobRoutes(app, jobStore, runner, progressFor, requireAuth, adminDb) {
       const n = Math.min(30, Math.max(1, Math.floor(Number(count) || 30)));
       job = { ...base, prompt: prompt.trim(), count: n, collection: collectionFor(type) };
     }
+
+    const over = jobQuotaError(await jobStore.listAll(), job, Date.now());
+    if (over) return res.status(429).json({ error: over });
 
     await jobStore.write(job);
     await runner.enqueue(job);

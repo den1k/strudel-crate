@@ -356,12 +356,12 @@ export async function resolvePublicItem(adminDb, namespaces, param) {
 
 // Insert a validated track/stem object. `track.id` becomes `slug`. Rejects a
 // duplicate slug. Links author when a profile id is given.
-export async function insertItem(adminDb, namespace, track, authorProfileId) {
+export async function insertItem(adminDb, namespace, track, authorProfileId, { jobId = process.env.CRATE_JOB_ID } = {}) {
   const existing = await itemsBySlug(adminDb, namespace, [track.id]);
   if (existing.length) return { ok: false, error: `slug already exists: ${track.id}` };
   // versionOf is agent-written, so this is the control that keeps a family's versions
   // with its owner. Manual CLI runs (no job, no author) stay unrestricted.
-  if (track.versionOf && (authorProfileId || process.env.CRATE_JOB_ID)) {
+  if (track.versionOf && (authorProfileId || jobId)) {
     const rootOwner = await itemOwnerProfileId(adminDb, namespace, track.versionOf);
     if (!authorProfileId || rootOwner !== authorProfileId) {
       return { ok: false, error: `not the owner of family: ${track.versionOf}` };
@@ -383,10 +383,8 @@ export async function insertItem(adminDb, namespace, track, authorProfileId) {
   };
   if (track.versionOf) update.versionOf = track.versionOf;
   if (track.remixOf) update.remixOf = track.remixOf;
-  // Stamp the runner job that created this row. The runner sets CRATE_JOB_ID in
-  // the claude child's env (Task 3); it flows through sub-agents to save-*.mjs.
-  // Absent for manual CLI runs — those rows simply carry no jobId.
-  const jobId = process.env.CRATE_JOB_ID;
+  // Stamp the runner job that created this row: passed by the job broker, absent for
+  // manual CLI runs.
   if (jobId) update.jobId = jobId;
   let tx = adminDb.tx[namespace][entId].update(update);
   if (authorProfileId) tx = tx.link({ author: authorProfileId });

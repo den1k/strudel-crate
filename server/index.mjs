@@ -10,6 +10,8 @@ import { itemsByJob } from './instant.mjs';
 import { createCardRenderer } from './render-card.mjs';
 import { createCardCache } from './card-cache.mjs';
 import { createAllowlist } from './allowlist.mjs';
+import { createJobBroker, createOps, createWorkerRunner } from './job-broker.mjs';
+import { createJobLauncher, stopStaleUnits } from './job-sandbox.mjs';
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const distDir = join(repoRoot, 'dist');
@@ -42,8 +44,13 @@ const cardRenderer = createCardRenderer({});
 // Default 1: on a 4-core/15GB host one job already fans out up to ~8 parallel
 // compose sub-agents (each ~500MB), so two full jobs oversubscribe RAM/CPU.
 // Raise CRATE_MAX_JOBS only when the box is otherwise idle.
+const broker = createJobBroker({
+  ops: createOps({ adminDb, runWorker: createWorkerRunner({ repoRoot }) }),
+});
+await broker.listen();
 const runner = createRunner({
-  repoRoot, jobStore, adminDb,
+  jobStore, adminDb, isAllowed,
+  launcher: createJobLauncher({ repoRoot, broker }),
   maxConcurrent: Number(process.env.CRATE_MAX_JOBS) || 1,
 });
 
@@ -56,7 +63,10 @@ const progressFor = async (job) => {
 const app = createApp({
   adminDb,
   namespaces: ['tracks', 'stems'],
-  jobStore, runner, progressFor, requireAuth, resolveUser, requireUser, isAllowed,
+  // Without admin credentials requireAuth is a pass-through: never expose job creation then.
+  jobStore: adminDb ? jobStore : undefined,
+  runner: adminDb ? runner : undefined,
+  progressFor, requireAuth, resolveUser, requireUser, isAllowed,
   distDir: existsSync(distDir) ? distDir : undefined,
   sampleCacheDir: join(repoRoot, 'data', 'sample-cache'),
   cardRenderer,
@@ -64,6 +74,7 @@ const app = createApp({
   publicOrigin: process.env.CRATE_PUBLIC_ORIGIN || 'https://crate.vimsical.com',
 });
 
+await stopStaleUnits();
 await runner.recover();
 
 app.listen(port, () => console.log(`strudel-ai api listening on http://localhost:${port}`));

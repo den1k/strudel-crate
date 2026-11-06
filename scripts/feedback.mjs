@@ -22,6 +22,13 @@ export function buildDigest(lessons) {
 }
 
 if (process.argv[1] && process.argv[1] === fileURLToPath(import.meta.url)) {
+  const { inJob, brokerCall } = await import('./lib/job-client.mjs');
+  if (inJob()) {
+    const res = await brokerCall('feedback');
+    if (!res.ok) { console.error(`feedback: ${res.error}`); process.exit(2); }
+    console.log(res.digest);
+    process.exit(0);
+  }
   const { adminDb, queryLessonsByProfile, queryAllLessons } = await import('./lib/instant.mjs');
   const target = process.argv[2] === 'stems' ? 'stems' : 'tracks';
   // Lessons are per-user: the runner stamps the generating user's profile id into

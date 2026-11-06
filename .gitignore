@@ -8,6 +8,7 @@ dist/
 data/ratings/
 data/stem-ratings/
 data/jobs/
+data/job-sandbox/
 
 # generation agents' scratch dir; save scripts delete files on success
 staging/
