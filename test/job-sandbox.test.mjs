@@ -11,7 +11,7 @@ import { EventEmitter } from 'node:events';
 import request from 'supertest';
 import { fakeAdmin } from './fake-admin.mjs';
 import { createApp } from '../server/app.mjs';
-import { createJobBroker, createOps, saveCapFor } from '../server/job-broker.mjs';
+import { createJobBroker, createOps, createWorkerRunner, saveCapFor } from '../server/job-broker.mjs';
 import { agentEnv, agentSandboxFlags, freshOauthToken, systemdRunArgv, workerSandboxFlags } from '../server/job-sandbox.mjs';
 import { budgetFor, createJobStore, jobQuotaError } from '../server/jobs.mjs';
 import { buildArgv, createRunner } from '../server/runner.mjs';
@@ -107,8 +107,9 @@ describe('job authority', () => {
     }
   });
   it('lets the agent write only its own dir and staging', () => {
-    const rw = flags.filter((_, i) => flags[i - 1] === '--rw').filter((p) => !p.startsWith('/dev/'));
+    const rw = flags.filter((_, i) => flags[i - 1] === '--rw' || flags[i - 1] === '--rw-links').filter((p) => !p.startsWith('/dev/'));
     expect(rw.sort()).toEqual(['/srv/crate/data/job-sandbox/j', '/srv/crate/staging']);
+    expect(flags[flags.indexOf('/srv/crate/staging') - 1]).toBe('--rw'); // shared between jobs: no links
   });
   it('lets the agent reach only the broker over TCP', () => {
     expect(flags.filter((_, i) => flags[i - 1] === '--tcp')).toEqual(['4000']);
@@ -525,5 +526,163 @@ os.kill(os.getpid(), 0)`);
   it('socketpair gives stream sockets only', () => {
     expect(pyProbe([], tryIt('socket.socketpair(socket.AF_UNIX, socket.SOCK_DGRAM)')).out).toMatch(/^DENIED/);
     expect(pyProbe([], tryIt('socket.socketpair()')).out).toBe('ALLOWED');
+  });
+});
+
+describe('audit run-2: broker', () => {
+  const job2 = { id: 'j2', type: 'generate-tracks', collection: 'tracks', count: 1, userId: 'u' };
+  const entry = (over = {}) => ({ job: job2, profileId: 'p1', saves: 0, calls: 0, ...over });
+  const item = (id) => ({ id, code: 's("bd")', title: 't' });
+  const today = new Date().toISOString().slice(0, 10);
+
+  it('evaluates in one worker and publishes in another', async () => {
+    const adminDb = fakeAdmin({ tracks: [], stems: [], lessons: [], profiles: [{ id: 'p1' }] });
+    const kinds = [];
+    const ops = createOps({ adminDb, runWorker: async (p) => { kinds.push(p.kind); return { ok: true, warnings: [] }; } });
+    await ops['save-track'](entry(), { item: { ...item('song-1'), prompt: 'p', batch: 'b', description: 'd', createdAt: 'now', meta: {} } });
+    expect(kinds).toEqual(['check-item', 'vendor-item']);
+  });
+  it('publishes nothing if evaluation fails', async () => {
+    const kinds = [];
+    const ops = createOps({ adminDb: fakeAdmin({ tracks: [] }), runWorker: async (p) => { kinds.push(p.kind); return { ok: false, error: 'no' }; } });
+    await ops['save-track'](entry(), { item: item('song-1') });
+    expect(kinds).toEqual(['check-item']);
+  });
+  it('overlapping saves cannot pass the cap', async () => {
+    const adminDb = fakeAdmin({ tracks: [], stems: [], lessons: [], profiles: [{ id: 'p1' }] });
+    let release;
+    const gate = new Promise((r) => { release = r; });
+    const ops = createOps({ adminDb, runWorker: async () => { await gate; return { ok: true, warnings: [] }; } });
+    const e = entry();
+    const cap = saveCapFor(job2);
+    const all = Array.from({ length: cap + 5 }, (_, i) => ops['save-track'](e, { item: { ...item(`s-${i}`), prompt: 'p', batch: 'b', description: 'd', createdAt: 'now', meta: {} } }));
+    release();
+    const results = await Promise.all(all);
+    expect(results.filter((r) => /limit/.test(r.error ?? '')).length).toBe(5);
+    expect(e.saves).toBe(cap);
+  });
+  it('a failed save gives its slot back', async () => {
+    const ops = createOps({ adminDb: fakeAdmin({ tracks: [] }), runWorker: async () => ({ ok: false, error: 'no' }) });
+    const e = entry();
+    await ops['save-track'](e, { item: item('s-1') });
+    expect(e.saves).toBe(0);
+  });
+  it('palette names can only sort where a new batch belongs', async () => {
+    const calls = [];
+    const ops = createOps({ adminDb: fakeAdmin({}), runWorker: async (p) => { calls.push(p); return { ok: true, voices: [] }; } });
+    for (const batch of ['zzz', '9999-01-01-pin', '2020-01-01-old']) {
+      expect((await ops['save-palette'](entry(), { palette: { batch } })).ok).toBe(false);
+    }
+    expect(calls).toEqual([]);
+    expect((await ops['save-palette'](entry(), { palette: { batch: `${today}-mine` } })).ok).toBe(true);
+    expect(calls.map((c) => c.kind)).toEqual(['check-palette', 'write-palette']);
+  });
+  it('a job can rewrite its own palette, not an earlier one, and only a few', async () => {
+    const calls = [];
+    const ops = createOps({ adminDb: fakeAdmin({}), runWorker: async (p) => { calls.push(p); return { ok: true, voices: [] }; } });
+    const e = entry();
+    await ops['save-palette'](e, { palette: { batch: `${today}-a` } });
+    expect(calls.at(-1).overwrite).toBe(false);
+    await ops['save-palette'](e, { palette: { batch: `${today}-a` } });
+    expect(calls.at(-1).overwrite).toBe(true);
+    await ops['save-palette'](e, { palette: { batch: `${today}-b` } });
+    await ops['save-palette'](e, { palette: { batch: `${today}-c` } });
+    expect((await ops['save-palette'](e, { palette: { batch: `${today}-d` } })).error).toMatch(/limit/);
+  });
+});
+
+describe('audit run-2: worker units', () => {
+  const fakeSpawn = () => {
+    const live = { now: 0, peak: 0, argv: [], finish: [] };
+    const spawnFn = (_cmd, argv) => {
+      live.now += 1;
+      live.peak = Math.max(live.peak, live.now);
+      live.argv.push(argv);
+      const child = new EventEmitter();
+      child.stdout = new EventEmitter();
+      child.stderr = new EventEmitter();
+      child.stdin = { end() {} };
+      live.finish.push(() => {
+        live.now -= 1;
+        child.stdout.emit('data', 'CRATE_WORKER_RESULT {"ok":true}\n');
+        child.emit('close', 0);
+      });
+      return child;
+    };
+    return { live, spawnFn };
+  };
+  const flush = () => new Promise((r) => { setTimeout(r, 30); });
+
+  it('runs at most the cap at once, and queues the rest instead of failing', async () => {
+    const repoRoot = await mkdtemp(join(tmpdir(), 'crate-w-'));
+    const { live, spawnFn } = fakeSpawn();
+    const run = createWorkerRunner({ repoRoot, spawn: spawnFn, maxConcurrent: 2 });
+    const all = Array.from({ length: 6 }, () => run({ kind: 'check-code', code: 'x' }));
+    for (let i = 0; i < 6; i++) {
+      await flush();
+      live.finish.shift()?.();
+    }
+    const results = await Promise.all(all);
+    expect(results.every((r) => r.ok)).toBe(true);
+    expect(live.peak).toBe(2);
+    await rm(repoRoot, { recursive: true, force: true });
+  });
+  it('an evaluator can write only its scratch and generates no code from strings', async () => {
+    const repoRoot = await mkdtemp(join(tmpdir(), 'crate-w-'));
+    const { live, spawnFn } = fakeSpawn();
+    const run = createWorkerRunner({ repoRoot, spawn: spawnFn });
+    const a = run({ kind: 'check-code', code: 'x' });
+    await flush();
+    const argv = live.argv[0];
+    const written = argv.filter((_, i) => argv[i - 1] === '--rw').filter((p) => !p.startsWith('/dev/'));
+    expect(written.length).toBe(1);
+    expect(written[0]).toMatch(/job-sandbox\/worker-/);
+    expect(argv).toContain('--disallow-code-generation-from-strings');
+    expect(argv).toContain('--expand-environment=no');
+    live.finish.shift()();
+    await a;
+    const b = run({ kind: 'vendor-item', item: {} });
+    await flush();
+    const pub = live.argv[1];
+    expect(pub.filter((_, i) => pub[i - 1] === '--rw')).toEqual(expect.arrayContaining([join(repoRoot, 'data', 'sample-cache'), join(repoRoot, 'palettes')]));
+    live.finish.shift()();
+    await b;
+    await rm(repoRoot, { recursive: true, force: true });
+  });
+  it('the real evaluator works with code generation off, and refuses it', () => {
+    const repo = fileURLToPath(new URL('..', import.meta.url));
+    const worker = (req) => JSON.parse(spawnSync(process.execPath, ['--disallow-code-generation-from-strings', join(repo, 'scripts/sandbox/validate-worker.mjs')], {
+      input: JSON.stringify(req), encoding: 'utf8', timeout: 60000,
+    }).stdout.split('\n').find((l) => l.startsWith('CRATE_WORKER_RESULT ')).slice(20));
+    expect(worker({ kind: 'check-code', code: 's("bd*4")' })).toMatchObject({ ok: true });
+    // Even past the policy, the gadgets are gone and strings can't become code.
+    const probe = spawnSync(process.execPath, ['--disallow-code-generation-from-strings', '--input-type=module', '-e', `
+      import { initStrudelEnv } from '${join(repo, 'scripts/strudel-env.mjs')}';
+      await initStrudelEnv();
+      let blocked = false;
+      try { Function('return 1')(); } catch (e) { blocked = e instanceof EvalError; }
+      console.log(JSON.stringify({ blocked, evaluate: typeof globalThis.evaluate, evalScope: typeof globalThis.evalScope, webaudioRepl: typeof globalThis.webaudioRepl, note: typeof globalThis.note }));
+    `], { encoding: 'utf8', timeout: 60000 });
+    expect(JSON.parse(probe.stdout.trim().split('\n').at(-1))).toEqual({ blocked: true, evaluate: 'undefined', evalScope: 'undefined', webaudioRepl: 'undefined', note: 'function' });
+  }, 90000);
+});
+
+describe('audit run-2: job quota', () => {
+  it('concurrent submissions see each other', async () => {
+    const jobsDir = await mkdtemp(join(tmpdir(), 'crate-q-'));
+    const store = createJobStore({ jobsDir });
+    const now = Date.now();
+    const mk = (i) => ({ id: `j${i}`, userId: 'u', status: 'queued', createdAt: new Date(now).toISOString(), type: 'generate-tracks', count: 1 });
+    const verdicts = await Promise.all(Array.from({ length: 8 }, (_, i) => store.admit(mk(i), (jobs) => jobQuotaError(jobs, mk(i), now))));
+    expect(verdicts.filter((v) => v === null).length).toBe(2);
+    expect((await store.listAll()).length).toBe(2);
+    await rm(jobsDir, { recursive: true, force: true });
+  });
+  it('a store failure does not wedge later submissions', async () => {
+    const jobsDir = await mkdtemp(join(tmpdir(), 'crate-q-'));
+    const store = createJobStore({ jobsDir });
+    await expect(store.admit({ id: 'a' }, () => { throw new Error('boom'); })).rejects.toThrow('boom');
+    expect(await store.admit({ id: 'b' }, () => null)).toBeNull();
+    await rm(jobsDir, { recursive: true, force: true });
   });
 });

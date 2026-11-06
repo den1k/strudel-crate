@@ -1,6 +1,7 @@
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { existsSync } from 'node:fs';
+import { rm } from 'node:fs/promises';
 import { init as initAdmin } from '@instantdb/admin';
 import { createApp } from './app.mjs';
 import { buildRequireAuth, buildResolveUser, buildRequireUser } from './auth.mjs';
@@ -76,6 +77,8 @@ const app = createApp({
 });
 
 await stopStaleUnits();
+// A crash can leave a job's dir behind, its credentials file included. Recovered jobs make new ones.
+await rm(join(repoRoot, 'data', 'job-sandbox'), { recursive: true, force: true });
 await runner.recover();
 
 app.listen(port, () => console.log(`strudel-ai api listening on http://localhost:${port}`));

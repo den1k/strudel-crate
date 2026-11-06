@@ -35,19 +35,22 @@ export function agentSandboxFlags({ repoRoot, jobDir, proxyPort, claudeDir, envF
   return [
     ...flags('--rox', [...SYSTEM_EXEC, claudeDir]),
     ...flags('--ro', [...SYSTEM_READ, ...REPO_READ.map((p) => join(repoRoot, p))]),
-    ...flags('--rw', [...DEVICES, jobDir, join(repoRoot, 'staging')]),
+    ...flags('--rw', [...DEVICES, join(repoRoot, 'staging')]),
+    ...flags('--rw-links', [jobDir]), // private scratch: claude keeps symlinks in its config
     '--tcp', String(proxyPort), // the broker: API proxy + save/read ops. Nothing else.
     '--env-file', envFile,
   ];
 }
 
-// The worker evaluates agent-written code at save. Network for sample banks, write access
-// only to where a save lands, no secrets anywhere it can read.
-export function workerSandboxFlags({ repoRoot, tmpDir }) {
+// Two kinds of worker, never one process doing both. An evaluator runs agent-written code,
+// so assume it is arbitrary code: it can write only its own scratch. A publisher writes where
+// a save lands (the server serves one of those trees) and never evaluates agent code.
+export function workerSandboxFlags({ repoRoot, tmpDir, publishes = false }) {
+  const landing = publishes ? [join(repoRoot, 'data', 'sample-cache'), join(repoRoot, 'palettes')] : [];
   return [
     ...flags('--rox', SYSTEM_EXEC),
     ...flags('--ro', [...SYSTEM_READ, ...REPO_READ.map((p) => join(repoRoot, p))]),
-    ...flags('--rw', [...DEVICES, tmpDir, join(repoRoot, 'data', 'sample-cache'), join(repoRoot, 'palettes')]),
+    ...flags('--rw', [...DEVICES, tmpDir, ...landing]),
     '--tcp', '443',
     '--allow-udp', // DNS
   ];
@@ -77,11 +80,16 @@ export function agentEnv({ jobId, jobDir, proxyPort, brokerToken, oauthToken }) 
 }
 
 export const JOB_LIMITS = { MemoryMax: '10G', TasksMax: '2048', CPUQuota: '350%', RuntimeMaxSec: '3600' };
-export const WORKER_LIMITS = { MemoryMax: '1500M', TasksMax: '256', CPUQuota: '100%', RuntimeMaxSec: '600' };
+export const WORKER_LIMITS = { MemoryMax: '1500M', TasksMax: '256', CPUQuota: '100%', RuntimeMaxSec: '180' };
+export const PUBLISHER_LIMITS = { ...WORKER_LIMITS, RuntimeMaxSec: '600' }; // vendoring a large bank
+// Each worker is its own unit, outside its job's limits. On 4 cores shared with other services.
+export const MAX_CONCURRENT_WORKERS = 3;
 
 export function systemdRunArgv({ unit, limits, cwd, command }) {
   return [
     '--user', '--wait', '--pipe', '--collect', '--quiet',
+    // Otherwise the manager expands ${VAR} from its own environment, in the job's prompt too.
+    '--expand-environment=no',
     `--unit=${unit}`, `--working-directory=${cwd}`,
     ...Object.entries(limits).flatMap(([k, v]) => ['-p', `${k}=${v}`]),
     ...command,

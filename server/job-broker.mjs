@@ -9,7 +9,9 @@ import { spawn as nodeSpawn } from 'node:child_process';
 import { mkdir, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { insertItem, itemSlugs, queryLessonsByProfile } from './instant.mjs';
-import { systemdEnv, systemdRunArgv, workerSandboxFlags, WORKER_LIMITS } from './job-sandbox.mjs';
+import {
+  MAX_CONCURRENT_WORKERS, PUBLISHER_LIMITS, systemdEnv, systemdRunArgv, workerSandboxFlags, WORKER_LIMITS,
+} from './job-sandbox.mjs';
 import { checkCodePolicy } from '../scripts/lib/code-policy.mjs';
 import { buildDigest } from '../scripts/feedback.mjs';
 import { nextRemixId } from '../scripts/remix-source.mjs';
@@ -22,25 +24,60 @@ const MAX_CODE = 256 * 1024;
 const MAX_OPS = 5000;
 const MAX_REVISIONS = 24; // buildWorklist's per-job cap: a job also saves its Step 0 revisions
 const RESULT_MARK = 'CRATE_WORKER_RESULT ';
+const PUBLISHING_KINDS = new Set(['vendor-item', 'write-palette']);
+const MAX_PALETTES_PER_JOB = 3;
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+// Palettes feed a memo every later job reads, newest filename last. A date-prefixed name near
+// today can't pin itself to the end of that list.
+export function batchNameProblem(batch, now = Date.now()) {
+  const date = /^(\d{4}-\d{2}-\d{2})-/.exec(batch)?.[1];
+  if (!date) return 'batch must start with YYYY-MM-DD-';
+  const at = Date.parse(`${date}T00:00:00Z`);
+  return Math.abs(at - now) <= 2 * DAY_MS ? null : 'batch date must be today';
+}
+
+// FIFO; a caller waits its turn rather than failing, since sub-agents fan out by design.
+function limiter(max) {
+  let active = 0;
+  const waiting = [];
+  return async function limited(task) {
+    if (active >= max) await new Promise((resolve) => { waiting.push(resolve); });
+    else active += 1;
+    try {
+      return await task();
+    } finally {
+      const next = waiting.shift();
+      if (next) next();
+      else active -= 1;
+    }
+  };
+}
 
 export const saveCapFor = (job) => (job.count ?? 1) + MAX_REVISIONS;
 
-// Evaluate agent-written code in its own sandbox and unit, away from this process.
-export function createWorkerRunner({ repoRoot, spawn = nodeSpawn }) {
-  return async function runWorker(payload) {
+// Evaluate agent-written code in its own sandbox and unit, away from this process. Its result
+// is advisory: an evaluator could print any result line, which is why stored code only ever
+// runs in an opaque frame, and why only a publisher, running none of that code, can write.
+export function createWorkerRunner({ repoRoot, spawn = nodeSpawn, maxConcurrent = MAX_CONCURRENT_WORKERS }) {
+  const limited = limiter(maxConcurrent);
+  return (payload) => limited(async () => {
+    const publishes = PUBLISHING_KINDS.has(payload.kind);
     const name = randomUUID();
     const tmpDir = join(repoRoot, 'data', 'job-sandbox', `worker-${name}`);
     await mkdir(tmpDir, { recursive: true });
     const command = [
       '/usr/bin/python3', '-I', join(repoRoot, 'scripts', 'sandbox', 'sandbox-exec.py'),
-      ...workerSandboxFlags({ repoRoot, tmpDir }),
+      ...workerSandboxFlags({ repoRoot, tmpDir, publishes }),
       '--', '/usr/bin/env', '-i', 'PATH=/usr/bin:/bin', `HOME=${tmpDir}`, `TMPDIR=${tmpDir}`, 'NODE_ENV=production',
-      process.execPath, join(repoRoot, 'scripts', 'sandbox', 'validate-worker.mjs'),
+      // A string can't become code here, whichever gadget it travels through.
+      process.execPath, '--disallow-code-generation-from-strings',
+      join(repoRoot, 'scripts', 'sandbox', 'validate-worker.mjs'),
     ];
     try {
       return await new Promise((resolve) => {
         const child = spawn('systemd-run', systemdRunArgv({
-          unit: `crate-worker-${name}`, limits: WORKER_LIMITS, cwd: repoRoot, command,
+          unit: `crate-worker-${name}`, limits: publishes ? PUBLISHER_LIMITS : WORKER_LIMITS, cwd: repoRoot, command,
         }), { cwd: repoRoot, env: systemdEnv() });
         let out = '';
         child.stdout.on('data', (d) => { if (out.length < MAX_BODY) out += d; });
@@ -59,7 +96,7 @@ export function createWorkerRunner({ repoRoot, spawn = nodeSpawn }) {
     } finally {
       await rm(tmpDir, { recursive: true, force: true });
     }
-  };
+  });
 }
 
 const fail = (error) => ({ ok: false, error });
@@ -80,27 +117,51 @@ export function createOps({ adminDb, runWorker }) {
   async function save(entry, namespace, body, character) {
     const { job, profileId } = entry;
     if (namespace !== job.collection) return fail(`this job can only save to ${job.collection}`);
-    if (entry.saves >= saveCapFor(job)) return fail('save limit for this job reached');
     const { item } = body;
     const problem = checkItem(item) ?? checkCode(item?.code);
     if (problem) return fail(problem);
     if (!profileId) return fail('job has no author profile');
-    const checked = await runWorker({ kind: 'item', item, character });
-    if (!checked.ok) return { ok: false, error: checked.error, warnings: checked.warnings };
-    const saved = await insertItem(adminDb, namespace, item, profileId, { jobId: job.id });
-    if (!saved.ok) return { ...saved, warnings: checked.warnings };
+    // Taken before the first await, or overlapping saves all pass the cap. Only a save that
+    // lands keeps its slot.
+    if (entry.saves >= saveCapFor(job)) return fail('save limit for this job reached');
     entry.saves += 1;
-    return { ok: true, id: item.id, warnings: checked.warnings ?? [] };
+    let saved = false;
+    try {
+      const checked = await runWorker({ kind: 'check-item', item, character });
+      if (!checked.ok) return { ok: false, error: checked.error, warnings: checked.warnings };
+      const vendored = await runWorker({ kind: 'vendor-item', item });
+      const warnings = vendored.warnings ?? [];
+      const inserted = await insertItem(adminDb, namespace, item, profileId, { jobId: job.id });
+      if (!inserted.ok) return { ...inserted, warnings };
+      saved = true;
+      return { ok: true, id: item.id, warnings };
+    } finally {
+      if (!saved) entry.saves -= 1;
+    }
   }
 
   return {
     'save-track': (entry, body) => save(entry, 'tracks', body, true),
     'save-stem': (entry, body) => save(entry, 'stems', body, false),
 
-    'save-palette': async (_entry, { palette }) => {
-      const problem = checkItem(palette, 'batch');
+    'save-palette': async (entry, { palette }) => {
+      const problem = checkItem(palette, 'batch') ?? batchNameProblem(palette.batch);
       if (problem) return fail(problem);
-      return runWorker({ kind: 'palette', palette });
+      // A job may rewrite its own batch; another job's stays that job's.
+      entry.batches ??= new Set();
+      const mine = entry.batches.has(palette.batch);
+      if (!mine && entry.batches.size >= MAX_PALETTES_PER_JOB) return fail('palette limit for this job reached');
+      if (!mine) entry.batches.add(palette.batch);
+      let saved = false;
+      try {
+        const checked = await runWorker({ kind: 'check-palette', palette });
+        if (!checked.ok) return checked;
+        const written = await runWorker({ kind: 'write-palette', palette, overwrite: mine });
+        saved = written.ok;
+        return written.ok ? { ...written, voices: checked.voices } : written;
+      } finally {
+        if (!saved && !mine) entry.batches.delete(palette.batch);
+      }
     },
 
     validate: async (_entry, { code, item, character }) => {

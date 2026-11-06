@@ -1,8 +1,9 @@
-// Runs inside the worker sandbox (server/job-broker.mjs): no secrets, evaluates agent code.
-// Reads one JSON request on stdin, prints one result line. Vendors sample banks on save.
+// Runs inside a worker sandbox (server/job-broker.mjs): no secrets. check-* kinds evaluate
+// agent code and can write nothing that lasts; the other kinds publish and evaluate nothing.
+// Reads one JSON request on stdin, prints one result line.
 import { validateCode, validateTrack } from '../validate.mjs';
 import { cacheBank, cacheTrackSamples, writeTrackManifest } from '../lib/sample-cache.mjs';
-import { effectiveSamples, savePalette } from '../palette.mjs';
+import { effectiveSamples, validatePalette, writePalette } from '../palette.mjs';
 
 const finish = (result) => {
   console.log(`CRATE_WORKER_RESULT ${JSON.stringify(result)}`);
@@ -44,13 +45,11 @@ async function vendorPalette(palette) {
 try {
   if (req.kind === 'check-code') finish(await validateCode(req.code));
   if (req.kind === 'check-item') finish(await validateTrack(req.item, { character: req.character }));
-  if (req.kind === 'item') {
-    const result = await validateTrack(req.item, { character: req.character });
-    if (!result.ok) finish(result);
-    finish({ ...result, warnings: await vendorItem(req.item) });
-  }
-  if (req.kind === 'palette') {
-    const result = await savePalette(req.palette);
+  if (req.kind === 'check-palette') finish(await validatePalette(req.palette));
+  // Publishing: writes where a save lands. Reads sources as text and evaluates no agent code.
+  if (req.kind === 'vendor-item') finish({ ok: true, warnings: await vendorItem(req.item) });
+  if (req.kind === 'write-palette') {
+    const result = await writePalette(req.palette, { overwrite: !!req.overwrite });
     if (!result.ok) finish(result);
     finish({ ...result, warnings: await vendorPalette(req.palette) });
   }

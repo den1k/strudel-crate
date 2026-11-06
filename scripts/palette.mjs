@@ -137,12 +137,26 @@ export async function validatePalette(palette) {
 
 // ---- save / load (validate AND persist) ------------------------------------
 
+// Persists without evaluating anything, so a publishing worker can run it: the shape is
+// rechecked here because the evaluating step's verdict can't be relied on.
+export async function writePalette(palette, { palettesDir = DEFAULT_PALETTES_DIR, overwrite = true } = {}) {
+  const shape = validatePaletteShape(palette);
+  if (!shape.ok) return { ok: false, error: shape.error };
+  await mkdir(palettesDir, { recursive: true });
+  try {
+    await writeFile(join(palettesDir, `${palette.batch}.json`), JSON.stringify(palette, null, 2) + '\n', { flag: overwrite ? 'w' : 'wx' });
+  } catch (err) {
+    if (err.code === 'EEXIST') return { ok: false, error: `batch ${palette.batch} already exists` };
+    throw err;
+  }
+  return { ok: true };
+}
+
 export async function savePalette(palette, { palettesDir = DEFAULT_PALETTES_DIR } = {}) {
   const result = await validatePalette(palette);
   if (!result.ok) return { ok: false, error: result.error, voices: result.voices };
-  await mkdir(palettesDir, { recursive: true });
-  await writeFile(join(palettesDir, `${palette.batch}.json`), JSON.stringify(palette, null, 2) + '\n');
-  return { ok: true, voices: result.voices };
+  const written = await writePalette(palette, { palettesDir });
+  return written.ok ? { ok: true, voices: result.voices } : { ...written, voices: result.voices };
 }
 
 export async function loadPalette(batch, { palettesDir = DEFAULT_PALETTES_DIR } = {}) {
