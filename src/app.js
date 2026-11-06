@@ -1,5 +1,4 @@
-import { getAudioContext } from '@strudel/webaudio';
-import { mountEditor, getEditor, isStarted, cyclePosition, seekEditor, panic } from './editor.js';
+import { mountEditor, getEditor, isStarted, cyclePosition, seekEditor, panic, resumeAudio } from './editor.js';
 import { nextPlayingId } from './playing-state.js';
 import { groupVersions } from './versions.js';
 import { exportSpec } from './export-spec.js';
@@ -142,7 +141,6 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
     return mountEditor({
       track,
       root: $('.editor', codeSection(track)),
-      prebake: () => ready,
       onToggle: onEditorToggle,
       onError: onEditorError,
     });
@@ -276,7 +274,7 @@ export async function initApp({ namespace, emptyHint, splitStems = false }) {
     syncUrl(); // surface the now-playing song in the address bar
     await ready; // audio context unlocks via this click
     if (state.playingId !== track.id) return; // user moved on while samples loaded
-    await getAudioContext().resume(); // post-export contexts start suspended
+    await resumeAudio(); // post-export contexts start suspended
     // Switching songs: stop the previous scheduler and flush every voice still
     // ringing out (samples, long notes, reverb tails) BEFORE the new pattern
     // schedules, so the old song can't bleed into the new one. Solo mode would

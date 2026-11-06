@@ -38,6 +38,7 @@ export default defineConfig({
         stems: page('./stems.html'),
         song: page('./song.html'),
         exportRender: page('./export-render.html'),
+        strudelEngine: page('./strudel-engine.html'),
       },
     },
   },

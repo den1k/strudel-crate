@@ -4,6 +4,7 @@
 import { segmentPlan, concatSegmentPCM } from './segment.js';
 import { encodeWav, encodeMp3 } from './encoders.js';
 import { exportSpec } from './export-spec.js';
+import { SANDBOX_ATTR } from './strudel-engine-client.js';
 
 const EXT = { wav: 'wav', mp3: 'mp3', stems: 'zip' };
 const MAX_SEGMENTS = 8;
@@ -19,6 +20,7 @@ export function exportFilename(slug, fmt) {
 
 function defaultConnect(src) {
   const iframe = document.createElement('iframe');
+  iframe.setAttribute('sandbox', SANDBOX_ATTR); // track code runs in here: opaque origin
   iframe.setAttribute('aria-hidden', 'true');
   iframe.style.cssText = 'position:absolute;width:0;height:0;border:0;visibility:hidden';
   iframe.src = src;

@@ -1,8 +1,7 @@
 // The dedicated single-song page at /song/<slug>. Reuses the shared Strudel
 // runtime (strudel-boot), the StrudelMirror editor (editor.js) and the pure
 // transport helpers (transport.js) so playback matches the list pages.
-import { getAudioContext } from '@strudel/webaudio';
-import { mountEditor, getEditor, cyclePosition, seekEditor, panic } from './editor.js';
+import { mountEditor, getEditor, cyclePosition, seekEditor, panic, resumeAudio } from './editor.js';
 import { bootStrudel } from './strudel-boot.js';
 import { exportSpec } from './export-spec.js';
 import { groupVersions } from './versions.js';
@@ -300,7 +299,6 @@ function wirePlayback(item, playBtn, editorWrap, ready) {
   const editor = mountEditor({
     track: item,
     root: $('.editor', editorWrap),
-    prebake: () => ready,
     onToggle: (_id, started) => {
       playingNow = started;
       showTransport(started);
@@ -321,7 +319,7 @@ function wirePlayback(item, playBtn, editorWrap, ready) {
     showTransport(true);
     await ready; // audio context unlocks via this click
     if (!playingNow) return; // paused again while samples loaded
-    await getAudioContext().resume(); // post-export contexts start suspended
+    await resumeAudio(); // post-export contexts start suspended
     editor.evaluate();
     // Resume from where we paused (re-anchor the freshly-started scheduler).
     if (resumeCycle != null && resumeCycle > 0) seekEditor(item.id, resumeCycle);

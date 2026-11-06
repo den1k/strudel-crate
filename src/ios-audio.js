@@ -49,4 +49,5 @@ export function enableSilentSwitchPlayback({
     for (const ev of GESTURES) doc.removeEventListener(ev, unlock);
   };
   for (const ev of GESTURES) doc.addEventListener(ev, unlock);
+  return unlock;
 }

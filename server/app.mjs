@@ -258,6 +258,23 @@ function jobRoutes(app, jobStore, runner, progressFor, requireAuth, adminDb) {
   }));
 }
 
+const SANDBOXED_PAGES = ['strudel-engine.html', 'export-render.html'];
+const SANDBOX_CSP = [
+  'sandbox allow-scripts',
+  "default-src 'none'",
+  "script-src 'self' 'unsafe-eval' 'wasm-unsafe-eval' blob: data:", // evaluating code is the job
+  "worker-src 'self' blob: data:",
+  "connect-src 'self' https: data: blob:", // sample banks live on arbitrary https hosts
+  "media-src 'self' https: data: blob:",
+  "style-src 'unsafe-inline'",
+  "base-uri 'none'",
+  "form-action 'none'",
+  "frame-ancestors 'self'",
+].join('; ');
+// Pages never evaluate track code, so a regression fails here instead of running it on
+// this origin. wasm-unsafe-eval stays for bundled wasm deps.
+const PAGE_CSP = "script-src 'self' 'wasm-unsafe-eval'; object-src 'none'; base-uri 'self'";
+
 export function createApp(opts = {}) {
   const app = express();
   app.use(express.json());
@@ -299,12 +316,16 @@ export function createApp(opts = {}) {
       const checks = await Promise.all(dirs.map(async (slug) => {
         try { await access(join(banksDir, slug, 'strudel.json')); return slug; } catch { return null; }
       }));
+      res.setHeader('Access-Control-Allow-Origin', '*'); // read by the opaque-origin engine
       res.json({ slugs: checks.filter(Boolean) });
     }));
     // Vendored files come from third-party repos: inert data on this origin, never a
     // document. fetch()ing audio/JSON is unaffected by the response's own CSP.
     app.use('/sample-cache', express.static(opts.sampleCacheDir, {
-      setHeaders: (res) => res.setHeader('Content-Security-Policy', "sandbox; default-src 'none'"),
+      setHeaders: (res) => {
+        res.setHeader('Content-Security-Policy', "sandbox; default-src 'none'");
+        res.setHeader('Access-Control-Allow-Origin', '*'); // read by the opaque-origin engine
+      },
     }));
   }
 
@@ -317,8 +338,23 @@ export function createApp(opts = {}) {
     const configuredOrigin = opts.publicOrigin;
     const sendInjected = async (res, file, tagsHtml) => {
       const html = await readFile(join(opts.distDir, file), 'utf8');
+      res.setHeader('Content-Security-Policy', PAGE_CSP);
       res.type('html').send(injectMeta(html, tagsHtml));
     };
+
+    // The only documents that evaluate track code. The header (not just the iframe
+    // attribute) makes them opaque-origin however they're reached.
+    for (const page of SANDBOXED_PAGES) {
+      app.get(`/${page}`, (_req, res) => {
+        res.setHeader('Content-Security-Policy', SANDBOX_CSP);
+        res.sendFile(join(opts.distDir, page));
+      });
+    }
+    // Module scripts and worklets load in CORS mode from those frames. Public build
+    // output, no credentials.
+    app.use('/assets', express.static(join(opts.distDir, 'assets'), {
+      setHeaders: (res) => res.setHeader('Access-Control-Allow-Origin', '*'),
+    }));
 
     // Tags for an item referenced by URL — the /song/:slug path param, or a list
     // page's ?play=<entityId>. Falls back to the brand card when the ref is
