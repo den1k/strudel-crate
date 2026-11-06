@@ -55,7 +55,7 @@ describe('profile API', () => {
   it('GET /api/profile returns the caller profile', async () => {
     const res = await request(app).get('/api/profile');
     expect(res.status).toBe(200);
-    expect(res.body.artistName).toBe('kalavox'); // email local part, auto-created
+    expect(res.body.artistName).toBe('kalavox');
   });
 
   it('PUT /api/profile sets the artist name', async () => {

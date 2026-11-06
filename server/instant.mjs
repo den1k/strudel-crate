@@ -2,13 +2,13 @@
 // Instant admin helpers. adminDb is injected (real client in prod, fake in tests).
 import { id } from '@instantdb/admin';
 
-// Returns the profile id for a user, creating one (artistName = email local part)
-// if none is linked yet. Idempotent.
+// Returns the profile id for a user, creating one if none is linked yet. Profiles are
+// world-readable, so the default name must not come from the email. Idempotent.
 export async function ensureProfile(adminDb, user) {
   const { profiles } = await adminDb.query({ profiles: { $: { where: { 'user.id': user.id } } } });
   if (profiles[0]) return profiles[0].id;
   const profileId = id();
-  const artistName = (user.email || 'artist').split('@')[0];
+  const artistName = 'anonymous';
   await adminDb.transact(
     adminDb.tx.profiles[profileId].update({ artistName, createdAt: new Date().toISOString() }).link({ user: user.id }),
   );

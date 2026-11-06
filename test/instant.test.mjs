@@ -12,13 +12,13 @@ describe('ensureProfile', () => {
     expect(db._txs).toHaveLength(0);
   });
 
-  it('creates a profile (artistName = email local part) when none exists', async () => {
+  it('creates a profile with a neutral name when none exists', async () => {
     const db = fakeAdmin({ profiles: [] });
     const id = await ensureProfile(db, { id: 'u2', email: 'kalavox@gmail.com' });
     expect(id).toBeTruthy();
     const op = db._txs[0];
     expect(op.ns).toBe('profiles');
-    expect(op.update.artistName).toBe('kalavox');
+    expect(op.update.artistName).toBe('anonymous');
     expect(op.link).toEqual({ user: 'u2' });
   });
 });
