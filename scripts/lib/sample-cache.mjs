@@ -145,6 +145,24 @@ function manifestSamplePaths(manifest) {
   return [...paths];
 }
 
+// True only when every file the bank's manifest lists is on disk, at any depth (pitched maps too).
+// Some banks were vendored without all their audio, and upstream may still have what they lack.
+export async function isBankComplete(bankDir) {
+  try {
+    const manifest = JSON.parse(await readFile(join(bankDir, 'strudel.json'), 'utf8'));
+    const paths = [];
+    const collect = (v) => {
+      if (typeof v === 'string') paths.push(v);
+      else if (v && typeof v === 'object') Object.values(v).forEach(collect);
+    };
+    for (const [key, val] of Object.entries(manifest)) if (!key.startsWith('_')) collect(val);
+    if (!paths.every((rel) => isSafeSamplePath(rel, bankDir))) return false;
+    return (await Promise.all(paths.map((rel) => exists(join(bankDir, rel))))).every(Boolean);
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Return a copy of `manifest` keeping only sample paths present in `keep`
  * (a Set of relative paths). Used after a vendor that skipped 404'd samples so

@@ -27,6 +27,8 @@ describe('sample cache routes', () => {
     const slug = 'github-fake-bank';
     await mkdir(join(cacheDir, 'banks', slug), { recursive: true });
     await writeFile(join(cacheDir, 'banks', slug, 'strudel.json'), JSON.stringify({ _base: './', x: ['x/a.wav'] }));
+    await mkdir(join(cacheDir, 'banks', slug, 'x'));
+    await writeFile(join(cacheDir, 'banks', slug, 'x', 'a.wav'), 'fake');
 
     const index = await request(app).get('/sample-cache/index.json');
     expect(index.body.slugs).toContain(slug);

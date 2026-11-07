@@ -5,7 +5,7 @@ import express from 'express';
 import { collectionFor } from './runner.mjs';
 import { jobQuotaError } from './jobs.mjs';
 import { setRating, setNotes, itemOwnerProfileId, familyOwnerProfileId, ensureProfile, getProfile, setArtistName, recordPlay, resolvePublicItem, queryLessonsByProfile, createLesson, updateLesson, deleteLesson } from './instant.mjs';
-import { ALLOWED_SAMPLE_HOSTS, BANK_SOURCE_FILE } from '../scripts/lib/sample-cache.mjs';
+import { ALLOWED_SAMPLE_HOSTS, BANK_SOURCE_FILE, isBankComplete } from '../scripts/lib/sample-cache.mjs';
 import { createPlayLimiter } from './rate-limit.mjs';
 import { songMetaTags, brandMetaTags, injectMeta, cardHash } from './og.mjs';
 import { songCardHtml, brandCardHtml } from './og-card.mjs';
@@ -350,17 +350,14 @@ export function createApp(opts = {}) {
   // lists cached bank slugs; /sample-cache/banks/<slug>/... serves the vendored files.
   if (opts.sampleCacheDir) {
     const cachedBanks = memoized(opts.anonCacheMs ?? 0, async () => {
-      const { readdir, access } = await import('node:fs/promises');
+      const { readdir } = await import('node:fs/promises');
       const banksDir = join(opts.sampleCacheDir, 'banks');
       let dirs = [];
       try { dirs = await readdir(banksDir); } catch { /* none cached yet */ }
-      // Only advertise banks that actually have a strudel.json manifest. A vendor
-      // that failed partway leaves sample files but no manifest; advertising such
-      // an orphan makes the client rewrite samples() to a local URL that 404s
-      // instead of falling back to the working upstream github bank.
-      const checks = await Promise.all(dirs.map(async (slug) => {
-        try { await access(join(banksDir, slug, 'strudel.json')); return slug; } catch { return null; }
-      }));
+      // Only advertise banks whose manifest and listed files are all there. Advertising anything
+      // less makes the client rewrite samples() to a local URL that 404s instead of falling back
+      // to the working upstream github bank.
+      const checks = await Promise.all(dirs.map(async (slug) => (await isBankComplete(join(banksDir, slug)) ? slug : null)));
       const slugs = checks.filter(Boolean);
       const sources = {};
       await Promise.all(slugs.map(async (slug) => {
