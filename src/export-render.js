@@ -1,3 +1,4 @@
+import './frame-lockdown.js';
 import * as core from '@strudel/core';
 import * as mini from '@strudel/mini';
 import * as tonal from '@strudel/tonal';

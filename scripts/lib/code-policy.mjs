@@ -14,7 +14,7 @@ const FORBIDDEN_IDENTIFIERS = new Set([
   'globalThis', 'global', 'window', 'self', 'top', 'parent', 'frames', 'opener',
   'document', 'location', 'history', 'navigator', 'origin',
   'localStorage', 'sessionStorage', 'indexedDB', 'caches', 'cookieStore',
-  'fetch', 'XMLHttpRequest', 'WebSocket', 'EventSource', 'RTCPeerConnection',
+  'fetch', 'XMLHttpRequest', 'WebSocket', 'EventSource', 'RTCPeerConnection', 'webkitRTCPeerConnection',
   'Worker', 'SharedWorker', 'ServiceWorker', 'importScripts', 'postMessage',
   'eval', 'Function', 'AsyncFunction', 'GeneratorFunction', 'WebAssembly',
   'evaluate', 'evalScope', 'strudelScope', 'repl', 'webaudioRepl', // Strudel's own way from a string to code

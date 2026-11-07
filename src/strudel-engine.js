@@ -2,6 +2,7 @@
 // CSP in server/app.mjs). Page and engine speak only by postMessage. NOT @strudel/web: its
 // dist inlines private copies of core/webaudio, so sounds registered through it are
 // invisible to webaudioOutput (two registries, silent playback).
+import './frame-lockdown.js';
 import * as core from '@strudel/core';
 import * as mini from '@strudel/mini';
 import * as tonal from '@strudel/tonal';

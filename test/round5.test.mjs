@@ -1,10 +1,12 @@
 // Round 5: playback of vendored banks, and what a job can put in a public row.
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import request from 'supertest';
-import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createApp } from '../server/app.mjs';
+import { checkCodePolicy } from '../scripts/lib/code-policy.mjs';
+import { removeWebRTC } from '../src/frame-lockdown.js';
 import { createOps, saveCapFor } from '../server/job-broker.mjs';
 import { createJobLauncher } from '../server/job-sandbox.mjs';
 import { fakeAdmin } from './fake-admin.mjs';
@@ -193,5 +195,28 @@ describe('a job\'s credentials in a row', () => {
     } finally {
       await rm(repoRoot, { recursive: true, force: true });
     }
+  });
+});
+
+describe('WebRTC in the playback frames', () => {
+  const carrier = () => ({ RTCPeerConnection: class {}, webkitRTCPeerConnection: class {}, keep: 1 });
+
+  it('removes the constructor and its alias', () => {
+    const c = carrier();
+    removeWebRTC(c);
+    expect(c.RTCPeerConnection).toBeUndefined();
+    expect(c.webkitRTCPeerConnection).toBeUndefined();
+    expect('RTCPeerConnection' in c).toBe(false);
+    expect(c.keep).toBe(1);
+  });
+
+  it.each(['strudel-engine', 'export-render'])('%s removes it before anything else is imported', async (name) => {
+    const src = await readFile(join(import.meta.dirname, '..', 'src', `${name}.js`), 'utf8');
+    const first = src.split('\n').find((l) => l.startsWith('import '));
+    expect(first).toMatch(/frame-lockdown\.js/);
+  });
+
+  it.each(['RTCPeerConnection', 'webkitRTCPeerConnection'])('the save-time policy refuses %s', (name) => {
+    expect(checkCodePolicy(`new ${name}({})`).ok).toBe(false);
   });
 });
