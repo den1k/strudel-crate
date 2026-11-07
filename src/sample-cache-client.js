@@ -51,7 +51,9 @@ export function installCacheAwareSamples(target = globalThis) {
   target.samples = function cacheAwareSamples(source, ...rest) {
     if (rest.length === 0 && typeof source === 'string') {
       const local = cachedManifestUrl(source);
-      if (local) return original.call(this, local);
+      // A vendored manifest says `_base: "./"`, which Strudel resolves against this page rather
+      // than the manifest, so the bank's own directory has to be given.
+      if (local) return original.call(this, local, local.slice(0, local.lastIndexOf('/') + 1));
     }
     return original.call(this, source, ...rest);
   };

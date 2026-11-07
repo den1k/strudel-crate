@@ -9,8 +9,9 @@
 //   banks/<slug>/<relpath>      every referenced sample, mirrored by relative path
 //   manifests/<track-id>.json   { banks: [...sources], slugs: [...bankSlugs] }
 //
-// The webapp can serve banks/<slug>/strudel.json and load it with samples(); the
-// relative _base + mirrored layout means cached banks are self-contained.
+// The webapp serves banks/<slug>/strudel.json and loads it with samples(), naming that directory
+// as the base (Strudel resolves a relative _base against the page, not the manifest). The mirrored
+// layout means cached banks are self-contained.
 import { mkdir, writeFile, readFile, access, readdir, rm, stat } from 'node:fs/promises';
 import { dirname, join, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';

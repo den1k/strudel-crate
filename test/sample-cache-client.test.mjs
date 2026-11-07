@@ -30,7 +30,11 @@ describe('cache-aware samples()', () => {
     const webaudio = { samples: original };
     installCacheAwareSamples(webaudio);
     webaudio.samples('github:eddyflux/crate');
-    expect(original).toHaveBeenCalledWith('/sample-cache/banks/github-eddyflux-crate/strudel.json');
+    // The base is explicit: a vendored manifest's `_base: "./"` would resolve against the page.
+    expect(original).toHaveBeenCalledWith(
+      '/sample-cache/banks/github-eddyflux-crate/strudel.json',
+      '/sample-cache/banks/github-eddyflux-crate/',
+    );
   });
 
   it('passes an uncached source straight through unchanged', () => {
