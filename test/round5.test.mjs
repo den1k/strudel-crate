@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createApp } from '../server/app.mjs';
 import { checkCodePolicy } from '../scripts/lib/code-policy.mjs';
-import { removeWebRTC } from '../src/frame-lockdown.js';
+import { loadWorkletsFromBlobs, removeWebRTC } from '../src/frame-lockdown.js';
 import { createOps, saveCapFor } from '../server/job-broker.mjs';
 import { createJobLauncher } from '../server/job-sandbox.mjs';
 import { fakeAdmin } from './fake-admin.mjs';
@@ -218,5 +218,33 @@ describe('WebRTC in the playback frames', () => {
 
   it.each(['RTCPeerConnection', 'webkitRTCPeerConnection'])('the save-time policy refuses %s', (name) => {
     expect(checkCodePolicy(`new ${name}({})`).ok).toBe(false);
+  });
+});
+
+describe('nested frames in the playback frames', () => {
+  it('audio worklets bundled as data: URLs load through blob: instead', async () => {
+    const seen = [];
+    class Worklet { addModule(url, opts) { seen.push([url, opts]); return Promise.resolve('added'); } }
+    loadWorkletsFromBlobs(Worklet.prototype);
+    const worklet = new Worklet();
+    expect(await worklet.addModule('data:text/javascript;base64,Ly8geA==')).toBe('added');
+    expect(seen[0][0]).toMatch(/^blob:/);
+    await worklet.addModule('/assets/plain.js', { credentials: 'omit' });
+    expect(seen[1]).toEqual(['/assets/plain.js', { credentials: 'omit' }]);
+  });
+
+  it.each(['strudel-engine.html', 'export-render.html'])('%s can\'t run a data: script or nest a frame', async (page) => {
+    const dist = await mkdtemp(join(tmpdir(), 'crate-r5-dist-'));
+    try {
+      await writeFile(join(dist, page), '<!doctype html>');
+      const res = await request(createApp({ distDir: dist })).get(`/${page}`).expect(200);
+      const csp = res.headers['content-security-policy'];
+      const directive = (name) => csp.split(';').map((d) => d.trim()).find((d) => d.startsWith(`${name} `));
+      expect(directive('script-src')).not.toContain('data:');
+      expect(directive('frame-src')).toBe("frame-src 'none'");
+      expect(directive('child-src')).toBe("child-src 'none'");
+    } finally {
+      await rm(dist, { recursive: true, force: true });
+    }
   });
 });

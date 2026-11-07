@@ -281,7 +281,10 @@ const SANDBOXED_PAGES = ['strudel-engine.html', 'export-render.html'];
 const SANDBOX_CSP = [
   'sandbox allow-scripts',
   "default-src 'none'",
-  "script-src 'self' 'unsafe-eval' 'wasm-unsafe-eval' blob: data:", // evaluating code is the job
+  // No data: a nested srcdoc frame could run one in a realm that still has RTCPeerConnection.
+  "script-src 'self' 'unsafe-eval' 'wasm-unsafe-eval' blob:", // evaluating code is the job
+  "frame-src 'none'",
+  "child-src 'none'",
   "worker-src 'self' blob: data:",
   // Vendored banks and the sample hosts saves are held to. Stored code has nothing secret here,
   // but it shouldn't get to report its listeners to a host of its choosing.
