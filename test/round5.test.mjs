@@ -6,6 +6,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createApp } from '../server/app.mjs';
 import { createOps, saveCapFor } from '../server/job-broker.mjs';
+import { createJobLauncher } from '../server/job-sandbox.mjs';
 import { fakeAdmin } from './fake-admin.mjs';
 
 describe('the bank index', () => {
@@ -147,5 +148,50 @@ describe('how many public rows a job gets', () => {
     expect((await ops['pending-revisions'](e, {})).list).toHaveLength(1);
     for (const i of [1, 2, 3]) expect((await ops['save-track'](e, { item: item(i) })).ok).toBe(true);
     expect((await ops['save-track'](e, { item: item(4) })).error).toMatch(/limit/);
+  });
+});
+
+describe('a job\'s credentials in a row', () => {
+  const secret = 'sk-ant-oat01-DUMMYabcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJ-KLMNOPQRSTUVWXYZ';
+  const job = { id: 'job-1', type: 'generate-tracks', collection: 'tracks', count: 5, prompt: 'p' };
+  const row = (over) => ({ id: 's-1', title: 'T', prompt: 'p', batch: 'b', description: 'd', code: 's("bd")', createdAt: '2026-11-07T01:02:03Z', meta: {}, ...over });
+  const save = (over) => {
+    const calls = [];
+    const ops = createOps({ adminDb: fakeAdmin({ tracks: [], stems: [], lessons: [], profiles: [{ id: 'p1' }] }), runWorker: async (p) => { calls.push(p); return { ok: true }; } });
+    return ops['save-track']({ job, profileId: 'p1', saves: 0, calls: 0, secrets: [secret] }, { item: row(over) });
+  };
+
+  it.each([
+    ['as written', { description: secret }],
+    ['in a comment, spaced out', { code: `// ${secret.match(/.{1,9}/g).join(' ')}\ns("bd")` }],
+    ['a long part of it', { title: secret.slice(20, 60) }],
+    ['reversed', { description: [...secret].reverse().join('') }],
+    ['base64', { description: Buffer.from(secret).toString('base64') }],
+    ['base64url', { description: Buffer.from(secret).toString('base64url') }],
+    ['hex', { code: `s("bd") // ${Buffer.from(secret).toString('hex').slice(0, 200)}` }],
+    ['upper case', { description: secret.toUpperCase() }],
+  ])('refuses it %s', async (_n, over) => {
+    const res = await save(over);
+    expect(res.ok).toBe(false);
+    expect(res.error).toMatch(/credential/);
+    expect(res.error).not.toContain(secret);
+  });
+
+  it('leaves an ordinary row alone', async () => {
+    expect((await save({ description: 'Dark techno with a sk-ant style name' })).ok).toBe(true);
+  });
+
+  it('the launcher hands the broker the token it gives the agent', async () => {
+    let got;
+    const broker = { register: (_j, _p, secrets) => { got = secrets; return 'broker-token'; }, revoke() {}, port: () => 1 };
+    const repoRoot = await mkdtemp(join(tmpdir(), 'crate-r5-launch-'));
+    try {
+      const launch = createJobLauncher({ repoRoot, broker, getToken: async () => secret });
+      const { cleanup } = await launch({ id: 'j' }, 'p1', []).catch((err) => { if (/ENOENT/.test(err.message)) return { skipped: true }; throw err; });
+      expect(got).toEqual([secret]);
+      await cleanup?.();
+    } finally {
+      await rm(repoRoot, { recursive: true, force: true });
+    }
   });
 });

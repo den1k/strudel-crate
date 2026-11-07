@@ -170,7 +170,7 @@ export function createJobLauncher({ repoRoot, broker, getToken = () => freshOaut
     for (const d of ['home', 'tmp', 'config']) await mkdir(join(jobDir, d), { recursive: true });
     const workDir = await makeJobWorkDir(repoRoot, jobDir);
 
-    const brokerToken = broker.register(job, authorProfileId);
+    const brokerToken = broker.register(job, authorProfileId, [oauthToken]);
     const proxyPort = broker.port();
     const envFile = join(jobDir, 'env.json');
     await writeFile(envFile, JSON.stringify(agentEnv({

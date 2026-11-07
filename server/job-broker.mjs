@@ -201,6 +201,24 @@ function quotesPrivateText(entry, item) {
     .some((part) => part.length >= MIN_QUOTE && !prompt.includes(part) && row.includes(part));
 }
 
+// A job's own credentials sit in its environment and rows are public. Catches one pasted or
+// lightly transformed, in whole or in long part. Real encryption gets past this.
+const SECRET_WINDOW = 24;
+function holdsSecret(entry, item) {
+  const row = squeeze(rowText(item));
+  return (entry.secrets ?? []).some((secret) => {
+    const raw = Buffer.from(secret);
+    return [secret, [...secret].reverse().join(''), raw.toString('base64'), raw.toString('base64url'), raw.toString('hex')].some((form) => {
+      const text = squeeze(form);
+      // Every half window, so a run of 1.5 windows always contains a whole one.
+      for (let i = 0; i + SECRET_WINDOW <= text.length; i += SECRET_WINDOW / 2) {
+        if (row.includes(text.slice(i, i + SECRET_WINDOW))) return true;
+      }
+      return false;
+    });
+  });
+}
+
 function checkCode(code) {
   if (typeof code !== 'string' || code.length > MAX_CODE) return 'code missing or too large';
   const policy = checkCodePolicy(code);
@@ -222,6 +240,10 @@ export function createOps({ adminDb, runWorker }) {
     const item = storedRow(body.item);
     // A remix names the source it was handed. Anything else there is just more public text.
     if (item.remixOf && item.remixOf !== entry.remixRoot) return fail('remixOf must be the root of this job\'s remix source');
+    if (holdsSecret(entry, item)) {
+      console.error(`[crate] job ${job.id}: refused a row holding one of its credentials`);
+      return fail('this row holds one of the job\'s credentials, and rows are public');
+    }
     if (quotesPrivateText(entry, item)) return fail('this row quotes a private lesson, and rows are public: say it in other words or leave it out');
     if (!profileId) return fail('job has no author profile');
     // Taken before the first await, or overlapping saves all pass the cap. Only a save that
@@ -386,9 +408,9 @@ export function createJobBroker({ ops, connect = (port, host) => net.connect(por
     listen: () => new Promise((resolve) => { server.listen(0, '127.0.0.1', resolve); }),
     close: () => new Promise((resolve) => { server.close(resolve); }),
     port: () => server.address().port,
-    register(job, profileId) {
+    register(job, profileId, secrets = []) {
       const token = randomBytes(32).toString('hex');
-      jobs.set(token, { job, profileId, saves: 0, calls: 0, inflight: 0 });
+      jobs.set(token, { job, profileId, saves: 0, calls: 0, inflight: 0, secrets: [token, ...secrets] });
       return token;
     },
     revoke: (token) => { jobs.delete(token); },
