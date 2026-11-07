@@ -12,7 +12,7 @@ import { insertItem, itemSlugs, itemsBySlug, queryLessonsByProfile } from './ins
 import {
   MAX_CONCURRENT_WORKERS, PUBLISHER_LIMITS, systemdEnv, systemdRunArgv, workerSandboxFlags, WORKER_LIMITS,
 } from './job-sandbox.mjs';
-import { checkCodePolicy } from '../scripts/lib/code-policy.mjs';
+import { checkCodePolicy, checkCodeVolume } from '../scripts/lib/code-policy.mjs';
 import { sourcesIn } from '../scripts/lib/sample-cache.mjs';
 import { buildDigest } from '../scripts/feedback.mjs';
 import { nextRemixId } from '../scripts/remix-source.mjs';
@@ -21,7 +21,7 @@ import { buildWorklist } from '../src/versions.js';
 const EGRESS_HOSTS = new Set(['api.anthropic.com:443']);
 const SLUG_RE = /^[a-zA-Z0-9][a-zA-Z0-9_-]{0,127}$/;
 const MAX_BODY = 1024 * 1024;
-const MAX_CODE = 64 * 1024; // longest live row: 9.4K
+const MAX_CODE = 32 * 1024; // longest live row: 9.4K
 const MAX_OPS = 5000;
 // Requests one job may have open. Sub-agents fan out to about 8, one call each; each open call
 // holds its body (up to MAX_BODY) on this process's heap while it waits for a worker.
@@ -119,22 +119,72 @@ function checkItem(item, key = 'id') {
   return null;
 }
 
-// A saved row is public, so its free text is a place private text could go. These are several
-// times the longest live values. Evaluation can't vouch for them: its result is advisory.
-const FIELD_LIMITS = { title: 200, prompt: 2000, batch: 128, description: 4000, createdAt: 40 };
-const MAX_META = 8000;
+// A saved row is public, so its free text is a place private text could go. These are about twice
+// the longest live values (40, 309, 54, 605). Evaluation can't vouch for them: its result is advisory.
+const FIELD_LIMITS = { title: 120, prompt: 600, batch: 72, description: 1500 };
+const CREATED_AT_RE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,3})?Z$/;
+const META_TEXT = 120; // longest live: 68
+const META_INSTRUMENTS = 24; // most live: 13
+const META_INSTRUMENT = 64; // longest live: 43
+
+const isOptionalInt = (v, min, max) => v === undefined || (Number.isInteger(v) && v >= min && v <= max);
+
+function metaProblem(meta) {
+  if (meta === undefined) return null;
+  if (!meta || typeof meta !== 'object' || Array.isArray(meta)) return 'meta must be an object';
+  if (!isOptionalInt(meta.bpm, 40, 220)) return 'meta.bpm must be an integer 40-220';
+  if (!isOptionalInt(meta.energy, 1, 5)) return 'meta.energy must be an integer 1-5';
+  for (const f of ['genre', 'mood', 'key']) {
+    if (meta[f] !== undefined && (typeof meta[f] !== 'string' || meta[f].length > META_TEXT)) return `meta.${f} must be a string of at most ${META_TEXT} characters`;
+  }
+  const { instruments } = meta;
+  if (instruments !== undefined && !(Array.isArray(instruments) && instruments.length <= META_INSTRUMENTS
+    && instruments.every((x) => typeof x === 'string' && x.length <= META_INSTRUMENT))) {
+    return `meta.instruments must be at most ${META_INSTRUMENTS} strings of at most ${META_INSTRUMENT} characters`;
+  }
+  return null;
+}
 
 function checkFields(item) {
   for (const [field, max] of Object.entries(FIELD_LIMITS)) {
     const v = item[field];
     if (v !== undefined && (typeof v !== 'string' || v.length > max)) return `${field} must be a string of at most ${max} characters`;
   }
-  if (JSON.stringify(item.meta ?? {}).length > MAX_META) return 'meta too large';
+  if (typeof item.id !== 'string') return 'invalid id';
+  if (item.batch !== undefined && !SLUG_RE.test(item.batch)) return 'invalid batch';
+  if (item.createdAt !== undefined && !(typeof item.createdAt === 'string' && CREATED_AT_RE.test(item.createdAt))) return 'createdAt must be an ISO timestamp, UTC';
   for (const f of ['versionOf', 'remixOf']) {
-    if (item[f] !== undefined && item[f] !== null && !SLUG_RE.test(String(item[f]))) return `invalid ${f}`;
+    if (item[f] !== undefined && item[f] !== null && !(typeof item[f] === 'string' && SLUG_RE.test(item[f]))) return `invalid ${f}`;
   }
-  return null;
+  return metaProblem(item.meta);
 }
+
+// The meta a row keeps: what the app reads, so a key of the agent's choosing isn't public text.
+function storedMeta(meta) {
+  if (meta === undefined) return undefined;
+  const { bpm, genre, mood, key, instruments, energy } = meta;
+  return JSON.parse(JSON.stringify({ bpm, genre, mood, key, instruments, energy }));
+}
+
+// What a row stores. Notes and lessons on a row are its listeners', and start empty.
+const storedRow = (item) => ({
+  id: item.id,
+  title: item.title,
+  prompt: item.prompt,
+  batch: item.batch,
+  description: item.description,
+  code: item.code,
+  meta: storedMeta(item.meta),
+  createdAt: item.createdAt,
+  versionOf: item.versionOf,
+  remixOf: item.remixOf,
+  notes: '',
+  lesson: '',
+});
+
+const rowText = (row) => [
+  row.id, row.title, row.batch, row.description, row.prompt, row.versionOf, row.remixOf, JSON.stringify(row.meta ?? {}), row.code,
+].join('\n');
 
 const squeeze = (s) => String(s).toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '');
 const MIN_QUOTE = 16; // squeezed characters: shorter than this is ordinary musical vocabulary
@@ -145,7 +195,7 @@ const MIN_QUOTE = 16; // squeezed characters: shorter than this is ordinary musi
 function quotesPrivateText(entry, item) {
   const texts = entry.privateTexts ?? [];
   if (!texts.length) return false;
-  const row = squeeze([item.title, item.batch, item.description, item.prompt, JSON.stringify(item.meta ?? {}), item.code].join('\n'));
+  const row = squeeze(rowText(item));
   const prompt = squeeze(entry.job.prompt ?? '');
   return texts.flatMap((t) => String(t).split(/[.!?\n]+/)).map(squeeze)
     .some((part) => part.length >= MIN_QUOTE && !prompt.includes(part) && row.includes(part));
@@ -154,7 +204,9 @@ function quotesPrivateText(entry, item) {
 function checkCode(code) {
   if (typeof code !== 'string' || code.length > MAX_CODE) return 'code missing or too large';
   const policy = checkCodePolicy(code);
-  return policy.ok ? null : policy.error;
+  if (!policy.ok) return policy.error;
+  const volume = checkCodeVolume(code);
+  return volume.ok ? null : volume.error;
 }
 
 // A remix job reads another user's row, which is text that user chose. It holds nothing private,
@@ -165,9 +217,11 @@ export function createOps({ adminDb, runWorker }) {
   async function save(entry, namespace, body, character) {
     const { job, profileId } = entry;
     if (namespace !== job.collection) return fail(`this job can only save to ${job.collection}`);
-    const { item } = body;
-    const problem = checkItem(item) ?? checkFields(item) ?? checkCode(item?.code);
+    const problem = checkItem(body.item) ?? checkFields(body.item) ?? checkCode(body.item?.code);
     if (problem) return fail(problem);
+    const item = storedRow(body.item);
+    // A remix names the source it was handed. Anything else there is just more public text.
+    if (item.remixOf && item.remixOf !== entry.remixRoot) return fail('remixOf must be the root of this job\'s remix source');
     if (quotesPrivateText(entry, item)) return fail('this row quotes a private lesson, and rows are public: say it in other words or leave it out');
     if (!profileId) return fail('job has no author profile');
     // Taken before the first await, or overlapping saves all pass the cap. Only a save that
@@ -182,8 +236,7 @@ export function createOps({ adminDb, runWorker }) {
       if (!checked.ok) return { ok: false, error: checked.error, warnings: checked.warnings };
       const vendored = await runWorker({ kind: 'vendor-item', item });
       const warnings = vendored.warnings ?? [];
-      // Notes and lessons on a row are its listeners', and start empty.
-      const inserted = await insertItem(adminDb, namespace, { ...item, notes: '', lesson: '' }, profileId, { jobId: job.id });
+      const inserted = await insertItem(adminDb, namespace, item, profileId, { jobId: job.id });
       if (!inserted.ok) return { ...inserted, warnings };
       saved = true;
       return { ok: true, id: item.id, warnings };
@@ -245,16 +298,18 @@ export function createOps({ adminDb, runWorker }) {
     },
 
     // Only the source the requester named when creating the job, and only if public.
-    'remix-source': async ({ job }, { slug }) => {
+    'remix-source': async (entry, { slug }) => {
+      const { job } = entry;
       if (job.type !== 'remix' || slug !== job.sourceSlug) return fail('not this job\'s remix source');
       const ns = job.collection;
       const item = (await adminDb.query({ [ns]: { $: { where: { slug } } } }))[ns][0];
       if (!item || item.isPublic === false) return fail(`source not found: ${ns}/${slug}`);
       const newId = nextRemixId(slug, [...(await itemSlugs(adminDb, ns))]);
+      entry.remixRoot = item.versionOf ?? item.slug;
       return {
         ok: true,
         source: {
-          root: item.versionOf ?? item.slug,
+          root: entry.remixRoot,
           newId,
           namespace: ns,
           title: item.title,

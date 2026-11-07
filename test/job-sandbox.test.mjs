@@ -539,7 +539,7 @@ describe('audit run-2: broker', () => {
     const adminDb = fakeAdmin({ tracks: [], stems: [], lessons: [], profiles: [{ id: 'p1' }] });
     const kinds = [];
     const ops = createOps({ adminDb, runWorker: async (p) => { kinds.push(p.kind); return { ok: true, warnings: [] }; } });
-    await ops['save-track'](entry(), { item: { ...item('song-1'), prompt: 'p', batch: 'b', description: 'd', createdAt: 'now', meta: {} } });
+    await ops['save-track'](entry(), { item: { ...item('song-1'), prompt: 'p', batch: 'b', description: 'd', createdAt: '2026-11-07T01:02:03Z', meta: {} } });
     expect(kinds).toEqual(['check-item', 'vendor-item']);
   });
   it('publishes nothing if evaluation fails', async () => {
@@ -555,7 +555,7 @@ describe('audit run-2: broker', () => {
     const ops = createOps({ adminDb, runWorker: async () => { await gate; return { ok: true, warnings: [] }; } });
     const e = entry();
     const cap = saveCapFor(job2);
-    const all = Array.from({ length: cap + 5 }, (_, i) => ops['save-track'](e, { item: { ...item(`s-${i}`), prompt: 'p', batch: 'b', description: 'd', createdAt: 'now', meta: {} } }));
+    const all = Array.from({ length: cap + 5 }, (_, i) => ops['save-track'](e, { item: { ...item(`s-${i}`), prompt: 'p', batch: 'b', description: 'd', createdAt: '2026-11-07T01:02:03Z', meta: {} } }));
     release();
     const results = await Promise.all(all);
     expect(results.filter((r) => /limit/.test(r.error ?? '')).length).toBe(5);

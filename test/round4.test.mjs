@@ -21,7 +21,7 @@ afterEach(async () => { await Promise.all(dirs.splice(0).map((d) => rm(d, { recu
 const job = { id: 'j', type: 'generate-tracks', collection: 'tracks', count: 1, userId: 'u' };
 const entry = (over = {}) => ({ job, profileId: 'p1', saves: 0, calls: 0, ...over });
 const row = (over = {}) => ({
-  id: 'song-1', title: 't', prompt: 'p', batch: 'b', description: 'd', createdAt: 'now', meta: {}, code: 's("bd")', ...over,
+  id: 'song-1', title: 't', prompt: 'p', batch: 'b', description: 'd', createdAt: '2026-11-07T01:02:03Z', meta: {}, code: 's("bd")', ...over,
 });
 const admin = (seed = {}) => fakeAdmin({ tracks: [], stems: [], lessons: [], profiles: [{ id: 'p1' }], ...seed });
 const passing = (calls = []) => async (p) => { calls.push(p); return { ok: true, warnings: [] }; };

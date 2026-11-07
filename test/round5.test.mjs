@@ -5,6 +5,8 @@ import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createApp } from '../server/app.mjs';
+import { createOps } from '../server/job-broker.mjs';
+import { fakeAdmin } from './fake-admin.mjs';
 
 describe('the bank index', () => {
   let cacheDir;
@@ -40,5 +42,85 @@ describe('the bank index', () => {
     await mkdir(join(cacheDir, 'banks', 'garbled'), { recursive: true });
     await writeFile(join(cacheDir, 'banks', 'garbled', 'strudel.json'), '{');
     expect(await slugs()).toEqual([]);
+  });
+});
+
+describe('what a job can put in a public row', () => {
+  const job = { id: 'job-1', type: 'generate-tracks', collection: 'tracks', count: 2, prompt: 'dark techno' };
+  const entry = (over = {}) => ({ job, profileId: 'p1', saves: 0, calls: 0, ...over });
+  const code = 'setcpm(30)\ns("bd")';
+  const row = (over = {}) => ({
+    id: 'song-1', title: 'T', prompt: 'p', batch: '2026-11-07-dark', description: 'd', code, createdAt: '2026-11-07T01:02:03Z',
+    meta: { bpm: 120, genre: 'techno', mood: 'dark', key: 'A minor', instruments: ['kick'], energy: 3 }, ...over,
+  });
+  const admin = (seed = {}) => fakeAdmin({ tracks: [], stems: [], lessons: [], profiles: [{ id: 'p1' }], ...seed });
+  const passing = (calls = []) => async (p) => { calls.push(p); return { ok: true, warnings: [] }; };
+  const saved = (db) => db._txs.find((x) => x.update?.slug)?.update;
+
+  it('accepts the longest values live rows hold', async () => {
+    const db = admin();
+    const ops = createOps({ adminDb: db, runWorker: passing() });
+    const big = row({
+      id: `${'s'.repeat(54)}-01-remix-01`, title: 't'.repeat(40), prompt: 'p'.repeat(309), batch: `2026-06-23-${'b'.repeat(44)}`, description: 'd'.repeat(605),
+      code: `// ${'c'.repeat(1286)}\ns("${'x'.repeat(2800)}")\n${' '.repeat(5200)}`,
+      meta: { bpm: 220, genre: 'g'.repeat(44), mood: 'm'.repeat(68), key: 'k'.repeat(50), instruments: Array(13).fill('i'.repeat(43)), energy: 5 },
+    });
+    expect((await ops['save-track'](entry(), { item: big })).ok).toBe(true);
+  });
+
+  it.each([
+    ['title', { title: 'x'.repeat(121) }],
+    ['prompt', { prompt: 'x'.repeat(601) }],
+    ['description', { description: 'x'.repeat(1501) }],
+    ['batch length', { batch: 'x'.repeat(73) }],
+    ['batch prose', { batch: 'not a slug, a sentence' }],
+    ['createdAt prose', { createdAt: 'hello there' }],
+    ['a slug that only stringifies to one', { id: ['song-1'] }],
+    ['a versionOf that only stringifies to one', { versionOf: ['song-1'] }],
+    ['meta that is not an object', { meta: 'free text' }],
+    ['meta genre', { meta: { genre: 'x'.repeat(121) } }],
+    ['meta genre type', { meta: { genre: { a: 1 } } }],
+    ['meta bpm', { meta: { bpm: 'one twenty' } }],
+    ['meta energy', { meta: { energy: 1.5 } }],
+    ['instrument count', { meta: { instruments: Array(25).fill('k') } }],
+    ['instrument length', { meta: { instruments: ['x'.repeat(65)] } }],
+    ['code length', { code: `s("bd")\n${' '.repeat(32 * 1024)}` }],
+    ['comments', { code: `// ${'x'.repeat(3001)}\ns("bd")` }],
+    ['many short comments', { code: `${'// xxxxxxxx\n'.repeat(400)}s("bd")` }],
+    ['string volume', { code: `s("${'x'.repeat(8001)}")` }],
+    ['strings split up', { code: `stack(${Array(90).fill(`s("${'x'.repeat(100)}")`).join(',')})` }],
+    ['template volume', { code: `s(\`${'x'.repeat(8001)}\`)` }],
+  ])('refuses before any evaluation: %s', async (_n, over) => {
+    const calls = [];
+    const db = admin();
+    const ops = createOps({ adminDb: db, runWorker: passing(calls) });
+    expect((await ops['save-track'](entry(), { item: row(over) })).ok).toBe(false);
+    expect(calls).toEqual([]);
+    expect(saved(db)).toBeUndefined();
+  });
+
+  it('stores only the meta fields the app uses', async () => {
+    const db = admin();
+    const ops = createOps({ adminDb: db, runWorker: passing() });
+    const meta = { bpm: 120, genre: 'g', mood: 'm', key: 'k', instruments: ['i'], energy: 3 };
+    expect((await ops['save-track'](entry(), { item: row({ meta: { ...meta, diary: 'dear reader', _x: { y: 1 } } }) })).ok).toBe(true);
+    expect(saved(db).meta).toEqual(meta);
+  });
+
+  it('remixOf can only name this remix job\'s source', async () => {
+    const remix = { ...job, type: 'remix', count: null, sourceSlug: 'src-1' };
+    const db = admin({ tracks: [{ id: 'e1', slug: 'src-1', isPublic: true, code: 'c' }] });
+    const ops = createOps({ adminDb: db, runWorker: passing() });
+    const e = entry({ job: remix });
+    expect((await ops['remix-source'](e, { slug: 'src-1' })).ok).toBe(true);
+    expect((await ops['save-track'](e, { item: row({ remixOf: 'free-text-here' }) })).error).toMatch(/remixOf/);
+    expect((await ops['save-track'](e, { item: row({ remixOf: 'src-1' }) })).ok).toBe(true);
+    expect((await ops['save-track'](entry(), { item: row({ id: 'song-2', remixOf: 'src-1' }) })).error).toMatch(/remixOf/);
+  });
+
+  it('a slug can\'t carry a lesson past the quote check', async () => {
+    const ops = createOps({ adminDb: admin(), runWorker: passing() });
+    const e = entry({ privateTexts: ['I secretly love the sound of my neighbour\'s dog'] });
+    expect((await ops['save-track'](e, { item: row({ id: 'i-secretly-love-the-sound-of-my-neighbours-dog' }) })).error).toMatch(/private lesson/);
   });
 });

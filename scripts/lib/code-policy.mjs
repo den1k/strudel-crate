@@ -104,6 +104,33 @@ export function samplesStatements(code) {
     .map((n) => ({ start: n.start, end: n.end, call: code.slice(n.expression.start, n.expression.end) }));
 }
 
+// A saved row is public, and a row's prose has to live somewhere in its code. Bounds, not a bar:
+// these limit how much a steered agent can publish, at about twice the most any live row holds
+// (comments 1286, strings 2839). Pattern code in identifiers stays limited only by code length.
+const MAX_COMMENT_CHARS = 3000;
+const MAX_STRING_CHARS = 8000;
+
+function stringChars(node) {
+  if (Array.isArray(node)) return node.reduce((sum, child) => sum + stringChars(child), 0);
+  if (!node || typeof node !== 'object') return 0;
+  if (node.type === 'Literal') return typeof node.value === 'string' ? node.value.length : 0;
+  if (node.type === 'TemplateElement') return node.value.raw.length;
+  return Object.values(node).reduce((sum, child) => sum + stringChars(child), 0);
+}
+
+export function checkCodeVolume(code) {
+  const comments = [];
+  let ast;
+  try {
+    ast = parse(code, { ...PARSE_OPTIONS, onComment: comments });
+  } catch (err) {
+    return fail(`evaluation failed: ${err.message}`);
+  }
+  if (comments.reduce((sum, c) => sum + c.value.length, 0) > MAX_COMMENT_CHARS) return fail(`too many comments: at most ${MAX_COMMENT_CHARS} characters`);
+  if (stringChars(ast.body) > MAX_STRING_CHARS) return fail(`too much text in strings: at most ${MAX_STRING_CHARS} characters`);
+  return { ok: true };
+}
+
 export function checkCodePolicy(code) {
   let ast;
   try {
