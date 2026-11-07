@@ -26,7 +26,6 @@ const MAX_OPS = 5000;
 // Requests one job may have open. Sub-agents fan out to about 8, one call each; each open call
 // holds its body (up to MAX_BODY) on this process's heap while it waits for a worker.
 const MAX_INFLIGHT = 24;
-const MAX_REVISIONS = 24; // buildWorklist's per-job cap: a job also saves its Step 0 revisions
 const RESULT_MARK = 'CRATE_WORKER_RESULT ';
 const PUBLISHING_KINDS = new Set(['vendor-item', 'write-palette']);
 const MAX_WORKER_OUTPUT = 40 * 1024 * 1024; // a fetcher's answer holds sample manifests
@@ -59,7 +58,8 @@ function limiter(max) {
   };
 }
 
-export const saveCapFor = (job) => (job.count ?? 1) + MAX_REVISIONS;
+// What was asked for, plus one for each note the worklist told this job to revise (Step 0).
+export const saveCapFor = (job, revisions = 0) => (job.count ?? 1) + revisions;
 
 // Evaluate agent-written code in its own sandbox and unit, away from this process. Its result
 // is advisory: an evaluator could print any result line, which is why stored code only ever
@@ -226,7 +226,7 @@ export function createOps({ adminDb, runWorker }) {
     if (!profileId) return fail('job has no author profile');
     // Taken before the first await, or overlapping saves all pass the cap. Only a save that
     // lands keeps its slot.
-    if (entry.saves >= saveCapFor(job)) return fail('save limit for this job reached');
+    if (entry.saves >= saveCapFor(job, entry.revisions)) return fail('save limit for this job reached');
     entry.saves += 1;
     let saved = false;
     try {
@@ -286,7 +286,8 @@ export function createOps({ adminDb, runWorker }) {
       return { ok: true, digest: buildDigest(lessons) };
     },
 
-    'pending-revisions': async ({ job, profileId }) => {
+    'pending-revisions': async (entry) => {
+      const { job, profileId } = entry;
       if (job.type === 'remix') return fail(NOT_IN_REMIX);
       const ns = job.collection;
       const res = await adminDb.query({ [ns]: { author: {} } });
@@ -294,7 +295,9 @@ export function createOps({ adminDb, runWorker }) {
         const author = Array.isArray(r.author) ? r.author[0] : r.author;
         return { ...r, id: r.slug, authorProfileId: author?.id ?? null };
       });
-      return { ok: true, list: buildWorklist(rows, { profileId, inJob: true }) };
+      const list = buildWorklist(rows, { profileId, inJob: true });
+      entry.revisions = Math.max(entry.revisions ?? 0, list.length); // a saved revision leaves the list
+      return { ok: true, list };
     },
 
     // Only the source the requester named when creating the job, and only if public.

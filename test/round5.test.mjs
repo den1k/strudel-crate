@@ -5,7 +5,7 @@ import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createApp } from '../server/app.mjs';
-import { createOps } from '../server/job-broker.mjs';
+import { createOps, saveCapFor } from '../server/job-broker.mjs';
 import { fakeAdmin } from './fake-admin.mjs';
 
 describe('the bank index', () => {
@@ -122,5 +122,30 @@ describe('what a job can put in a public row', () => {
     const ops = createOps({ adminDb: admin(), runWorker: passing() });
     const e = entry({ privateTexts: ['I secretly love the sound of my neighbour\'s dog'] });
     expect((await ops['save-track'](e, { item: row({ id: 'i-secretly-love-the-sound-of-my-neighbours-dog' }) })).error).toMatch(/private lesson/);
+  });
+});
+
+describe('how many public rows a job gets', () => {
+  const job = { id: 'job-1', type: 'generate-tracks', collection: 'tracks', count: 2, prompt: 'p' };
+  const item = (i) => ({ id: `s-${i}`, title: 'T', prompt: 'p', batch: 'b', description: 'd', code: 's("bd")', createdAt: '2026-11-07T01:02:03Z', meta: {} });
+  const admin = (tracks = []) => fakeAdmin({ tracks, stems: [], lessons: [], profiles: [{ id: 'p1' }] });
+
+  it('is what was asked for, when nothing is waiting to be revised', async () => {
+    const ops = createOps({ adminDb: admin(), runWorker: async () => ({ ok: true }) });
+    const e = { job, profileId: 'p1', saves: 0, calls: 0 };
+    expect(saveCapFor(job)).toBe(2);
+    expect((await ops['pending-revisions'](e, {})).list).toEqual([]);
+    expect((await ops['save-track'](e, { item: item(1) })).ok).toBe(true);
+    expect((await ops['save-track'](e, { item: item(2) })).ok).toBe(true);
+    expect((await ops['save-track'](e, { item: item(3) })).error).toMatch(/limit/);
+  });
+
+  it('grows by one per note the worklist says to revise', async () => {
+    const noted = { id: 'e1', slug: 'root-1', isPublic: true, code: 'c', notes: 'more cowbell', author: { id: 'p1' } };
+    const ops = createOps({ adminDb: admin([noted]), runWorker: async () => ({ ok: true }) });
+    const e = { job, profileId: 'p1', saves: 0, calls: 0 };
+    expect((await ops['pending-revisions'](e, {})).list).toHaveLength(1);
+    for (const i of [1, 2, 3]) expect((await ops['save-track'](e, { item: item(i) })).ok).toBe(true);
+    expect((await ops['save-track'](e, { item: item(4) })).error).toMatch(/limit/);
   });
 });
