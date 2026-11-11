@@ -10,6 +10,13 @@ const rules = {
       create: "false",
     },
   },
+  // No guest accounts: the rating route takes any signed-in account, so free guest
+  // sign-ins would let one person rate many times. Magic-code sign-up has an email.
+  $users: {
+    allow: {
+      create: "data.email != null",
+    },
+  },
   plays: {
     allow: {
       view: "auth.id != null && auth.id in data.ref('profile.user.id')",
