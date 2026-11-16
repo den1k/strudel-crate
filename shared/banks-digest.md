@@ -1,14 +1,14 @@
 ## Loadable sample banks discovered on GitHub
 These are REAL, loadable Strudel banks (crawled from public repos). Reach past the base palette: load one with `samples('<ref>')`. For a bank's exact sound names, grep `data/banks.json` before you write the `samples()` load.
 
-### drums (77)
+### drums (81)
 - tidalcycles/Dirt-Samples · https://raw.githubusercontent.com/tidalcycles/Dirt-Samples/master/strudel.json · 218
 - algorave-dave/samples · github:algorave-dave/samples · 7
 - eddyflux/crate · github:eddyflux/crate · 18
 - yaxu/spicule · github:yaxu/spicule · 75
 - mot4i/garden · github:mot4i/garden · 13
 - tidalcycles/uzu-drumkit · github:tidalcycles/uzu-drumkit · 16
-- …and 71 more — grep `data/banks.json`.
+- …and 75 more — grep `data/banks.json`.
 
 ### bass (12)
 - eddyflux/wax · github:eddyflux/wax · 21
@@ -19,16 +19,17 @@ These are REAL, loadable Strudel banks (crawled from public repos). Reach past t
 - dovbaeb/samples-strudel-pls · github:dovbaeb/samples-strudel-pls · 24
 - …and 6 more — grep `data/banks.json`.
 
-### lead (11)
+### lead (9)
 - Bubobubobubobubo/Dough-Waveforms · github:Bubobubobubobubo/Dough-Waveforms · 65
 - tidalcycles/uzu-wavetables · github:tidalcycles/uzu-wavetables · 2
 - kyrsive/glorkglunk-wavetables · github:kyrsive/glorkglunk-wavetables · 9
-- ShawnToubeau/livecode · https://raw.githubusercontent.com/ShawnToubeau/livecode/main/music/songs/bowghain/samples/strudel.json · 3
-- 11111000000/wavecode · https://raw.githubusercontent.com/11111000000/wavecode/master/ui/public/samples/synth/strudel.json · 12
 - aalokok/soundrepo · github:aalokok/soundrepo · 3
-- …and 5 more — grep `data/banks.json`.
+- BryceStevenWilley/bryce.avx.samples · github:BryceStevenWilley/bryce.avx.samples · 13
+- domi-s/strudel-samples · github:domi-s/strudel-samples · 6
+- …and 3 more — grep `data/banks.json`.
 
-### pad (5)
+### pad (6)
+- switchangel/pad · github:switchangel/pad · 1
 - eerieear/samples · github:eerieear/samples · 5
 - ElBarbs/strudel-pads · github:ElBarbs/strudel-pads · 1
 - evilfemme/evil-samples · github:evilfemme/evil-samples · 7
@@ -40,8 +41,8 @@ These are REAL, loadable Strudel banks (crawled from public repos). Reach past t
 - jpopesculian/ep1320 · github:jpopesculian/ep1320 · 58
 - boggodan/bflute · github:boggodan/bflute · 3
 - febeverelst/algorave_FE-VER · https://raw.githubusercontent.com/febeverelst/algorave_FE-VER/main/Samples/strudel.json · 2
+- mysinglelise/msl-strudel-samples · github:mysinglelise/msl-strudel-samples · 4
 - TodePond/pond · github:TodePond/pond · 11
-- cfragoso/algorave · https://raw.githubusercontent.com/cfragoso/algorave/main/vocals/strudel.json · 1
 - …and 10 more — grep `data/banks.json`.
 
 ### world (2)
@@ -57,8 +58,9 @@ These are REAL, loadable Strudel banks (crawled from public repos). Reach past t
 - sonidosingapura/rochormatic · github:sonidosingapura/rochormatic · 18
 - …and 12 more — grep `data/banks.json`.
 
-### fx (1)
+### fx (2)
 - Emanuel-de-Jong/L1C0-B3nLib_x86_EXE · https://raw.githubusercontent.com/Emanuel-de-Jong/L1C0-B3nLib_x86_EXE/main/assets/audio/strudel.json · 5
+- justusaugust/strudel-samples · github:justusaugust/strudel-samples · 25
 
 ### melodic (6)
 - timoncool/Bulka · https://raw.githubusercontent.com/timoncool/Bulka/main/website/public/samples/e-pianos/strudel.json · 3
