@@ -19,22 +19,23 @@ These are REAL, loadable Strudel banks (crawled from public repos). Reach past t
 - dovbaeb/samples-strudel-pls · github:dovbaeb/samples-strudel-pls · 24
 - …and 6 more — grep `data/banks.json`.
 
-### lead (9)
+### lead (10)
 - Bubobubobubobubo/Dough-Waveforms · github:Bubobubobubobubo/Dough-Waveforms · 65
+- alienmind/strdltn · https://raw.githubusercontent.com/alienmind/strdltn/main/template/samples/strudel.json · 2
 - tidalcycles/uzu-wavetables · github:tidalcycles/uzu-wavetables · 2
 - kyrsive/glorkglunk-wavetables · github:kyrsive/glorkglunk-wavetables · 9
 - aalokok/soundrepo · github:aalokok/soundrepo · 3
 - BryceStevenWilley/bryce.avx.samples · github:BryceStevenWilley/bryce.avx.samples · 13
-- domi-s/strudel-samples · github:domi-s/strudel-samples · 6
-- …and 3 more — grep `data/banks.json`.
+- …and 4 more — grep `data/banks.json`.
 
-### pad (6)
+### pad (8)
 - switchangel/pad · github:switchangel/pad · 1
 - eerieear/samples · github:eerieear/samples · 5
 - ElBarbs/strudel-pads · github:ElBarbs/strudel-pads · 1
+- ethanfischer/strudel-samples · github:ethanfischer/strudel-samples · 25
 - evilfemme/evil-samples · github:evilfemme/evil-samples · 7
-- Samplesbit/strudel_samples · github:Samplesbit/strudel_samples · 1
-- sucaritaesredonda/samples · github:sucaritaesredonda/samples · 7
+- jonborchardt/strudel-bench · https://raw.githubusercontent.com/jonborchardt/strudel-bench/main/samples/user/ballast-cuts/strudel.json · 2
+- …and 2 more — grep `data/banks.json`.
 
 ### vocal (16)
 - switchangel/beginningtrance · github:switchangel/beginningtrance · 1
@@ -70,11 +71,11 @@ These are REAL, loadable Strudel banks (crawled from public repos). Reach past t
 - futurechef/codingcuisine.dev · https://raw.githubusercontent.com/futurechef/codingcuisine.dev/main/public/station/strudel.json · 6
 - lynn/sounds · https://raw.githubusercontent.com/lynn/sounds/main/chrono-trigger/strudel.json · 57
 
-### misc (58)
+### misc (59)
 - QuantumVillage/quantum-music · github:QuantumVillage/quantum-music · 1
 - vasilymilovidov/samples · github:vasilymilovidov/samples · 8
 - eduardoagarcia/strudel · https://raw.githubusercontent.com/eduardoagarcia/strudel/main/samples/fx/strudel.json · 1
 - yaxu/mrid · github:yaxu/mrid · 13
 - salsicha/capoeira_strudel · github:salsicha/capoeira_strudel · 2
 - Bubobubobubobubo/Dough-Amiga · github:Bubobubobubobubo/Dough-Amiga · 116
-- …and 52 more — grep `data/banks.json`.
+- …and 53 more — grep `data/banks.json`.
