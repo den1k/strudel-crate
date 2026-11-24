@@ -1,0 +1,5 @@
+patchedDependencies:
+  '@kabelsalat/web@0.4.1': patches/@kabelsalat__web@0.4.1.patch
+onlyBuiltDependencies:
+  - esbuild
+  - "@swc/core"
